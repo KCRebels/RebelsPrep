@@ -1,0 +1,22 @@
+{
+  "name": "RebelsPrep",
+  "short_name": "RebelsPrep",
+  "id": "/RebelsPrep/",
+  "start_url": "/RebelsPrep/?launch=rp2",
+  "scope": "/RebelsPrep/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/RebelsPrep/rebelsprep-icon-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/RebelsPrep/rebelsprep-icon-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
