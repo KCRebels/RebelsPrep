@@ -66,3 +66,9 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 
 .drill-row.unavailable{background:#eef0f1;border-color:#d8dcde}.drill-row.unavailable .drill-row-select{opacity:1;color:#969da6;cursor:default}.drill-row.unavailable .drill-row-label small,.drill-row.unavailable .drill-row-mark{color:#a2a8ae}.drill-row.unavailable .drill-row-mark{background:#e1e5e7}
 .portal-links>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #d4d9d7}.portal-links small{display:block;color:#687184;margin-top:4px}.portal-open{display:block;border:1px solid #aeb5ba;border-radius:9px;padding:10px;white-space:nowrap;font-weight:700;text-decoration:none}.shared-clock{margin:20px 0}.shared-clock>strong{font-size:24px}.current-block{border:2px solid #a72535}.portal-station{border-top:1px solid #d4d9d7;margin-top:14px;padding-top:12px}.portal-station details{line-height:1.5}.portal-station summary{color:#a72535;font-weight:700;cursor:pointer}
+
+.practice-clock-stats{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:18px 0 0}
+.practice-clock-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:140px;padding:20px 10px;background:#fff;border:2px solid #cfd6d3;border-radius:16px}
+.practice-clock-box>span{font-size:14px;font-weight:800;text-transform:uppercase;color:#626d80}
+.practice-clock-box>strong{font-size:clamp(30px,8vw,48px);font-weight:800;line-height:1.1;color:#111827;font-variant-numeric:tabular-nums;white-space:nowrap}
+.practice-clock-phase{margin:12px 0 18px;text-align:center;color:#626d80;font-weight:700}
