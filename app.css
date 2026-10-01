@@ -90,3 +90,5 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .team-card.selectable-team .team-card-actions{flex:none;gap:6px}
 .team-card.selectable-team .team-card-actions button{padding:7px 9px;min-height:36px;font-size:12px}
 @media(max-width:360px){.team-card.selectable-team{gap:6px;padding:9px 10px}.team-choice{gap:7px}.team-choice strong{font-size:14px}.team-card.selectable-team .team-card-actions button{padding:7px}}
+
+.team-choice{flex-direction:row}
