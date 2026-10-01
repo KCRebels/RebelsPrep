@@ -1,6 +1,6 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild9';
-import {drills} from './drills.mjs?v=rpbuild9';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild9';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild10';
+import {drills} from './drills.mjs?v=rpbuild10';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild10';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -9,6 +9,7 @@ const blank=()=>({date:today(),start:'17:30',durationMinutes:180,blockMinutes:12
 let state,view='setup',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null;
 try{state={...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
 if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
+if(state.drillResetVersion!==1){if(!state.plan||state.clock?.done)state.selectedDrills=[];state.drillResetVersion=1;save();}
 const allPlayers=()=>[...roster,...state.guests];
 const name=id=>allPlayers().find(p=>p.id===id)?.name||coaches.find(c=>c.id===id)?.name||id;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{error='This device could not save the draft. Keep this page open or free storage before closing.';}}
@@ -27,8 +28,14 @@ function setup(){
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
  setting('Duration (minutes)','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
  setting('Block length','<select id="blockMinutes">'+options([[10,'10 minutes'],[12,'12 minutes'],[15,'15 minutes']],state.blockMinutes)+'</select>')+
- '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>';
+ '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section><div class="actions"><button id="new-practice">New Practice</button></div>';
 
+}
+function resetDrillChoices(){state.selectedDrills=[];drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;}
+function newPractice(){
+ if(busy){error='Wait for the current build to finish before starting a new practice.';render();return;}
+ if(!dirty()){render();return;}
+ resetDrillChoices();save();setView('setup');
 }
 function person(p,coach=false){
  const inList=coach?state.coachIds:state.included,adjust=state.adjustments[p.id]||{},parts=[];
@@ -68,7 +75,7 @@ function calculateDrillCount(){
  if(state.included.length<3||!state.coachIds.length){recommendation=null;updateDrillGuidance();return;}
  recommendation={key,pending:true};updateDrillGuidance();
  try{
-  const w=new Worker('./worker.mjs?v=rpbuild9',{type:'module'});recommendationWorker=w;
+  const w=new Worker('./worker.mjs?v=rpbuild10',{type:'module'});recommendationWorker=w;
   w.onmessage=e=>{
    if(recommendation?.key===key){
     recommendation=e.data.error?{key,error:e.data.error}:{key,...e.data.recommendation};
@@ -146,7 +153,7 @@ function render(){
 function bind(){
  document.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));
  for(const id of ['date','start','facility','durationMinutes','blockMinutes','allowReplacements']){
-  const el=$('#'+id);if(el)el.onchange=()=>{if(!dirty()){render();return;}state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
+  const el=$('#'+id);if(el)el.onchange=()=>{if(!dirty()){render();return;}if(id==='date'&&state.date!==el.value)resetDrillChoices();state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
  }
  document.querySelectorAll('[data-include]').forEach(el=>el.onchange=()=>{if(!dirty()){render();return;}const key=el.hasAttribute('data-coach')?'coachIds':'included';state[key]=el.checked?[...new Set([...state[key],el.dataset.include])]:state[key].filter(id=>id!==el.dataset.include);save();render();});
  document.querySelectorAll('[data-adjust]').forEach(el=>el.onclick=()=>adjust(el.dataset.adjust));
@@ -154,6 +161,7 @@ function bind(){
  if($('#drill-search'))$('#drill-search').oninput=e=>{drillSearch=e.target.value;refreshDrills();};
  document.querySelectorAll('[data-category]').forEach(el=>el.onclick=()=>{drillCategory=el.dataset.category;refreshDrills();});
  const click=(id,fn)=>{if($('#'+id))$('#'+id).onclick=fn;};
+ click('new-practice',newPractice);
  click('include-all',()=>{if(dirty()){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty()){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty()){state.coachIds=coaches.map(c=>c.id);save();render();}});
@@ -185,7 +193,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input=practiceInput();
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild9',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild10',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
@@ -197,7 +205,7 @@ function startClock(){
 }
 function pauseClock(){const c=state.clock;if(!c||c.done)return;if(c.running){c.remaining=Math.max(0,c.end-Date.now());c.running=false;}else{c.end=Date.now()+c.remaining;c.running=true;}save();render();}
 function skipClock(){const c=state.clock;if(!c||c.done||c.phase==='rotate')return;c.phase='rotate';c.remaining=60000;c.end=Date.now()+60000;c.running=true;save();speak('Rotate to your next station.');render();}
-function finish(){if(!state.clock||state.clock.done)return;state.clock.done=true;state.clock.running=false;state.clock.remaining=0;state.history.push({date:state.date,players:state.plan.players.length,durationMinutes:state.plan.durationMinutes,blockMinutes:state.plan.blockMinutes,replacements:state.plan.replacements.length,replacementIds:state.plan.replacements,completedAt:new Date().toISOString()});save();speak('Practice is finished.');render();}
+function finish(){if(!state.clock||state.clock.done)return;state.clock.done=true;state.clock.running=false;state.clock.remaining=0;state.history.push({date:state.date,players:state.plan.players.length,durationMinutes:state.plan.durationMinutes,blockMinutes:state.plan.blockMinutes,replacements:state.plan.replacements.length,replacementIds:state.plan.replacements,completedAt:new Date().toISOString()});resetDrillChoices();save();speak('Practice is finished.');render();}
 function tick(){
  const c=state.clock;if(!c)return;if(c.running&&!c.done){
   while(Date.now()>=c.end&&!c.done){
