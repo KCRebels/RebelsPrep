@@ -24,17 +24,20 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  const clockToken=token(),keys=[...new Set([teamId,...teamIds])];
  return F.runTransaction(db,async tx=>{
   const directories=new Map();
-  for(const key of keys){const doc=await tx.get(F.doc(db,'rpTeams',key));directories.set(key,doc.exists()?doc.data():{portals:{}});}
-  const previousClocks=new Set([...directories.values()].map(d=>d.clockToken).filter(Boolean));
+  const lookupKeys=[...new Set([...keys,...allPeople.flatMap(p=>p.memberTeamIds||[])])];
+  for(const key of lookupKeys){const doc=await tx.get(F.doc(db,'rpTeams',key));directories.set(key,doc.exists()?doc.data():{portals:{}});}
+  const previousClocks=new Set(keys.map(key=>directories.get(key)?.clockToken).filter(Boolean));
   const clockDocs=new Map();
   for(const id of previousClocks){const doc=await tx.get(F.doc(db,'rpClocks',id));clockDocs.set(id,doc.exists()?doc.data():null);}
   for(const data of clockDocs.values())if(data&&!clockState(data.clock)?.done)throw Error('Finish the active practice for the selected teams before activating another.');
-  const identity=p=>p.role+':'+p.name.trim().toLowerCase().replace(/\s+/g,' ');
-  const current=new Map(allPeople.map(p=>[identity(p),p]));
+  const identity=p=>p.role+':'+p.name.trim().toLowerCase().replace(/[’]/g,"'").replace(/\s+/g,' ');
+  const current=new Map(allPeople.flatMap(p=>[p.name,...p.aliases||[]].map(name=>[identity({...p,name}),p])));
+  const currentIds=new Map(allPeople.map(p=>[p.id,p]));
   const portals={},records=new Map();
   // Keep every existing permanent token, including links created in earlier combinations.
-  for(const key of [...teamIds,teamId])for(const [id,p] of Object.entries(directories.get(key)?.portals||{})){
-   const person=current.get(identity(p));
+  for(const key of [...new Set([...teamIds,teamId,...lookupKeys])])for(const [id,p] of Object.entries(directories.get(key)?.portals||{})){
+   const person=currentIds.get(id)||current.get(identity(p));
+   if(!keys.includes(key)&&!person)continue;
    const entry={...p,id:person?.id||id,name:person?.name||p.name};
    for(const link of [p.token,...p.alternateTokens||[]])records.set(link,{...entry,token:link});portals[entry.id]??={token:p.token,name:entry.name,role:p.role};
   }

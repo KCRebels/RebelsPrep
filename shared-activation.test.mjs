@@ -34,5 +34,14 @@ try{
  assert.equal(next.portals.p1.token,permanent);
  assert.equal((await F.getDoc(F.doc(db,'rpPortals',permanent))).data().clockToken,next.clockToken);
  assert.equal((await F.getDoc(F.doc(db,'rpPortals',alternate))).data().clockToken,next.clockToken);
+ await F.updateDoc(F.doc(db,'rpClocks',next.clockToken),{clock:{...newClock(plan),done:true}});
+ const ella={id:'ella',name:'Ella Olson',aliases:['Ella Olsen'],memberTeamIds:['nationals','individual']};
+ const ellaToken='f'.repeat(64);
+ await F.setDoc(F.doc(db,'rpTeams','nationals'),{portals:{legacy:{name:'Ella Olsen',role:'player',token:ellaToken}}});
+ const ellaPlan={...plan,players:[ella],coaches:[]};
+ const individual=await activate(ellaPlan,'individual','2026-10-01',[{...ella,role:'player'}],'https://kcrebels.github.io/RebelsPrep/',['individual']);
+ assert.equal(individual.portals.ella.token,ellaToken);
+ assert.equal((await F.getDoc(F.doc(db,'rpPortals',ellaToken))).data().name,'Ella Olson');
+ assert.equal((await F.getDoc(F.doc(db,'rpTeams','nationals'))).data().portals.legacy.token,ellaToken);
  console.log('Combined activation: permanent and alternate links preserved, team directories share one clock, conflicts rejected, solo restart verified.');
 }finally{await env.cleanup();}

@@ -7,7 +7,7 @@ const names = [
  ['Kerrigan Gaston','','image'],['Kyleigh Gooding','','image'],['Stella Hamilton','','image'],['Teagan Hills','C','written'],
  ['Hayli Houfek','P','image'],['Kate Jacquinot','P','image'],['Landri Kistner','','image'],['Jenna May','','image'],
  ['Kinslee Mendez','','image'],['Delilah Miles','C','image'],['Aubrey Noonan','C','image'],['Capri Olsen','','image'],
- ['Heidi Olsen','','image'],['Ella Olsen','','image'],['Evangeline Pham','C','written'],['Emma Robertson','P','written'],
+ ['Heidi Olsen','','image'],['Ella Olson','','image'],['Evangeline Pham','C','written'],['Emma Robertson','P','written'],
  ['Rylee Rushton','P','written'],['Grace Samuels','C','written'],['Ava Sarber','P','image'],['Savannah Smith','','image'],
  ['Bobbi Snook','','image'],['Shanley Taylor','C','written'],['Avree Troxel','C','written'],['Stella Utter','P','written'],
  ['Peyton Valenzuela','','image'],['Avery Whitaker','P','image'],['Rylie Whitfield','','image'],['Kaydence Wilson','','image'],
@@ -19,7 +19,7 @@ export const players = names.map(([name,role,roleSource],i)=>({
 export const coaches = ['John Shafer','Bill Latteman','Halley Rindom','Chris Olsen','Jimmy Miles','Rylie Giddens','Dwight Mayhugh','Chris Bachkora','Dan Lickel'].map((name,i)=>({id:'rp-c-'+(i+1),name})).sort((a,b)=>a.name.split(' ').at(-1).localeCompare(b.name.split(' ').at(-1))||a.name.localeCompare(b.name));
 export const rosterReview = {
  complete:true,
- message:'Roster combines the images with the written pitching and catching corrections confirmed September 30.',
+ message:'Team rosters include the spreadsheet and previously confirmed pitching and catching assignments.',
  writtenPitchers:['Stella Utter','Rylee Rushton','Alaina Assenmacher','Ainsley Curry','Emma Robertson'],
  writtenCatchers:['Avree Troxel','Grace Samuels','Evangeline Pham','Teagan Hills','Shanley Taylor']
 };
