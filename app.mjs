@@ -14,7 +14,7 @@ const blank=(teamId=teams[0].id)=>({teamId,started:false,steps:{},date:today(),s
 let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false;
 let sharedUser=null,sharedDirectory=null,sharedData=null,sharedStop=null,sharedBusy=false,sharedMessage='';
 const teamKey=id=>KEY+':team:'+id;
-try{const id=localStorage.getItem(KEY+':active-team')||teams[0].id;const saved=localStorage.getItem(teamKey(id))||localStorage.getItem(KEY);state={...blank(id),...JSON.parse(saved||'{}')};if(saved&&state.started===undefined)state.started=true;if(saved)state.started=true;if(!teams.some(t=>t.id===state.teamId))state.teamId=teams[0].id;}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
+try{const id=localStorage.getItem(KEY+':active-team')||teams[0].id;const saved=localStorage.getItem(teamKey(id))||localStorage.getItem(KEY);state={...blank(id),...JSON.parse(saved||'{}')};if(saved&&JSON.parse(saved).started===undefined)state.started=true;if(!teams.some(t=>t.id===state.teamId))state.teamId=teams[0].id;}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
 if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
 const team=()=>teams.find(t=>t.id===state.teamId)||teams[0];
 state.selectedDrills=state.selectedDrills.filter(id=>id!=='drill-0');
@@ -27,7 +27,7 @@ function flushSetup(){if(view!=='setup')return true;const values={};for(const id
 function setView(v){if(!flushSetup()){render();return;}view=v;error='';render();window.scrollTo(0,0);}
 function issues(){return [...settingsIssues(state),...attendanceIssues(state,allPlayers(),coaches),...drillIssues(state,drills)];}
 function nav(){const active=['plan','review'].includes(view)?'review':view;return '<nav class="bottom-nav" aria-label="Practice planner">'+[['home','Home'],['setup','1 Setup'],['attendance','2 Attendance'],['drills','3 Drills'],['review','Build']].map(([v,label])=>'<button data-view="'+v+'" '+(v===active?'aria-current="page"':'')+'><span>'+label+'</span>'+(state.steps[v]?' <span class="step-check" aria-label="complete">✓</span>':'')+'</button>').join('')+'</nav>';}
-function home(){return heading('Teams','Choose a team to build its practice.')+'<div class="team-list">'+teams.map(t=>'<section class="panel team-card"><h2>'+esc(t.name)+'</h2><p class="muted">'+esc(t.description)+' · '+t.players.length+' players</p><div class="actions"><button class="primary" data-team="'+t.id+'">'+(t.id===state.teamId&&state.started?'Resume Practice':'Choose Team')+'</button>'+(t.id===state.teamId&&state.started?'<button id="new-practice">New Practice</button>':'')+'</div></section>').join('')+'</div><div class="actions"><button data-view="history">Practice History</button></div>';}
+function home(){return heading('Teams','Choose a team to build its practice.')+'<div class="team-list">'+teams.map(t=>'<section class="panel team-card"><h2>'+esc(t.name)+'</h2><p class="muted">'+esc(t.description)+' · '+t.players.length+' players</p><div class="actions"><button '+(t.id===state.teamId&&state.started?'class="primary"':'')+' data-team="'+t.id+'">'+(t.id===state.teamId&&state.started?'Resume Practice':'Choose Team')+'</button>'+(t.id===state.teamId&&state.started?'<button id="new-practice">New Practice</button>':'')+'</div></section>').join('')+'</div><div class="actions"><button data-view="history">Practice History</button></div>';}
 function chooseTeam(id){if(id!==state.teamId){if(busy||state.clock?.running){error='Pause the clock or finish the build before changing teams.';render();return;}save();try{state={...blank(id),...JSON.parse(localStorage.getItem(teamKey(id))||'{}'),teamId:id};}catch{state=blank(id);}recommendationWorker?.terminate();recommendation=null;drillSearch='';drillCategory='All Drills';}state.started=true;save();setView('setup');}
 function stepActions(next,label){return '<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button><button class="primary" data-next="'+next+'">'+label+'</button></div>';}
 function nextStep(next){if(!flushSetup()){render();return;}const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();return;}state.steps[view]=true;state.started=true;save();setView(next);}
@@ -52,12 +52,12 @@ function startOverDraft(){
  if(sharedData&&!clockState(sharedData.clock)?.done||state.clock&&!state.clock.done){error='Finish the active practice before starting over.';render();return;}
  if(busy)return;
  replacementOffer=null;drillPickerOpen=false;error='';
- state=resetPractice({...blank(state.teamId),history:state.history},today());
+ state={...resetPractice({...blank(state.teamId),history:state.history},today()),started:false};
  resetDrillChoices();view='setup';save();render();window.scrollTo(0,0);
 }
 function startOverButton(){
  const active=Boolean(sharedData&&!clockState(sharedData.clock)?.done||state.clock&&!state.clock.done);
- return state.started&&!active&&['setup','attendance','drills','review','plan'].includes(view)?'<button id="start-over" '+(busy?'disabled':'')+'>Start Over</button>':'';
+ return !active&&['setup','attendance','drills','review','plan'].includes(view)?'<button id="start-over" '+(busy?'disabled':'')+'>Start Over</button>':'';
 }
 function newPractice(){
  if(sharedData&&!clockState(sharedData.clock)?.done){error='Finish the active shared practice before starting a new practice.';render();return;}
@@ -182,10 +182,10 @@ function clockHTML(){
 }
 function historyPage(){return heading('Practice History','Completed practice previews saved on this device.')+'<section class="panel">'+(state.history.length?state.history.slice().reverse().map(h=>'<div class="history"><strong>'+esc(h.date)+' · '+h.players+' hitters</strong><p class="status">'+h.durationMinutes+' minutes · '+h.blockMinutes+' minute blocks · '+h.replacements+' Live replacements</p></div>').join(''):'<p class="empty">No completed practices.</p>')+'</section>';}
 function render(){
- const preview=document.querySelector('.preview');if(shared.configured)preview.innerHTML='<strong>RebelsPrep</strong> · Build locally, then Activate Practice to publish assignments. Shared RSVPs are not connected yet.';
- const picker=view==='drills'&&drillPickerOpen;document.querySelector('main>header').hidden=picker;document.querySelector('.preview').hidden=picker;document.querySelector('main>footer').hidden=picker;
- $('#team-name').textContent=view==='home'?'Practice Planner':team().name;
- $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]())+(view==='home'?sharedPanel():'' );
+ const preview=document.querySelector('.preview');preview.hidden=true;
+ const picker=view==='drills'&&drillPickerOpen;document.querySelector('main>header').hidden=picker;document.querySelector('.preview').hidden=true;document.querySelector('main>footer').hidden=picker;
+ $('#team-name').textContent=view==='home'?'':team().name;$('#team-name').hidden=view==='home';
+ $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
  bind();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
 function bind(){
