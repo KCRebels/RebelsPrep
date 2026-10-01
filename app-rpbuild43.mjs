@@ -1,5 +1,5 @@
 import {selectionKey,combinedTeam} from './team-selection.mjs?v=rpbuild33';
-import * as shared from './shared.mjs?v=rpcheckin58';
+import * as shared from './shared.mjs?v=rpcheckin60';
 import {clockState} from './portal-model.mjs?v=rpbuild18';
 import {openPortal} from './portal.mjs?v=rpbuild33';
 import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild33';
