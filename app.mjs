@@ -1,6 +1,6 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs';
-import {drills} from './drills.mjs';
-import {timeLabel,clockMinutes} from './scheduler.mjs';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild2';
+import {drills} from './drills.mjs?v=rpbuild2';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild2';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -8,6 +8,7 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 const blank=()=>({date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
 let state,view='setup',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='';
 try{state={...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
+if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
 const allPlayers=()=>[...roster,...state.guests];
 const name=id=>allPlayers().find(p=>p.id===id)?.name||coaches.find(c=>c.id===id)?.name||id;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{error='This device could not save the draft. Keep this page open or free storage before closing.';}}
@@ -54,7 +55,7 @@ function drillPage(){
  return heading('Choose Drills','Select drills whose equipment is available. Front Toss and Machine are mandatory.')+
  '<section class="panel"><h2>Required work</h2><p>Warm Up · '+(!noTees?'Tee Work · ':'')+'Machine · Front Toss</p><label class="check"><input id="allowReplacements" type="checkbox" '+(state.allowReplacements?'checked':'')+'>Allow a second Front Toss session to replace Live when needed</label><p class="muted">Live is the priority. The plan will identify replacements and any pitchers or catchers who could not get a Live role, so you can review the tradeoff.</p>'+
  (noTees?'<p class="notice">More than 20 hitters: tee drills are unavailable for this hitting practice.</p>':'')+'</section>'+
- '<section class="panel"><h2>Drill rotation</h2><div class="actions"><button id="all-drills">Select available drills</button><button id="clear-drills">Clear selection</button></div><p class="muted">Front Toss and Machine may repeat. Other selected drills are used once per hitter. More different drills give the builder more room to work.</p><div class="drills">'+available.map(d=>'<div class="drill"><label class="check"><input type="checkbox" data-drill="'+d.id+'" '+(state.selectedDrills.includes(d.id)?'checked':'')+'><strong>'+esc(d.name)+'</strong></label><p class="status">'+esc(d.equipment)+'</p><details><summary>Instructions</summary><p>'+esc(d.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(d.coachingCues)+'</p></details></div>').join('')+'</div></section>'+
+ '<section class="panel"><h2>Drill rotation</h2><div class="actions"><button id="all-drills">Select available drills</button><button id="clear-drills">Clear selection</button></div><p class="muted">Front Toss and Machine may repeat. Other selected drills are used once per hitter, with one station for each drill in a block. Selecting a drill confirms you have its listed equipment; the small-ball and bunting machines are separate equipment from the tunnel machine.</p><div class="drills">'+available.map(d=>'<div class="drill"><label class="check"><input type="checkbox" data-drill="'+d.id+'" '+(state.selectedDrills.includes(d.id)?'checked':'')+'><strong>'+esc(d.name)+'</strong></label><p class="status">'+esc(d.equipment)+'</p><details><summary>Instructions</summary><p>'+esc(d.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(d.coachingCues)+'</p></details></div>').join('')+'</div></section>'+
  '<div class="sticky-actions actions"><button data-view="attendance">Attendance</button><button id="save-draft">Save draft</button><button class="primary" id="build" '+(busy?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';
 }
 function stationsFor(block,filter){
@@ -128,7 +129,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input={players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};
- try{worker?.terminate();worker=new Worker('./worker.mjs',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild2',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}

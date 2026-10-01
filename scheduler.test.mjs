@@ -21,6 +21,7 @@ test('32 hitters omit all tee work while preserving group sizes',()=>{
 test('45-person plan requires explicit Live replacement choice',()=>{
  assert.throws(()=>make(45,{allowReplacements:false}),/No valid plan found/);
  const p=make(45);assert.ok(p.replacements.length>0);assert.ok(p.missingPitchers.length>0);assert.ok(p.requiresAcceptance);assert.deepEqual(validatePractice(p),[]);
+ for(const block of p.blocks){const names=block.stations.filter(s=>s.kind==='drill').map(s=>s.drill);assert.equal(new Set(names).size,names.length,'Equipment station duplicated');}
 });
 test('late/early attendees get their opening work before stations',()=>{
  const adjusted=players.slice(0,12).map((p,i)=>i===4?{...p,arrival:'18:06',departure:'20:06'}:p);
@@ -38,4 +39,5 @@ test('validator rejects missing human warmup, oversize group and repeat drills',
  const p=make(12);const oversized=structuredClone(p);const station=oversized.blocks.flatMap(b=>b.stations).find(s=>s.kind==='drill');station.players.push('rp-p-01','rp-p-02');assert.ok(validatePractice(oversized).length);
  const invalid=structuredClone(p);const warm=invalid.blocks.flatMap(b=>b.stations).find(s=>s.kind==='warm');assert.ok(warm);warm.coach=null;warm.catcher=null;assert.ok(validatePractice(invalid).includes('Warm-up needs a human catcher or coach'));
  const conflict=structuredClone(p);const block=conflict.blocks.find(b=>b.stations.some(s=>s.kind==='live'));block.stations.push({kind:'front',drill:'Front Toss',players:[],coach:coaches[0].id});assert.ok(validatePractice(conflict).includes('Tunnel conflict'));
+ const duplicate=structuredClone(p);const drillBlock=duplicate.blocks.find(b=>b.stations.some(s=>s.kind==='drill'));drillBlock.stations.push(structuredClone(drillBlock.stations.find(s=>s.kind==='drill')));assert.ok(validatePractice(duplicate).includes('A drill station is used twice in one block'));
 });

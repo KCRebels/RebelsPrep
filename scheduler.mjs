@@ -83,7 +83,7 @@ function attempt(input,prepared,pattern,seed){
   function chooseCore(at,chosen,remaining){
    if(at===core.length){
     if(!partitionable(remaining.length))return;
-    const fill=fillDrills(remaining,extras,memory,rng);
+    const fill=fillDrills(remaining,extras,memory,rng,Math.min(6,teeGroup.length));
     if(fill){settled=[...chosen,...fill];return true;}return false;
    }
    const c=core[at],saved=pool;pool=remaining;
@@ -136,14 +136,15 @@ function attempt(input,prepared,pattern,seed){
  plan.requiresAcceptance=(!input.allowReplacements&&missingLive.length>0)||pitching.length>0||catching.length>0;
  return plan;
 }
-function fillDrills(pool,drills,memory,rng){
+function fillDrills(pool,drills,memory,rng,reservedTees=0){
  if(!pool.length)return [];
  if(!partitionable(pool.length)||!drills.length)return null;
- let budget=500;
+ let budget=1800;
  function visit(remaining,stations,tees){
   if(!remaining.length)return stations;
   if(stations.length>=10||--budget<0)return null;
-  const options=p=>drills.filter(d=>!memory.get(p.id).seen.has(d.name)&&tees+(d.tees||0)<=6);
+  const usedDrills=new Set(stations.map(s=>s.drill));
+  const options=p=>drills.filter(d=>!usedDrills.has(d.name)&&!memory.get(p.id).seen.has(d.name)&&tees+(d.tees||0)<=6);
   const sorted=remaining.slice().sort((a,b)=>options(a).length-options(b).length);
   const first=sorted[0];const choices=options(first).map(d=>({d,compat:sorted.filter(p=>!memory.get(p.id).seen.has(d.name)),r:rng()})).filter(x=>x.compat.length>=3).sort((a,b)=>b.compat.length-a.compat.length||a.r-b.r);
   for(const {d,compat} of choices){
@@ -157,7 +158,7 @@ function fillDrills(pool,drills,memory,rng){
   }
   return null;
  }
- return visit(pool,[],0);
+ return visit(pool,[],reservedTees);
 }
 export function buildPractice(input){
  const prepared=prepare(input),{people,blocks,tee,coaches}=prepared;
@@ -190,7 +191,7 @@ export function buildPractice(input){
 export function validatePractice(plan){
  const errors=[],people=plan.players,ids=new Set(people.map(p=>p.id)),coachIds=new Set(plan.coaches.map(c=>c.id)),mem=new Map(people.map(p=>[p.id,{warm:p.noPitchWarmup,machine:0,front:0,live:0,pitch:0,catch:0,seen:new Set()}])),tee=people.length<=20;
  for(const [b,block] of plan.blocks.entries()){
-  const assigned=new Set(),usedCoaches=new Set();let machine=0,front=0,live=0,warmPairs=0,other=0,tees=0;const pending=[];
+  const assigned=new Set(),usedCoaches=new Set(),stationDrills=new Set();let machine=0,front=0,live=0,warmPairs=0,other=0,tees=0;const pending=[];
   function take(id){if(!ids.has(id))errors.push('Unknown player');if(assigned.has(id))errors.push('Conflicting assignment in block '+(b+1));assigned.add(id);const p=people.find(p=>p.id===id);if(p&&(b<p.from||b>=p.until))errors.push('Unavailable player in block '+(b+1));}
   for(const s of block.stations){
    for(const id of s.players)take(id);if(s.pitcher)take(s.pitcher);if(s.catcher)take(s.catcher);
@@ -198,6 +199,7 @@ export function validatePractice(plan){
    if(!['opening','warm'].includes(s.kind)&&(s.players.length<3||s.players.length>4))errors.push('Station must have 3–4 hitters');
    if(s.kind==='opening'){
     if(s.drill==='Tee Work'&&!tee)errors.push('Tee Work is removed above 20 hitters');
+    if(s.drill==='Tee Work')tees+=Math.min(6,s.players.length);
     for(const id of s.players){const p=people.find(p=>p.id===id);if(b!==p.from+(s.drill==='Tee Work'?1:0))errors.push('Opening order invalid');}
    }else if(s.kind==='warm'){
     warmPairs++;if(s.players.length!==1||(!s.catcher&&!s.coach))errors.push('Warm-up needs a human catcher or coach');
@@ -209,7 +211,7 @@ export function validatePractice(plan){
     if(s.pitcher)mem.get(s.pitcher).pitch++;
     if(s.catcher){if(!people.find(p=>p.id===s.catcher)?.canCatch)errors.push('Ineligible live catcher');mem.get(s.catcher).catch++;}
     else if(s.equipment!=='9Square')errors.push('Live requires player catcher or 9Square');
-   }else if(s.kind==='machine')machine++;else if(s.kind==='front'){front++;if(!s.coach)errors.push('Front Toss requires coach');}else{other++;tees+=s.tees||0;}
+   }else if(s.kind==='machine')machine++;else if(s.kind==='front'){front++;if(!s.coach)errors.push('Front Toss requires coach');}else{other++;tees+=s.tees||0;if(stationDrills.has(s.drill))errors.push('A drill station is used twice in one block');stationDrills.add(s.drill);}
    for(const id of s.players){const m=mem.get(id);if(!m)continue;if(['machine','front','live'].includes(s.kind))m[s.kind]++;
     else if(s.kind==='drill'){if(m.seen.has(s.drill))errors.push('Nonrepeatable drill repeats');m.seen.add(s.drill);}
    }

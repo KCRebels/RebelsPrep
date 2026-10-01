@@ -14,82 +14,17 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/RebelsPrep/rebelsprep-white-frame-v5-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/RebelsPrep/rebelsprep-white-frame-v5-512.png">
   <link rel="manifest" href="/RebelsPrep/manifest-white-frame-v5.webmanifest">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: #f5f5f5;
-      color: #171717;
-      font-family: Arial, sans-serif;
-    }
-    main {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 48px 20px;
-    }
-    header { text-align: center; margin-bottom: 36px; }
-    h1 { margin: 0; line-height: 0; }
-    .brand-logo { display: block; width: 100%; max-width: 480px; height: auto; margin: 0 auto; }
-    header p { color: #555; }
-    section {
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      border: 1px solid #ddd;
-    }
-    h2 { margin-top: 0; font-size: 22px; }
-    .option {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 18px 0;
-      border-bottom: 1px solid #eee;
-      font-weight: bold;
-    }
-    .option:last-of-type { border-bottom: 0; }
-    .status { color: #666; font-size: 14px; font-weight: normal; }
-    .notice {
-      margin-top: 24px;
-      padding: 16px;
-      background: #f9eeee;
-      border-left: 4px solid #bd1825;
-      line-height: 1.5;
-    }
-    footer {
-      text-align: center;
-      color: #666;
-      margin-top: 24px;
-      font-size: 13px;
-    }
-  </style>
+  <link rel="stylesheet" href="./app.css?v=rpbuild2">
 </head>
 <body>
-  <main>
-    <header>
-      <h1><img class="brand-logo" src="/RebelsPrep/rebelsprep-logo-v2.png" alt="RebelsPrep" width="2172" height="724"></h1>
-      <p>Practice planning and execution</p>
-    </header>
-    <section>
-      <h2>KC Rebels Nationals</h2>
-      <div class="option">
-        <span>Hitting</span>
-        <span class="status">Pilot in development</span>
-      </div>
-      <div class="option">
-        <span>Fielding</span>
-        <span class="status">Coming later</span>
-      </div>
-      <div class="option">
-        <span>Full Practice</span>
-        <span class="status">Coming later</span>
-      </div>
-      <p class="notice">
-        The RebelsPrep home page is set up.
-        Coach sign-in, RSVPs, practice assignments, and the live clock
-        are not available yet.
-      </p>
-    </section>
-    <footer>RebelsPrep · Starter home page</footer>
-  </main>
+<main>
+<header><img class="logo" src="./rebelsprep-logo-v2.png" alt="RebelsPrep" width="2172" height="724"><p>KC Rebels Nationals</p></header>
+<div class="preview"><strong>Coach build preview</strong> · Drafts and the practice clock are saved on this device. Coach sign-in, shared RSVPs, and player assignments are not connected yet.</div>
+<div id="app"><p>Loading practice planner…</p></div>
+<footer>RebelsPrep · Builder preview 1</footer>
+</main>
+<dialog id="dialog"></dialog>
+<script type="module" src="./app.mjs?v=rpbuild2"></script>
 </body>
 </html>
+
