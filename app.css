@@ -170,3 +170,45 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
     padding:8px 10px !important;
   }
 }
+
+
+/* Setup rows use explicit mobile proportions so Safari cannot reflow them. */
+.setup-primary-row{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);
+  gap:14px;
+  align-items:start;
+}
+.setup-primary-row label{min-width:0}
+.setup-primary-row input,
+.setup-primary-row select{width:100%;min-width:0}
+
+@media(max-width:680px){
+  .setup-primary-row{
+    grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);
+    gap:12px;
+  }
+  .setup-primary-row label{min-height:0}
+  .setup-primary-row input[type=date]{
+    font-size:15px !important;
+    padding-left:10px !important;
+    padding-right:6px !important;
+  }
+
+  .practice-timing-row{
+    grid-template-columns:minmax(0,1.08fr) minmax(0,.82fr) minmax(0,1.10fr) !important;
+    gap:8px !important;
+  }
+  .practice-timing-row label{
+    font-size:13px !important;
+    white-space:nowrap !important;
+  }
+  .practice-timing-row input,
+  .practice-timing-row select{
+    height:48px;
+    min-height:48px;
+    font-size:14px !important;
+    padding:8px 6px !important;
+  }
+}
