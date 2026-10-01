@@ -1,4 +1,4 @@
-import {firebaseConfig,builderEmails} from './shared-config.mjs?v=rpbuild18';
+import {firebaseConfig,builderEmails} from './shared-config.mjs?v=rpbuild19';
 import {portalAssignments,newClock,changeClock,clockState,portalURL} from './portal-model.mjs?v=rpbuild18';
 let servicesPromise;
 export const configured=Boolean(firebaseConfig?.projectId&&firebaseConfig?.apiKey&&firebaseConfig?.authDomain);

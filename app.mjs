@@ -1,6 +1,6 @@
-import * as shared from './shared.mjs?v=rpbuild18';
+import * as shared from './shared.mjs?v=rpbuild19';
 import {clockState} from './portal-model.mjs?v=rpbuild18';
-import {openPortal} from './portal.mjs?v=rpbuild18';
+import {openPortal} from './portal.mjs?v=rpbuild19';
 import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild16';
 import {drills} from './drills.mjs?v=rpbuild16';
 import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild16';

@@ -1,4 +1,4 @@
-import {configured,watchPortal,watchClock} from './shared.mjs?v=rpbuild18';
+import {configured,watchPortal,watchClock} from './shared.mjs?v=rpbuild19';
 import {clockState} from './portal-model.mjs?v=rpbuild18';
 import {drills} from './drills.mjs?v=rpbuild16';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
