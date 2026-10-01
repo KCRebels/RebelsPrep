@@ -77,9 +77,11 @@ function setup(){
  setting('Date','<input id="date" type="date" value="'+state.date+'">')+
  setting('Facility','<select id="facility">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select>')+
  '<div class="practice-type-field"><span>Practice type</span><div class="practice-type-buttons" role="group" aria-label="Practice type"><button type="button" data-practice-type="Hitting" aria-pressed="'+(state.practiceType==='Hitting')+'">Hitting</button><button type="button" disabled aria-disabled="true">Fielding</button><button type="button" disabled aria-disabled="true">Full Practice</button></div></div>'+
+ '<div class="practice-timing-row">'+
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
  setting('Duration (minutes)','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
  setting('Block length','<select id="blockMinutes">'+options([[10,'10 minutes'],[12,'12 minutes'],[15,'15 minutes']],state.blockMinutes)+'</select>')+
+ '</div>'+
  '</div><p class="muted">Ends at <strong id="practice-end">'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>'+stepActions('attendance','Next: Attendance');
 
 }
