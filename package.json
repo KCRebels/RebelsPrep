@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-rebelsprep 'node firestore.test.mjs'"
+    "test": "node --test scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs team-selection.test.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-rebelsprep 'node --test firestore.test.mjs shared-activation.test.mjs'"
   },
   "devDependencies": {
     "firebase": "12.19.0",

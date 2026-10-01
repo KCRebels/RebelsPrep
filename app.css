@@ -80,3 +80,13 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .team-card .actions{display:flex;flex-wrap:nowrap;gap:8px;margin:0}
 .team-card .actions button{flex:0 1 auto;min-width:0;min-height:40px;padding:8px 14px;font-size:14px;white-space:nowrap;border-radius:8px}
 @media(max-width:360px){.team-card.panel{padding:10px 12px}.team-card .actions{gap:6px}.team-card .actions button{padding:8px 11px}}
+
+.team-card.selectable-team{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid #adb8b3;padding:10px 12px}
+.team-card.selectable-team.selected-team{border-color:#a72535;background:#fff8f9}
+.team-choice{display:flex;align-items:center;gap:10px;flex:1;min-width:0;margin:0;cursor:pointer}
+.team-choice input{flex:none;width:22px;height:22px;margin:0;accent-color:#a72535}
+.team-choice span{min-width:0}.team-choice strong{display:block;font-size:16px;line-height:1.2;color:#111827}
+.team-choice small{display:block;font-size:11px;font-weight:400;line-height:1.2;color:#687184;margin-top:3px}
+.team-card.selectable-team .team-card-actions{flex:none;gap:6px}
+.team-card.selectable-team .team-card-actions button{padding:7px 9px;min-height:36px;font-size:12px}
+@media(max-width:360px){.team-card.selectable-team{gap:6px;padding:9px 10px}.team-choice{gap:7px}.team-choice strong{font-size:14px}.team-card.selectable-team .team-card-actions button{padding:7px}}
