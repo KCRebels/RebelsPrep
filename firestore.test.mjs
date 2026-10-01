@@ -1,6 +1,6 @@
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
-import {doc,setDoc,getDoc,getDocs,collection,writeBatch,onSnapshot} from 'firebase/firestore';
+import {doc,setDoc,getDoc,getDocs,collection,writeBatch,onSnapshot,updateDoc} from 'firebase/firestore';
 import assert from 'node:assert/strict';
 const env=await initializeTestEnvironment({projectId:'demo-rebelsprep',firestore:{rules:await readFile(new URL('./firestore.rules',import.meta.url),'utf8')}});
 try{
@@ -22,6 +22,15 @@ try{
  await assertFails(getDocs(collection(anonymous,'rpClocks')));
  await assertFails(getDoc(doc(anonymous,'rpPortals','guess')));
  await assertSucceeds(getDoc(doc(coach,'rpTeams','nationals')));
+
+ // Public check-in: only an active, matching sanitized session can accept writes.
+ const session='c'.repeat(64);await setDoc(doc(coach,'rpCheckinSessions',session),{active:true,clockToken:clock,date:'2026-10-01',start:'17:30',players:[{id:'p1',name:'Player One'}]});
+ await assertSucceeds(setDoc(doc(anonymous,'rpCheckins','valid-player'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'17:30',status:'checked-in'}));
+ await assertSucceeds(setDoc(doc(anonymous,'rpCheckins','valid-guest'),{kind:'guest-request',name:'Guest One',sessionToken:session,clockToken:clock,practiceTime:'17:30',status:'pending'}));
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','bad-session'),{kind:'player',name:'Player One',sessionToken:'d'.repeat(64),clockToken:clock,practiceTime:'17:30',status:'checked-in'}));
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','bad-clock'),{kind:'player',name:'Player One',sessionToken:session,clockToken:'e'.repeat(64),practiceTime:'17:30',status:'checked-in'}));
+ await updateDoc(doc(coach,'rpCheckinSessions',session),{active:false});
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','closed-session'),{kind:'player',name:'Player One',sessionToken:session,clockToken:clock,practiceTime:'17:30',status:'checked-in'}));
  // Independent anonymous portal listener follows a coach's shared clock write.
  await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{stop();reject(Error('Clock listener timed out'));},8000);const stop=onSnapshot(doc(anonymous,'rpClocks',clock),s=>{if(s.data()?.clock.done){assert.equal(s.data().clock.running,false);clearTimeout(timeout);stop();resolve();}},reject);setDoc(doc(coach,'rpClocks',clock),{clock:{running:false,done:true}}).catch(reject);});
  console.log('PASS: coach permissions, bearer reads, no listing, denied unauthorized writes, synchronized Done listener');
