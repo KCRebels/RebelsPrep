@@ -58,3 +58,9 @@ test('multiple chosen machine variants appear and total tee capacity stays at si
 
 test('45 hitters can use selected tee drills within the six-tee limit',()=>{const p=make(45);assert.deepEqual(validatePractice(p),[]);assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=6);const invalid=structuredClone(p);const b=invalid.blocks.find(b=>b.stations.some(s=>s.tees));b.stations.find(s=>s.tees).tees=7;assert.ok(validatePractice(invalid).includes('Barn capacity exceeded'));});
 test('drill station numbers follow the coach selection order',()=>{const choices=drills.filter(d=>d.kind==='drill').reverse();const p=make(12,{drills:choices});for(const s of p.blocks.flatMap(b=>b.stations).filter(s=>s.kind==='drill'))assert.equal(s.resource,'Drill station '+(choices.findIndex(d=>d.id===s.drillId)+1));});
+test('23 hitters reuse five chosen stations across the full practice',()=>{
+ const chosen=drills.filter(d=>d.kind==='drill'&&!d.tees).slice(0,5);
+ const p=make(23,{drills:chosen});assert.deepEqual(validatePractice(p),[]);assert.equal(p.missingLive.length,0);
+ for(const b of p.blocks){const hitting=b.stations.filter(s=>['drill','machine','front','live'].includes(s.kind));assert.ok(hitting.length<=7);assert.ok(hitting.every(s=>s.players.length>=3&&s.players.length<=4));}
+ assert.ok(p.blocks.flatMap(b=>b.stations).filter(s=>s.kind==='drill').length>chosen.length);
+});

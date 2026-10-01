@@ -1,8 +1,8 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild15';
-import {drills} from './drills.mjs?v=rpbuild15';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild15';
-import {teams} from './teams.mjs?v=rpbuild15';
-import {settingsIssues,attendanceIssues,drillIssues,resetPractice,teeRequirement} from './workflow.mjs?v=rpbuild15';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild16';
+import {drills} from './drills.mjs?v=rpbuild16';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild16';
+import {teams} from './teams.mjs?v=rpbuild16';
+import {settingsIssues,attendanceIssues,drillIssues,resetPractice,teeRequirement} from './workflow.mjs?v=rpbuild16';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -72,9 +72,9 @@ function drillGuidance(){
  const r=recommendation;
  if(!r||r.key!==recommendationKey()||r.pending)return 'Calculating drill count…';
  if(r.error)return 'Suggested drill count unavailable.';
- return 'Suggested: '+r.count+' additional '+(r.count===1?'drill':'drills');
+ return r.total+' hitting stations total · '+r.frontCount+' additional with Front Toss'+(r.liveCount?' · '+r.liveCount+' additional with Live':'');
 }
-function drillChoiceTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Practice '+(r.count===1?'Drill':'Drills'):'Choose Practice Drills';}
+function drillChoiceTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Set Up '+r.count+' Drill '+(r.count===1?'Station':'Stations'):'Choose Practice Drills';}
 function updateDrillGuidance(){
  const el=$('#drill-guidance');if(el)el.textContent=drillGuidance();
  const title=$('#drill-choice-title');if(title)title.textContent=drillChoiceTitle();
@@ -91,7 +91,7 @@ function calculateDrillCount(){
  if(state.included.length<3||!state.coachIds.length){recommendation=null;updateDrillGuidance();return;}
  recommendation={key,pending:true};updateDrillGuidance();
  try{
-  const w=new Worker('./worker.mjs?v=rpbuild15',{type:'module'});recommendationWorker=w;
+  const w=new Worker('./worker.mjs?v=rpbuild16',{type:'module'});recommendationWorker=w;
   w.onmessage=e=>{
    if(recommendation?.key===key){
     recommendation=e.data.error?{key,error:e.data.error}:{key,...e.data.recommendation};
@@ -107,8 +107,8 @@ function availableDrills(){return drills;}
 function extraDrills(){return availableDrills().filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work');}
 function drillInstructions(d){return [['Purpose',d.primaryPurpose],['Set Up',d.spaceSetup],['Equipment',d.equipment],['How To Do It',d.howItWorks],['Coaching Cues',d.coachingCues],['What Good Looks Like',d.success],['Best Used For',d.bestUsedFor],['Notes',d.notes]].filter(([,text])=>text).map(([label,text])=>'<section><h4>'+label+'</h4><p>'+esc(text)+'</p></section>').join('');}
 function equipmentWarning(){const n=teeRequirement(state.selectedDrills,drills);return n>6?'<p class="notice equipment-warning" role="status">These choices call for '+n+' tees. You have 6. The drills may need to run in different blocks.</p>':'';}
-function pickerTitle(){const r=recommendation,core=practiceInput().drills.filter(d=>d.kind!=='drill').length;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+(r.count+core)+' '+(r.count+core===1?'Drill':'Drills'):'Choose Drills';}
-function selectionSummary(){const selected=practiceInput().drills,r=recommendation,core=selected.filter(d=>d.kind!=='drill').length,target=r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count+core:null;let station=0;return '<strong>'+selected.length+(target!==null?' of '+target:'')+' selected</strong>'+(selected.length?'<ol>'+selected.map(d=>'<li>'+(d.kind==='drill'?++station+'. ':d.kind==='machine'?'Machine: ':'Front Toss: ')+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
+function pickerTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Station '+(r.count===1?'Drill':'Drills'):'Choose Station Drills';}
+function selectionSummary(){const selected=practiceInput().drills,r=recommendation,target=r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null,stationChoices=selected.filter(d=>d.kind==='drill').length;let station=0;return '<strong>'+stationChoices+(target!==null?' of '+target:'')+' station drills selected</strong>'+(selected.length?'<ol>'+selected.map(d=>'<li>'+(d.kind==='drill'?++station+'. ':d.kind==='machine'?'Machine focus: ':'Front Toss focus: ')+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
 function drillResults(){
  const query=drillSearch.trim().toLowerCase();
  const matches=drills.filter(d=>(drillCategory==='All Drills'||d.category===drillCategory)&&(!query||[d.name,d.category,d.primaryPurpose,d.hittingMethod,d.equipment].join(' ').toLowerCase().includes(query)));
@@ -217,7 +217,7 @@ function build(){
  const problems=issues();if(problems.length){error=problems.join(' ');view='review';render();return;}
  replacementOffer=null;state.allowReplacements=false;recommendationWorker?.terminate();busy=true;error='';view='review';render();
  const input=practiceInput();
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild15',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.replacementOffer){replacementOffer=e.data.replacementOffer;view='review';}else if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage({mode:'build',input});}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild16',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.replacementOffer){replacementOffer=e.data.replacementOffer;view='review';}else if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage({mode:'build',input});}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
