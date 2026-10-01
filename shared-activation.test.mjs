@@ -22,7 +22,7 @@ try{
  assert.equal(result.portals.p1.token,permanent);
  assert.match(result.checkinToken,/^[a-f0-9]{64}$/);
  assert.ok(result.checkinURL.includes('?checkin=1&session='));
- const sessionDoc=await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken));assert.equal(sessionDoc.data().active,true);assert.equal(sessionDoc.data().clockToken,result.clockToken);
+ const sessionDoc=await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken));assert.equal(sessionDoc.data().active,true);assert.equal(sessionDoc.data().clockToken,result.clockToken);assert.deepEqual(sessionDoc.data().playerIds,['p1','p2']);
  const barnDoc=await F.getDoc(F.doc(db,'rpCheckinLocations','barn'));assert.ok(barnDoc.data().sessions.some(x=>x.checkinToken===result.checkinToken&&x.clockToken===result.clockToken&&x.start===plan.start));
 
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));
