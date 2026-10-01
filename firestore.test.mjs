@@ -29,6 +29,8 @@ try{
  await assertSucceeds(setDoc(doc(anonymous,'rpCheckins','valid-guest'),{kind:'guest-request',name:'Guest One',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'pending'}));
  await assertFails(setDoc(doc(anonymous,'rpCheckins','bad-session'),{kind:'player',name:'Player One',sessionToken:'d'.repeat(64),clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'checked-in'}));
  await assertFails(setDoc(doc(anonymous,'rpCheckins','bad-clock'),{kind:'player',name:'Player One',sessionToken:session,clockToken:'e'.repeat(64),practiceTime:'17:30',practiceDate:'2026-10-01',status:'checked-in'}));
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','wrong-date'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-02',status:'checked-in'}));
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','wrong-time'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'19:00',practiceDate:'2026-10-01',status:'checked-in'}));
  await updateDoc(doc(coach,'rpCheckinSessions',session),{active:false});
  await assertFails(setDoc(doc(anonymous,'rpCheckins','closed-session'),{kind:'player',name:'Player One',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'checked-in'}));
  // Independent anonymous portal listener follows a coach's shared clock write.
