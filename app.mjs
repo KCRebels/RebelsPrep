@@ -1,8 +1,8 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild11';
-import {drills} from './drills.mjs?v=rpbuild11';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild11';
-import {teams} from './teams.mjs?v=rpbuild11';
-import {settingsIssues,attendanceIssues,drillIssues,resetPractice} from './workflow.mjs?v=rpbuild11';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild12';
+import {drills} from './drills.mjs?v=rpbuild12';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild12';
+import {teams} from './teams.mjs?v=rpbuild12';
+import {settingsIssues,attendanceIssues,drillIssues,resetPractice} from './workflow.mjs?v=rpbuild12';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -17,13 +17,14 @@ const allPlayers=()=>[...team().players,...state.guests];
 const name=id=>allPlayers().find(p=>p.id===id)?.name||coaches.find(c=>c.id===id)?.name||id;
 function save(){try{localStorage.setItem(teamKey(state.teamId),JSON.stringify(state));localStorage.setItem(KEY+':active-team',state.teamId);}catch{error='This device could not save the draft. Keep this page open or free storage before closing.';}}
 function dirty(scope='drills'){if(state.clock?.running){error='Pause or finish the local clock before changing this practice.';return false;}if(busy){error='Wait for this build to finish before changing the practice.';return false;}state.started=true;state.plan=null;state.clock=null;const invalid=scope==='setup'?['setup','attendance','drills']:scope==='attendance'?['attendance','drills']:['drills'];for(const step of invalid)delete state.steps[step];save();return true;}
-function setView(v){view=v;error='';render();window.scrollTo(0,0);}
+function flushSetup(){if(view!=='setup')return true;const values={};for(const id of ['date','start','facility','durationMinutes','blockMinutes']){const el=$('#'+id);if(el)values[id]=['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;}if(Object.entries(values).some(([id,value])=>state[id]!==value)){if(!dirty('setup'))return false;Object.assign(state,values);save();}return true;}
+function setView(v){if(!flushSetup()){render();return;}view=v;error='';render();window.scrollTo(0,0);}
 function issues(){return [...settingsIssues(state),...attendanceIssues(state,allPlayers(),coaches),...drillIssues(state,drills)];}
 function nav(){const active=['plan','review'].includes(view)?'review':view;return '<nav class="bottom-nav" aria-label="Practice planner">'+[['home','Home'],['setup','1 Setup'],['attendance','2 Attendance'],['drills','3 Drills'],['review','Build']].map(([v,label])=>'<button data-view="'+v+'" '+(v===active?'aria-current="page"':'')+'><span>'+label+'</span>'+(state.steps[v]?' <span class="step-check" aria-label="complete">✓</span>':'')+'</button>').join('')+'</nav>';}
 function home(){return heading('Teams','Choose a team to build its practice.')+'<div class="team-list">'+teams.map(t=>'<section class="panel team-card"><h2>'+esc(t.name)+'</h2><p class="muted">'+esc(t.description)+' · '+t.players.length+' players</p><div class="actions"><button class="primary" data-team="'+t.id+'">'+(t.id===state.teamId&&state.started?'Resume Practice':'Choose Team')+'</button>'+(t.id===state.teamId&&state.started?'<button id="new-practice">New Practice</button>':'')+'</div></section>').join('')+'</div><div class="actions"><button data-view="history">Practice History</button></div>';}
 function chooseTeam(id){if(id!==state.teamId){if(busy||state.clock?.running){error='Pause the clock or finish the build before changing teams.';render();return;}save();try{state={...blank(id),...JSON.parse(localStorage.getItem(teamKey(id))||'{}'),teamId:id};}catch{state=blank(id);}recommendationWorker?.terminate();recommendation=null;drillSearch='';drillCategory='All Drills';}state.started=true;save();setView('setup');}
 function stepActions(next,label){return '<div class="actions step-actions"><button id="save-draft">Save draft</button><button class="primary" data-next="'+next+'">'+label+'</button></div>';}
-function nextStep(next){const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();return;}state.steps[view]=true;state.started=true;save();setView(next);}
+function nextStep(next){if(!flushSetup()){render();return;}const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();return;}state.steps[view]=true;state.started=true;save();setView(next);}
 function review(){const problems=issues(),chosen=drills.filter(d=>state.selectedDrills.includes(d.id));return heading('Review Practice',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><p>'+esc(state.date)+' · '+esc(state.facility)+' · '+timeLabel(clockMinutes(state.start))+'–'+timeLabel(clockMinutes(state.start)+Number(state.durationMinutes))+'</p><p>'+state.durationMinutes+' minutes · '+state.blockMinutes+' minute blocks</p><button data-view="setup">Edit Setup</button></section><section class="panel"><h2>Attendance</h2><p>'+state.included.length+' hitters · '+state.coachIds.length+' coaches</p><p class="muted">'+coaches.filter(c=>state.coachIds.includes(c.id)).map(c=>esc(c.name)).join(' · ')+'</p><button data-view="attendance">Edit Attendance</button></section><section class="panel"><h2>Drills</h2><p>'+chosen.length+' selected</p>'+(chosen.length?'<ul class="review-list">'+chosen.map(d=>'<li>'+esc(d.name)+'</li>').join(''):'<p class="muted">No additional drills selected.</p>')+'<p class="muted">Required: Warm Up · '+(state.included.length<=20?'Tee Work · ':'')+'Machine · Front Toss. '+(state.allowReplacements?'Live may be replaced by a second Front Toss session when needed.':'Live is required for every hitter.')+'</p><button data-view="drills">Edit Drills</button></section>'+(problems.length?'<div class="notice"><strong>Finish these choices</strong><ul>'+problems.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+'<div class="actions step-actions"><button id="save-draft">Save draft</button>'+(state.plan?'<button data-view="plan">View Practice</button>':'')+'<button id="build" class="primary" '+(busy||problems.length?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';}
 function options(vals,current){return vals.map(([v,label,disabled])=>'<option value="'+v+'" '+(String(v)===String(current)?'selected':'')+' '+(disabled?'disabled':'')+'>'+label+'</option>').join('');}
 function heading(title,sub){return '<h1>'+title+'</h1><p class="muted">'+sub+'</p>';}
@@ -37,7 +38,7 @@ function setup(){
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
  setting('Duration (minutes)','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
  setting('Block length','<select id="blockMinutes">'+options([[10,'10 minutes'],[12,'12 minutes'],[15,'15 minutes']],state.blockMinutes)+'</select>')+
- '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>'+stepActions('attendance','Next: Attendance');
+ '</div><p class="muted">Ends at <strong id="practice-end">'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>'+stepActions('attendance','Next: Attendance');
 
 }
 function resetDrillChoices(){state.selectedDrills=[];drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;}
@@ -83,7 +84,7 @@ function calculateDrillCount(){
  if(state.included.length<3||!state.coachIds.length){recommendation=null;updateDrillGuidance();return;}
  recommendation={key,pending:true};updateDrillGuidance();
  try{
-  const w=new Worker('./worker.mjs?v=rpbuild11',{type:'module'});recommendationWorker=w;
+  const w=new Worker('./worker.mjs?v=rpbuild12',{type:'module'});recommendationWorker=w;
   w.onmessage=e=>{
    if(recommendation?.key===key){
     recommendation=e.data.error?{key,error:e.data.error}:{key,...e.data.recommendation};
@@ -165,7 +166,7 @@ function bind(){
  document.querySelectorAll('[data-next]').forEach(el=>el.onclick=()=>nextStep(el.dataset.next));
  document.querySelectorAll('[data-team]').forEach(el=>el.onclick=()=>chooseTeam(el.dataset.team));
  for(const id of ['date','start','facility','durationMinutes','blockMinutes','allowReplacements']){
-  const el=$('#'+id);if(el)el.onchange=()=>{if(!dirty(id==='allowReplacements'?'drills':'setup')){render();return;}state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
+  const el=$('#'+id);if(el&&['date','start','durationMinutes'].includes(id))el.oninput=()=>{if(!dirty('setup')){render();return;}state[id]=id==='durationMinutes'?Number(el.value):el.value;save();const end=$('#practice-end');if(end)end.textContent=Number.isFinite(clockMinutes(state.start)+Number(state.durationMinutes))?timeLabel(clockMinutes(state.start)+Number(state.durationMinutes)):'Choose a valid time';};if(el)el.onchange=()=>{if(!dirty(id==='allowReplacements'?'drills':'setup')){render();return;}state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
  }
  document.querySelectorAll('[data-include]').forEach(el=>el.onchange=()=>{if(!dirty('attendance')){render();return;}const key=el.hasAttribute('data-coach')?'coachIds':'included';state[key]=el.checked?[...new Set([...state[key],el.dataset.include])]:state[key].filter(id=>id!==el.dataset.include);save();render();});
  document.querySelectorAll('[data-adjust]').forEach(el=>el.onclick=()=>adjust(el.dataset.adjust));
@@ -180,7 +181,7 @@ function bind(){
  click('clear-coaches',()=>{if(dirty('attendance')){state.coachIds=[];save();render();}});
  click('all-drills',()=>{if(dirty()){state.selectedDrills=availableDrills().map(d=>d.id);save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
- click('save-draft',()=>{save();error='Draft saved on this device.';render();});
+ click('save-draft',()=>{if(!flushSetup()){render();return;}save();error='Draft saved on this device.';render();});
  click('build',build);click('rebuild',build);click('add-guest',guest);
  if($('#accept-plan'))$('#accept-plan').onchange=e=>{state.plan.accepted=e.target.checked;save();$('#run-local').disabled=!e.target.checked;};
  if($('#assignment-filter'))$('#assignment-filter').onchange=e=>{$('#blocks').innerHTML=blocksHTML(e.target.value);};
@@ -206,7 +207,7 @@ function build(){
  const problems=issues();if(problems.length){error=problems.join(' ');view='review';render();return;}
  recommendationWorker?.terminate();busy=true;error='';view='review';render();
  const input=practiceInput();
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild11',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild12',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
