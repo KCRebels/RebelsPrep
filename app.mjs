@@ -4,7 +4,7 @@ import {openPortal} from './portal.mjs?v=rpbuild19';
 import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild16';
 import {drills} from './drills.mjs?v=rpbuild16';
 import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild16';
-import {teams} from './teams.mjs?v=rpbuild27';
+import {teams} from './teams.mjs?v=rpbuild28';
 import {settingsIssues,attendanceIssues,drillIssues,resetPractice,teeRequirement} from './workflow.mjs?v=rpbuild16';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
