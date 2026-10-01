@@ -11,14 +11,14 @@ main{max-width:1100px;margin:auto;padding:26px 20px 40px}header{text-align:cente
 .drill-categories button{flex:none;white-space:nowrap;border:2px solid #d4d9d7;border-radius:999px;padding:14px 22px;font-size:18px;color:#5c6476}
 .drill-categories button[aria-pressed=true]{border-color:#a72535;color:#a72535;background:#fff0f1}
 .drill-count{font-size:20px;font-weight:700;color:#687184;margin:22px 0}.drill-count span{font-size:15px;font-weight:400}
-.drills{gap:20px;align-items:start}.drill{background:white;border:2px solid #d4d9d7;border-radius:24px;padding:26px;box-shadow:0 4px 0 #e5e8e6}
-.drill .drill-category{font-size:14px;font-weight:800;letter-spacing:1.2px;color:#a72535;text-transform:uppercase;margin:0 0 10px}
-.drill h3{font-size:27px;line-height:1.2;margin:0 0 16px;color:#121827}.drill .drill-purpose{font-size:18px;line-height:1.45;color:#5c6476;margin:0 0 20px}
-.drill-tags{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.drill-tags span{background:#f0f2f1;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:700;color:#4e5869}
-.drill-controls{display:flex;gap:12px;align-items:start;flex-wrap:wrap}.drill-controls button,.drill-controls summary{border:2px solid #171717;border-radius:12px;padding:12px 18px;font-size:16px;color:#171717;background:white;min-height:48px;font-weight:700;margin:0;cursor:pointer}
+.drills{gap:12px;align-items:start}.drill{background:white;border:2px solid #d4d9d7;border-radius:18px;padding:16px;box-shadow:0 4px 0 #e5e8e6}
+.drill .drill-category{font-size:12px;font-weight:800;letter-spacing:.8px;color:#a72535;text-transform:uppercase;margin:0 0 8px}
+.drill h3{font-size:20px;line-height:1.25;margin:0 0 10px;color:#121827}.drill .drill-purpose{font-size:15px;line-height:1.4;color:#5c6476;margin:0 0 12px}
+.drill-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.drill-tags span{background:#f0f2f1;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;color:#4e5869}
+.drill-controls{display:flex;gap:8px;align-items:start;flex-wrap:wrap}.drill-controls button,.drill-controls summary{border:2px solid #171717;border-radius:10px;padding:8px 12px;font-size:14px;color:#171717;background:white;min-height:44px;font-weight:700;margin:0;cursor:pointer}
 .drill-controls button[aria-pressed=true]{background:#a72535;border-color:#a72535;color:white}.drill-controls details{flex:1}.drill-controls summary{display:inline-block;list-style:none}.drill-controls summary::-webkit-details-marker{display:none}.drill-details{color:#5c6476;margin-top:14px}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
-@media(max-width:680px){.drill{padding:22px}.drill h3{font-size:25px}.drill-categories button{font-size:16px;padding:12px 18px}}
+@media(max-width:680px){.drill{padding:15px}.drill h3{font-size:20px}.drill-categories button{font-size:16px;padding:12px 18px}}
 
 /* Clear attendance controls and stronger roster outlines. */
 .attendance-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -32,3 +32,6 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .person input[type=checkbox]:checked::after{content:'';position:absolute;left:7px;top:3px;width:7px;height:13px;border:solid white;border-width:0 3px 3px 0;transform:rotate(45deg)}
 @media(max-width:680px){.person{padding:12px;gap:10px}.person .check{font-size:16px}.person button{padding:10px;font-size:13px}}
 @media(max-width:360px){.attendance-actions{gap:6px}.attendance-actions button{font-size:13px;padding:12px 5px}}
+
+@media(max-width:680px){.sticky-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 0}.sticky-actions button{min-width:0;padding:10px 5px;white-space:nowrap;font-size:13px}}
+@media(max-width:360px){.sticky-actions button{font-size:12px;padding:10px 3px}}
