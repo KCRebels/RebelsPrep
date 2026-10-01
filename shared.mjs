@@ -14,6 +14,7 @@ export async function isLoginLink(url){const {A,auth}=await services();return A.
 export async function signOut(){const {A,auth}=await services();await A.signOut(auth);}
 export async function observeAuth(fn){const {A,auth}=await services();return A.onAuthStateChanged(auth,fn);}
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');
+export function checkinURL(base,token){const u=new URL(base);u.hash='';u.search='?checkin=1&session='+encodeURIComponent(token);return u.href;}
 export async function registry(teamId){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');const d=await F.getDocFromServer(F.doc(db,'rpTeams',teamId));return d.exists()?d.data():{portals:{}};}
 export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId]){
  if(!plan)throw Error('Build a practice first.');
