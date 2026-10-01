@@ -35,3 +35,13 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 
 @media(max-width:680px){.sticky-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 0}.sticky-actions button{min-width:0;padding:10px 5px;white-space:nowrap;font-size:13px}}
 @media(max-width:360px){.sticky-actions button{font-size:12px;padding:10px 3px}}
+
+/* Consistent setup fields, including Safari date and time controls. */
+.settings-grid{align-items:start}
+.settings-grid label{min-width:0;font-size:15px;line-height:1.3}
+.settings-grid input,.settings-grid select{display:block;width:100%;min-width:0;max-width:100%;height:48px;min-height:48px;padding:10px 8px;font-size:16px;line-height:normal;border:2px solid #adb8b3;border-radius:10px}
+.settings-grid input[type=date],.settings-grid input[type=time]{appearance:none;-webkit-appearance:none;overflow:hidden;text-align:left}
+.settings-grid input::-webkit-date-and-time-value{min-width:0;text-align:left;margin:0}
+.settings-grid input::-webkit-datetime-edit{display:inline-flex;padding:0;min-width:0}
+@media(max-width:680px){.settings-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:18px}.settings-grid label{font-size:14px;min-height:74px}.settings-grid input,.settings-grid select{font-size:16px}}
+@media(max-width:360px){.settings-grid{grid-template-columns:1fr}.settings-grid label{min-height:0}}

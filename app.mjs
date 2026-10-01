@@ -1,6 +1,6 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild7';
-import {drills} from './drills.mjs?v=rpbuild7';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild7';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild8';
+import {drills} from './drills.mjs?v=rpbuild8';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild8';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -20,7 +20,7 @@ function heading(title,sub){return '<h1>'+title+'</h1><p class="muted">'+sub+'</
 function setting(label,html){return '<label>'+label+html+'</label>';}
 function setup(){
  const end=timeLabel(clockMinutes(state.start)+Number(state.durationMinutes));
- return heading('Build Practice','KC Rebels Nationals')+'<section class="panel"><h2>Practice settings</h2><div class="grid">'+
+ return heading('Build Practice','KC Rebels Nationals')+'<section class="panel"><h2>Practice settings</h2><div class="grid settings-grid">'+
  setting('Date','<input id="date" type="date" value="'+state.date+'">')+
  setting('Facility','<select id="facility">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select>')+
  setting('Practice type','<select aria-label="Practice type"><option>Hitting</option><option disabled>Fielding — coming later</option><option disabled>Full Practice — coming later</option></select>')+
@@ -152,7 +152,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input={players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild7',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild8',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
