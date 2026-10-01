@@ -800,4 +800,4 @@ export const drills = [
     "tees": 0,
     "requiresCoach": false
   }
-];
+].filter(d=>d.name!=='Basic Tee Work');

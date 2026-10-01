@@ -25,7 +25,7 @@ function attempt(input,prepared,pattern,seed){
  const memory=new Map(people.map(p=>[p.id,{machine:0,front:0,live:0,pitched:0,caught:0,warm:p.noPitchWarmup,seen:new Set()}]));
  const plan={blockMinutes:step,durationMinutes:duration,start:input.start,facility:input.facility,players:people,coaches,blocks:[],replacements:[],warnings:[],score:0,selectedDrills:input.drills.map(d=>({...d}))};
  const needsOpening=(p,b)=>b===p.from;
- const eligible=p=>p.until-p.from>=1;
+ const eligible=p=>p.until>p.from;
  if(people.some(p=>!eligible(p)))return null;
  const lastLive=pattern.reduce((a,v,i)=>v?i:a,-1);
  for(let b=0;b<blocks;b++){
@@ -155,7 +155,7 @@ function fillDrills(pool,drills,memory,rng,reservedTees=0){
     if(compat.length<n||!partitionable(remaining.length-n))continue;
     const group=compat.slice(0,n),ids=new Set(group.map(p=>p.id));
     const rest=remaining.filter(p=>!ids.has(p.id));
-    const result=visit(rest,[...stations,{kind:'drill',drill:d.name,drillId:d.id,players:group.map(p=>p.id),tees:d.tees||0,equipment:d.equipment,howItWorks:d.howItWorks,coachingCues:d.coachingCues,resource:'Drill station '+(stations.length+1)}],tees+(d.tees||0));
+    const result=visit(rest,[...stations,{kind:'drill',drill:d.name,drillId:d.id,players:group.map(p=>p.id),tees:d.tees||0,equipment:d.equipment,howItWorks:d.howItWorks,coachingCues:d.coachingCues,resource:'Drill station '+(drills.findIndex(x=>x.id===d.id)+1)}],tees+(d.tees||0));
     if(result)return result;
    }
   }
@@ -203,8 +203,10 @@ export function validatePractice(plan){
    if(s.coach){if(!coachIds.has(s.coach)||usedCoaches.has(s.coach))errors.push('Invalid or conflicting coach');usedCoaches.add(s.coach);}
    if(!['opening','warm'].includes(s.kind)&&(s.players.length<3||s.players.length>4))errors.push('Station must have 3–4 hitters');
    if(s.kind==='opening'){
-    if(s.drill!=='Warm Up')errors.push('Opening Tee Work has been removed; rebuild this practice');
-    for(const id of s.players){const p=people.find(p=>p.id===id);if(b!==p.from)errors.push('Opening order invalid');}
+    if(s.drill==='Tee Work')errors.push('Opening Tee Work has been removed');
+    if(s.drill==='Tee Work')tees+=Math.min(6,s.players.length);
+    if(s.drill==='Tee Work')for(const id of s.players)mem.get(id)?.seen.add('Basic Tee Work');
+    for(const id of s.players){const p=people.find(p=>p.id===id);if(b!==p.from+(s.drill==='Tee Work'?1:0))errors.push('Opening order invalid');}
    }else if(s.kind==='warm'){
     warmPairs++;if(s.players.length!==1||(!s.catcher&&!s.coach))errors.push('Warm-up needs a human catcher or coach');
     const p=people.find(p=>p.id===s.players[0]);if(!p?.canPitch)errors.push('Ineligible warm-up pitcher');

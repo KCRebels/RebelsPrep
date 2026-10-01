@@ -22,8 +22,4 @@ export function drillIssues(state,drills){
 }
 export function resetPractice(state,date){return {...state,date,started:true,included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,steps:{}};}
 
-export function teeEquipmentWarning(state,drills,available=6){
- const selected=new Set(state.selectedDrills);
- const needed=drills.filter(d=>selected.has(d.id)&&d.name!=='Basic Tee Work').reduce((total,d)=>total+(d.tees||0),0);
- return needed>available?'Not enough tees for all selected drills at once: '+needed+' tees needed; '+available+' available. '+(needed-available)+' more needed. Your selections are kept.':'';
-}
+export function teeRequirement(selectedIds,drills){return [...new Set(selectedIds)].reduce((n,id)=>n+(Number(drills.find(d=>d.id===id)?.tees)||0),0);}
