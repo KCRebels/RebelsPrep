@@ -10,7 +10,7 @@ try{
  const services=async()=>({F,db,auth:{currentUser:{emailVerified:true}}});
  const src=await readFile(new URL('./shared.mjs',import.meta.url),'utf8');
  const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function control')).replace('export async function','async function');
- const activate=new Function('services','allowed','token','newClock','clockState','portalAssignments','portalURL',body+'return activate;')(services,()=>true,token,newClock,clockState,portalAssignments,portalURL);
+ const activate=new Function('services','allowed','token','newClock','clockState','portalAssignments','portalURL','checkinURL',body+'return activate;')(services,()=>true,token,newClock,clockState,portalAssignments,portalURL,(base,t)=>new URL('?checkin=1&session='+t,base).href);
  const p={id:'p1',name:'Grace Samuels',memberTeamIds:['multi-a','multi-b']},p2={id:'p2',name:'Stella Utter',memberTeamIds:['multi-b']},coach={id:'c1',name:'Coach One'};
  const plan={practiceType:'Hitting',players:[p,p2],coaches:[coach],blocks:[{number:1,start:1050,end:1062,stations:[{kind:'machine',drill:'Machine',resource:'Machine',players:['p1','p2'],coach:'c1'}],coaching:[]}],blockMinutes:12,durationMinutes:12,replacements:[]};
  const permanent='d'.repeat(64),alternate='e'.repeat(64);
@@ -20,6 +20,11 @@ try{
  await assert.rejects(()=>activate({...plan,practiceType:''},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Choose Hitting/);
  const result=await activate(plan,'combined--multi-a--multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-a','multi-b']);
  assert.equal(result.portals.p1.token,permanent);
+ assert.match(result.checkinToken,/^[a-f0-9]{64}$/);
+ assert.ok(result.checkinURL.includes('?checkin=1&session='));
+ const sessionDoc=await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken));assert.equal(sessionDoc.data().active,true);assert.equal(sessionDoc.data().clockToken,result.clockToken);
+ const barnDoc=await F.getDoc(F.doc(db,'rpCheckinLocations','barn'));assert.ok(barnDoc.data().sessions.some(x=>x.checkinToken===result.checkinToken&&x.start===plan.start));
+
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));
  assert.equal(first.data().clockToken,result.clockToken);
  assert.equal(second.data().clockToken,result.clockToken);
