@@ -21,6 +21,11 @@ service cloud.firestore {
    allow list, delete: if false;
    allow create, update: if builder();
   }
+  match /rpCheckinLocations/{location} {
+   allow get: if location in ['barn','shed'];
+   allow list, delete: if false;
+   allow create, update: if builder();
+  }
   match /rpCheckins/{id} {
    allow create: if request.resource.data.kind in ['player','guest-request']
     && request.resource.data.status in ['checked-in','pending']
