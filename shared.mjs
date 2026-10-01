@@ -62,7 +62,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
   }
   tx.set(F.doc(db,'rpClocks',clockToken),{clock:newClock(plan),date,teamId,teamIds});
   tx.set(F.doc(db,'rpCheckinSessions',checkinToken),{date,clockToken,teamId,teamIds,facility:plan.facility,start:plan.start,players:plan.players.map(p=>({id:p.id,name:p.name})),active:true});
-  const next={portals,clockToken,checkinToken,plan,date,teamIds,practiceKey:teamId};
+  const next={portals,clockToken,checkinToken,checkinURL:checkinURL(base,checkinToken),plan,date,teamIds,practiceKey:teamId};
   for(const key of keys){
    if(key===teamId){tx.set(F.doc(db,'rpTeams',key),next);continue;}
    const own={...directories.get(key).portals};
