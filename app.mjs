@@ -74,15 +74,15 @@ function setting(label,html){return '<label>'+label+html+'</label>';}
 function setup(){
  const end=timeLabel(clockMinutes(state.start)+Number(state.durationMinutes));
  return heading('Setup',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><div class="grid settings-grid">'+
- '<div class="setup-primary-row">'+
- setting('Date','<input id="date" type="date" value="'+state.date+'">')+
- setting('Facility','<select id="facility">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select>')+
+ '<div class="setup-primary-row" style="grid-column:1/-1;display:grid;grid-template-columns:1.45fr .75fr;gap:12px;width:100%">'+
+ '<label style="min-width:0">Date<input id="date" type="date" value="'+state.date+'" style="box-sizing:border-box;width:100%;height:48px;font-size:16px;line-height:48px;padding:0 10px"></label>'+
+ '<label style="min-width:0">Facility<select id="facility" style="box-sizing:border-box;width:100%;height:48px;font-size:16px;line-height:48px;padding:0 10px">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select></label>'+
  '</div>'+
  '<div class="practice-type-field"><span>Practice type</span><div class="practice-type-buttons" role="group" aria-label="Practice type"><button type="button" data-practice-type="Hitting" aria-pressed="'+(state.practiceType==='Hitting')+'">Hitting</button><button type="button" disabled aria-disabled="true">Fielding</button><button type="button" disabled aria-disabled="true">Full</button></div></div>'+
- '<div class="practice-timing-row">'+
- setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
- setting('Duration','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
- setting('Block','<select id="blockMinutes">'+options([[10,'10 min'],[12,'12 min'],[15,'15 min']],state.blockMinutes)+'</select>')+
+ '<div class="practice-timing-row" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;align-items:start">'+
+ '<label style="min-width:0;width:auto;font-size:13px;line-height:1.2;white-space:nowrap">Start time<input id="start" type="time" value="'+state.start+'" style="box-sizing:border-box;width:100%;min-width:0;height:50px;min-height:50px;margin:0;padding:0 8px;font-size:16px;font-weight:700;line-height:50px"></label>'+
+ '<label style="min-width:0;width:auto;font-size:13px;line-height:1.2;white-space:nowrap">Duration<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'" style="box-sizing:border-box;width:100%;min-width:0;height:50px;min-height:50px;margin:0;padding:0 8px;font-size:16px;font-weight:700;line-height:50px"></label>'+
+ '<label style="min-width:0;width:auto;font-size:13px;line-height:1.2;white-space:nowrap">Block<select id="blockMinutes" style="box-sizing:border-box;width:100%;min-width:0;height:50px;min-height:50px;margin:0;padding:0 8px;font-size:16px;font-weight:700;line-height:50px">'+options([[10,'10 min'],[12,'12 min'],[15,'15 min']],state.blockMinutes)+'</select></label>'+
  '</div>'+
  '</div><p class="muted">Ends at <strong id="practice-end">'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>'+stepActions('attendance','Next: Attendance');
 
