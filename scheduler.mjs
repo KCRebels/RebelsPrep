@@ -16,18 +16,16 @@ function prepare(input){
  if(people.length<3)throw Error('At least three hitters are needed for 3–4 player stations.');
  if(people.some(p=>p.from>=p.until))throw Error('An included player has no complete available block. Adjust arrival/departure or attendance.');
  const coachIds=new Set(input.coaches.map(c=>c.id));if(coachIds.size!==input.coaches.length)throw Error('Each coach must have a unique ID.');
- const tee=people.length<=20;
- const extras=input.drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(!d.tee||tee));
- const variants={front:input.drills.filter(d=>d.kind==='front'&&(!d.tee||tee)),machine:input.drills.filter(d=>d.kind==='machine'&&(!d.tee||tee))};
- const openingDrill=input.drills.find(d=>d.name==='Basic Tee Work'&&tee);
- return {people,step,start,blocks,tee,extras,variants,openingDrill,coaches:input.coaches,duration};
+ const extras=input.drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work');
+ const variants={front:input.drills.filter(d=>d.kind==='front'),machine:input.drills.filter(d=>d.kind==='machine')};
+ return {people,step,start,blocks,extras,variants,coaches:input.coaches,duration};
 }
 function attempt(input,prepared,pattern,seed){
- const {people,step,start,blocks,tee,extras,variants,openingDrill,coaches,duration}=prepared,rng=random(seed);
+ const {people,step,start,blocks,extras,variants,coaches,duration}=prepared,rng=random(seed);
  const memory=new Map(people.map(p=>[p.id,{machine:0,front:0,live:0,pitched:0,caught:0,warm:p.noPitchWarmup,seen:new Set()}]));
  const plan={blockMinutes:step,durationMinutes:duration,start:input.start,facility:input.facility,players:people,coaches,blocks:[],replacements:[],warnings:[],score:0,selectedDrills:input.drills.map(d=>({...d}))};
- const needsOpening=(p,b)=>b===p.from||tee&&b===p.from+1;
- const eligible=p=>p.until-p.from>=(tee?2:1);
+ const needsOpening=(p,b)=>b===p.from;
+ const eligible=p=>p.until-p.from>=1;
  if(people.some(p=>!eligible(p)))return null;
  const lastLive=pattern.reduce((a,v,i)=>v?i:a,-1);
  for(let b=0;b<blocks;b++){
@@ -35,9 +33,7 @@ function attempt(input,prepared,pattern,seed){
   const reserved=new Set();
   const add=(s)=>{stations.push(s);for(const id of [...s.players,s.pitcher,s.catcher].filter(Boolean))reserved.add(id);if(s.coach)usedCoaches.add(s.coach);};
   const warmGroup=available.filter(p=>b===p.from).map(p=>p.id);
-  const teeGroup=available.filter(p=>tee&&b===p.from+1).map(p=>p.id);
   if(warmGroup.length)add({kind:'opening',drill:'Warm Up',players:warmGroup,resource:'Group'});
-  if(teeGroup.length)add({kind:'opening',drill:'Tee Work',players:teeGroup,resource:'Group',equipment:'6 tees; take turns in the opening group',...(openingDrill?{drillId:openingDrill.id,howItWorks:openingDrill.howItWorks,coachingCues:openingDrill.coachingCues}:{})});
   let pool=available.filter(p=>!needsOpening(p,b));
   let livePitcher=null,liveCatcher=null;
   if(pattern[b]&&pool.length>=4){
@@ -86,7 +82,7 @@ function attempt(input,prepared,pattern,seed){
   function chooseCore(at,chosen,remaining){
    if(at===core.length){
     if(!partitionable(remaining.length))return;
-    const coreTees=chosen.reduce((n,s)=>n+(s.tees||0),0)+Math.min(6,teeGroup.length);
+    const coreTees=chosen.reduce((n,s)=>n+(s.tees||0),0);
     if(coreTees>6)return;
     const fill=fillDrills(remaining,extras,memory,rng,coreTees);
     if(fill){settled=[...chosen,...fill];return true;}return false;
@@ -168,9 +164,9 @@ function fillDrills(pool,drills,memory,rng,reservedTees=0){
  return visit(pool,[],reservedTees);
 }
 export function buildPractice(input){
- const prepared=prepare(input),{people,blocks,tee,coaches}=prepared;
+ const prepared=prepare(input),{people,blocks,coaches}=prepared;
  if(!coaches.length)throw Error('Include at least one coach for mandatory Front Toss and human pitching warm-ups.');
- const open=tee?2:1,total=blocks-open;
+ const open=1,total=blocks-open;
  const maxLive=Math.min(total,people.filter(p=>p.canPitch).length*3);
  let best=null;
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
@@ -196,21 +192,19 @@ export function buildPractice(input){
  throw Error('No valid plan found with these selections. Add more different drills, include coaches, adjust attendance or arrival/departure, allow Front Toss replacements, or explicitly extend the practice. No station-size or mandatory-work rule was relaxed.');
 }
 export function validatePractice(plan){
- const errors=[],people=plan.players,ids=new Set(people.map(p=>p.id)),coachIds=new Set(plan.coaches.map(c=>c.id)),mem=new Map(people.map(p=>[p.id,{warm:p.noPitchWarmup,machine:0,front:0,live:0,pitch:0,catch:0,seen:new Set()}])),tee=people.length<=20;
+ const errors=[],people=plan.players,ids=new Set(people.map(p=>p.id)),coachIds=new Set(plan.coaches.map(c=>c.id)),mem=new Map(people.map(p=>[p.id,{warm:p.noPitchWarmup,machine:0,front:0,live:0,pitch:0,catch:0,seen:new Set()}]));
  for(const [b,block] of plan.blocks.entries()){
   const assigned=new Set(),usedCoaches=new Set(),stationDrills=new Set();let machine=0,front=0,live=0,warmPairs=0,other=0,tees=0;const pending=[];
   function take(id){if(!ids.has(id))errors.push('Unknown player');if(assigned.has(id))errors.push('Conflicting assignment in block '+(b+1));assigned.add(id);const p=people.find(p=>p.id===id);if(p&&(b<p.from||b>=p.until))errors.push('Unavailable player in block '+(b+1));}
   for(const s of block.stations){
-   if(s.kind!=='opening'){tees+=s.tees||0;if(!tee&&s.tees>0)errors.push('Tee drills are removed above 20 hitters');}
+   if(s.kind!=='opening')tees+=s.tees||0;
    if(s.drillId&&plan.selectedDrills){const d=plan.selectedDrills.find(d=>d.id===s.drillId);if(!d||d.kind!==s.kind&&s.kind!=='opening'||d&&s.kind!=='opening'&&d.name!==s.drill)errors.push('Drill is not a selected compatible drill');}
    for(const id of s.players)take(id);if(s.pitcher)take(s.pitcher);if(s.catcher)take(s.catcher);
    if(s.coach){if(!coachIds.has(s.coach)||usedCoaches.has(s.coach))errors.push('Invalid or conflicting coach');usedCoaches.add(s.coach);}
    if(!['opening','warm'].includes(s.kind)&&(s.players.length<3||s.players.length>4))errors.push('Station must have 3–4 hitters');
    if(s.kind==='opening'){
-    if(s.drill==='Tee Work'&&!tee)errors.push('Tee Work is removed above 20 hitters');
-    if(s.drill==='Tee Work')tees+=Math.min(6,s.players.length);
-    if(s.drill==='Tee Work')for(const id of s.players)mem.get(id)?.seen.add('Basic Tee Work');
-    for(const id of s.players){const p=people.find(p=>p.id===id);if(b!==p.from+(s.drill==='Tee Work'?1:0))errors.push('Opening order invalid');}
+    if(s.drill!=='Warm Up')errors.push('Opening Tee Work has been removed; rebuild this practice');
+    for(const id of s.players){const p=people.find(p=>p.id===id);if(b!==p.from)errors.push('Opening order invalid');}
    }else if(s.kind==='warm'){
     warmPairs++;if(s.players.length!==1||(!s.catcher&&!s.coach))errors.push('Warm-up needs a human catcher or coach');
     const p=people.find(p=>p.id===s.players[0]);if(!p?.canPitch)errors.push('Ineligible warm-up pitcher');
@@ -230,7 +224,6 @@ export function validatePractice(plan){
   for(const p of people){
    if(b>=p.from&&b<p.until&&!assigned.has(p.id))errors.push('Missing assignment');
    if(b===p.from&&!block.stations.some(s=>s.drill==='Warm Up'&&s.players.includes(p.id)))errors.push('Missing opening Warm Up');
-   if(tee&&b===p.from+1&&!block.stations.some(s=>s.drill==='Tee Work'&&s.players.includes(p.id)))errors.push('Missing opening Tee Work');
   }
   pending.forEach(id=>mem.get(id).warm=true);
  }

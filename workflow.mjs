@@ -17,7 +17,13 @@ export function attendanceIssues(state,players,coaches){
 }
 export function drillIssues(state,drills){
  const issues=[];
- for(const id of state.selectedDrills){const d=drills.find(d=>d.id===id);if(!d)issues.push('Remove an unknown drill.');else if(state.included.length>20&&d.tee)issues.push(d.name+': tee drills are unavailable above 20 hitters.');}
+ for(const id of state.selectedDrills){const d=drills.find(d=>d.id===id);if(!d)issues.push('Remove an unknown drill.');}
  return issues;
 }
 export function resetPractice(state,date){return {...state,date,started:true,included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,steps:{}};}
+
+export function teeEquipmentWarning(state,drills,available=6){
+ const selected=new Set(state.selectedDrills);
+ const needed=drills.filter(d=>selected.has(d.id)&&d.name!=='Basic Tee Work').reduce((total,d)=>total+(d.tees||0),0);
+ return needed>available?'Not enough tees for all selected drills at once: '+needed+' tees needed; '+available+' available. '+(needed-available)+' more needed. Your selections are kept.':'';
+}

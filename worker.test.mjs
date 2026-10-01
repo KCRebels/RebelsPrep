@@ -6,6 +6,6 @@ import {validatePractice} from './scheduler.mjs';
 const messages=[];
 globalThis.self={postMessage:m=>messages.push(m)};
 await import('./worker.mjs');
-const input=n=>({players:players.slice(0,n),coaches,drills:drills.filter(d=>n<=20||!d.tee),facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true});
+const input=n=>({players:players.slice(0,n),coaches,drills:drills.filter(d=>d.name!=='Basic Tee Work'),facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true});
 test('build checks Live first even when old draft allowed replacements',()=>{messages.length=0;self.onmessage({data:{mode:'build',input:input(12)}});assert.ok(messages[0].plan);assert.equal(messages[0].plan.replacements.length,0);assert.equal(messages[0].replacementOffer,undefined);assert.deepEqual(validatePractice(messages[0].plan),[]);});
 test('Front Toss replacements are offered only after a failed Live build',()=>{messages.length=0;self.onmessage({data:{mode:'build',input:input(45)}});assert.equal(messages[0].plan,undefined);assert.ok(messages[0].replacementOffer.replacements.length>0);assert.deepEqual(validatePractice(messages[0].replacementOffer),[]);});
