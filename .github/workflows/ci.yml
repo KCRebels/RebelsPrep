@@ -1,0 +1,29 @@
+name: RebelsPrep CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Syntax checks
+        run: |
+          node --check shared.mjs
+          node --check checkin-rp47.mjs
+          node --check app-rpbuild43.mjs
+          node --check scheduler.mjs
+          node --check worker.mjs
+      - run: npm test
+      - run: npm run test:rules
