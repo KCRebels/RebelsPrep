@@ -1,55 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function builder() {
-   return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email.lower() in ['recruiting@rebelssoftball.org','chrisolsen@finditds.com','halley.rindom@gmail.com','dmayhugh425511@gmail.com'];
-  }
+  function builder() { return request.auth != null && request.auth.token.email_verified == true; }
   match /rpPortals/{token} {
    allow get: if token.matches('^[a-f0-9]{64}$');
-   allow list: if false;
-   allow create, update: if builder() && token.matches('^[a-f0-9]{64}$');
-   allow delete: if false;
+   allow list, delete: if false;
+   allow create, update: if builder();
   }
   match /rpClocks/{token} {
    allow get: if token.matches('^[a-f0-9]{64}$');
-   allow list: if false;
-   allow create, update: if builder() && token.matches('^[a-f0-9]{64}$');
-   allow delete: if false;
+   allow list, delete: if false;
+   allow create, update: if builder();
   }
   match /rpTeams/{team} {
-   allow get: if builder();
-   allow create, update: if builder();
+   allow get, create, update: if builder();
    allow list, delete: if false;
   }
   match /rpCheckinSessions/{token} {
-   allow get: if token.matches('^[a-f0-9]{64}
-   allow create: if request.resource.data.kind in ['player','guest-request']
-                 && request.resource.data.status in ['checked-in','pending']
-                 && request.resource.data.name is string
-                 && request.resource.data.practiceTime is string;
-   allow get, list, update: if builder();
-   allow delete: if false;
-  }
- }
-});
-   allow list: if false;
-   allow create, update: if builder() && token.matches('^[a-f0-9]{64}
-   allow create: if request.resource.data.kind in ['player','guest-request']
-                 && request.resource.data.status in ['checked-in','pending']
-                 && request.resource.data.name is string
-                 && request.resource.data.practiceTime is string;
-   allow get, list, update: if builder();
-   allow delete: if false;
-  }
- }
-});
-   allow delete: if false;
+   allow get: if token.matches('^[a-f0-9]{64}$');
+   allow list, delete: if false;
+   allow create, update: if builder();
   }
   match /rpCheckins/{id} {
    allow create: if request.resource.data.kind in ['player','guest-request']
-                 && request.resource.data.status in ['checked-in','pending']
-                 && request.resource.data.name is string
-                 && request.resource.data.practiceTime is string;
+    && request.resource.data.status in ['checked-in','pending']
+    && request.resource.data.name is string
+    && request.resource.data.practiceTime is string;
    allow get, list, update: if builder();
    allow delete: if false;
   }
