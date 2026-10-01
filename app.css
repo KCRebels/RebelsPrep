@@ -212,3 +212,35 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
     padding:8px 6px !important;
   }
 }
+
+
+/* Final compact timing row: all three controls and labels stay on one line. */
+@media(max-width:680px){
+  .practice-timing-row{
+    grid-column:1/-1 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+    width:100% !important;
+  }
+  .practice-timing-row label{
+    min-width:0 !important;
+    width:auto !important;
+    min-height:0 !important;
+    font-size:13px !important;
+    line-height:1.15 !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+  }
+  .practice-timing-row input,
+  .practice-timing-row select{
+    box-sizing:border-box !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:48px !important;
+    min-height:48px !important;
+    font-size:14px !important;
+    padding:8px 6px !important;
+  }
+}
