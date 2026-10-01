@@ -1,2 +1,27 @@
 import {players} from './roster.mjs?v=rpbuild16';
-export const teams=[{id:'kc-rebels-nationals',name:'KC Rebels Nationals',description:'Three teams practicing together',players}];
+export const teams=[
+ {id:'kc-rebels-nationals',name:'KC Rebels All Nationals',description:'Three teams practicing together',players},
+ {id:'kc-rebels-all-regional',name:'KC Rebels All Regional',description:'Roster setup pending',players:[]},
+ {"id":"kc-rebels-8-cairns","name":"KC Rebels 8 Cairns","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-9-sherman","name":"KC Rebels 9 Sherman","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-10-bachkora","name":"KC Rebels 10 Bachkora","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-10-carroll","name":"KC Rebels 10 Carroll","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-10-graves","name":"KC Rebels 10 Graves","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-10-perkins","name":"KC Rebels 10 Perkins","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-11-coppage","name":"KC Rebels 11 Coppage","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-12-bachkora","name":"KC Rebels 12 Bachkora","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-12-eakin","name":"KC Rebels 12 Eakin","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-12-huebert","name":"KC Rebels 12 Huebert","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-12-perkins","name":"KC Rebels 12 Perkins","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-12-stremsterfer","name":"KC Rebels 12 Stremsterfer","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-14-mason-shafer","name":"KC Rebels 14 Mason/Shafer","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-14-national","name":"KC Rebels 14 National","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-14-regional","name":"KC Rebels 14 Regional","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-14-ufford","name":"KC Rebels 14 Ufford","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-14b","name":"KC Rebels 14B","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-16-frans","name":"KC Rebels 16 Frans","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-16-national","name":"KC Rebels 16 National","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-16-regional","name":"KC Rebels 16 Regional","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-18-national","name":"KC Rebels 18 National","description":"Roster setup pending","players":[]},
+ {"id":"kc-rebels-18-regional","name":"KC Rebels 18 Regional","description":"Roster setup pending","players":[]}
+];
