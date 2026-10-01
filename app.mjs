@@ -1,12 +1,12 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild3';
-import {drills} from './drills.mjs?v=rpbuild3';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild3';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild4';
+import {drills} from './drills.mjs?v=rpbuild4';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild4';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const blank=()=>({date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
-let state,view='setup',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='';
+let state,view='setup',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills';
 try{state={...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
 if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
 const allPlayers=()=>[...roster,...state.guests];
@@ -45,17 +45,40 @@ function person(p,coach=false){
 }
 function attendance(){
  return heading('Attendance','Only included players and coaches will enter this draft.')+
- '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions"><button id="include-all">Include all players</button><button id="clear-players">Clear players</button><button id="add-guest">Add guest player</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
- '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Include all coaches</button><button id="clear-coaches">Clear coaches</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
+ '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-guest">Add guest player</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
+ '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
  '<div class="actions"><button data-view="setup">Setup</button><button class="primary" data-view="drills">Choose drills</button></div>';
+}
+function availableDrills(){return drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(state.included.length<=20||!d.tee));}
+function drillResults(){
+ const available=availableDrills(),query=drillSearch.trim().toLowerCase();
+ const matches=available.filter(d=>(drillCategory==='All Drills'||d.category===drillCategory)&&(!query||[d.name,d.category,d.primaryPurpose,d.hittingMethod,d.equipment].join(' ').toLowerCase().includes(query)));
+ return '<p class="drill-count" role="status">'+matches.length+' '+(matches.length===1?'drill':'drills')+' <span>· '+available.filter(d=>state.selectedDrills.includes(d.id)).length+' selected</span></p><div class="drills">'+matches.map(d=>{
+ const selected=state.selectedDrills.includes(d.id);
+ return '<article class="drill'+(selected?' selected':'')+'"><p class="drill-category">'+esc(d.category)+'</p><h3>'+esc(d.name)+'</h3><p class="drill-purpose">'+esc(d.primaryPurpose)+'</p><div class="drill-tags"><span>'+esc(d.hittingMethod)+'</span><span>'+esc(d.equipment)+'</span></div><div class="drill-controls"><button data-select-drill="'+d.id+'" aria-pressed="'+selected+'" aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'">'+(selected?'Selected':'Select')+'</button><details><summary>Details</summary><div class="drill-details"><p>'+esc(d.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(d.coachingCues)+'</p></div></details></div></article>';
+ }).join('')+'</div>'+(matches.length?'':'<p class="empty">No drills match. Try another search or category.</p>');
+}
+function bindDrillCards(){
+ document.querySelectorAll('[data-select-drill]').forEach(el=>el.onclick=()=>{
+  if(!dirty()){render();return;}
+  const id=el.dataset.selectDrill;
+  state.selectedDrills=state.selectedDrills.includes(id)?state.selectedDrills.filter(x=>x!==id):[...state.selectedDrills,id];
+  save();refreshDrills();
+ });
+}
+function refreshDrills(){
+ $('#drill-results').innerHTML=drillResults();bindDrillCards();
+ document.querySelectorAll('[data-category]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.category===drillCategory)));
 }
 function drillPage(){
  const noTees=state.included.length>20;
- const available=drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(!noTees||!d.tee));
+ const available=availableDrills();
+ const categories=['All Drills',...new Set(available.map(d=>d.category))];
+ if(!categories.includes(drillCategory))drillCategory='All Drills';
  return heading('Choose Drills','Select drills whose equipment is available. Front Toss and Machine are mandatory.')+
  '<section class="panel"><h2>Required work</h2><p>Warm Up · '+(!noTees?'Tee Work · ':'')+'Machine · Front Toss</p><label class="check"><input id="allowReplacements" type="checkbox" '+(state.allowReplacements?'checked':'')+'>Allow a second Front Toss session to replace Live when needed</label><p class="muted">Live is the priority. The plan will identify replacements and any pitchers or catchers who could not get a Live role, so you can review the tradeoff.</p>'+
  (noTees?'<p class="notice">More than 20 hitters: tee drills are unavailable for this hitting practice.</p>':'')+'</section>'+
- '<section class="panel"><h2>Drill rotation</h2><div class="actions"><button id="all-drills">Select available drills</button><button id="clear-drills">Clear selection</button></div><p class="muted">Front Toss and Machine may repeat. Other selected drills are used once per hitter, with one station for each drill in a block. Selecting a drill confirms you have its listed equipment; the small-ball and bunting machines are separate equipment from the tunnel machine.</p><div class="drills">'+available.map(d=>'<div class="drill"><label class="check"><input type="checkbox" data-drill="'+d.id+'" '+(state.selectedDrills.includes(d.id)?'checked':'')+'><strong>'+esc(d.name)+'</strong></label><p class="status">'+esc(d.equipment)+'</p><details><summary>Instructions</summary><p>'+esc(d.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(d.coachingCues)+'</p></details></div>').join('')+'</div></section>'+
+ '<section class="drill-library"><h2>Drill rotation</h2><div class="actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><p class="muted">Front Toss and Machine may repeat. Other selected drills are used once per hitter, with one station for each drill in a block. Selecting a drill confirms you have its listed equipment; the small-ball and bunting machines are separate equipment from the tunnel machine.</p><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills…" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><div id="drill-results">'+drillResults()+'</div></section>'+
  '<div class="sticky-actions actions"><button data-view="attendance">Attendance</button><button id="save-draft">Save draft</button><button class="primary" id="build" '+(busy?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';
 }
 function stationsFor(block,filter){
@@ -96,13 +119,15 @@ function bind(){
  }
  document.querySelectorAll('[data-include]').forEach(el=>el.onchange=()=>{if(!dirty()){render();return;}const key=el.hasAttribute('data-coach')?'coachIds':'included';state[key]=el.checked?[...new Set([...state[key],el.dataset.include])]:state[key].filter(id=>id!==el.dataset.include);save();render();});
  document.querySelectorAll('[data-adjust]').forEach(el=>el.onclick=()=>adjust(el.dataset.adjust));
- document.querySelectorAll('[data-drill]').forEach(el=>el.onchange=()=>{if(!dirty()){render();return;}state.selectedDrills=el.checked?[...new Set([...state.selectedDrills,el.dataset.drill])]:state.selectedDrills.filter(id=>id!==el.dataset.drill);save();render();});
+ bindDrillCards();
+ if($('#drill-search'))$('#drill-search').oninput=e=>{drillSearch=e.target.value;refreshDrills();};
+ document.querySelectorAll('[data-category]').forEach(el=>el.onclick=()=>{drillCategory=el.dataset.category;refreshDrills();});
  const click=(id,fn)=>{if($('#'+id))$('#'+id).onclick=fn;};
  click('include-all',()=>{if(dirty()){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty()){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty()){state.coachIds=coaches.map(c=>c.id);save();render();}});
  click('clear-coaches',()=>{if(dirty()){state.coachIds=[];save();render();}});
- click('all-drills',()=>{if(dirty()){state.selectedDrills=drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(state.included.length<=20||!d.tee)).map(d=>d.id);save();render();}});
+ click('all-drills',()=>{if(dirty()){state.selectedDrills=availableDrills().map(d=>d.id);save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{save();error='Draft saved on this device.';render();});
  click('build',build);click('rebuild',build);click('add-guest',guest);
@@ -129,7 +154,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input={players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild3',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild4',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}

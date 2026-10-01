@@ -16,7 +16,7 @@ const names = [
 export const players = names.map(([name,role,roleSource],i)=>({
  id:'rp-p-'+String(i+1).padStart(2,'0'),name,pitcher:role.includes('P'),catcher:role.includes('C'),roleSource
 }));
-export const coaches = ['John Shafer','Bill Latteman','Halley Rindom','Chris Olsen','Jimmy Miles','Rylie Giddens','Dwight Mayhugh','Chris Bachkora','Dan Lickel'].map((name,i)=>({id:'rp-c-'+(i+1),name}));
+export const coaches = ['John Shafer','Bill Latteman','Halley Rindom','Chris Olsen','Jimmy Miles','Rylie Giddens','Dwight Mayhugh','Chris Bachkora','Dan Lickel'].map((name,i)=>({id:'rp-c-'+(i+1),name})).sort((a,b)=>a.name.split(' ').at(-1).localeCompare(b.name.split(' ').at(-1))||a.name.localeCompare(b.name));
 export const rosterReview = {
  complete:true,
  message:'Roster combines the images with the written pitching and catching corrections confirmed September 30.',
