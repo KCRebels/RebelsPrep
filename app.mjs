@@ -53,7 +53,7 @@ function startOverDraft(){
  if(busy)return;
  replacementOffer=null;drillPickerOpen=false;error='';
  state=resetPractice({...blank(state.teamId),history:state.history},today());
- resetDrillChoices();save();setView('setup');
+ resetDrillChoices();view='setup';save();render();window.scrollTo(0,0);
 }
 function startOverButton(){
  const active=Boolean(sharedData&&!clockState(sharedData.clock)?.done||state.clock&&!state.clock.done);
