@@ -119,3 +119,16 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
   .settings-grid label:nth-of-type(4) input,
   .settings-grid label:nth-of-type(5) select{font-size:14px;padding-left:7px;padding-right:7px}
 }
+
+
+/* Practice timing is a single explicit row. */
+.practice-timing-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.practice-timing-row label{min-width:0}
+@media(max-width:680px){
+  .practice-timing-row{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.1fr);gap:8px}
+  .practice-timing-row label{font-size:12px;min-height:0}
+  .practice-timing-row input,.practice-timing-row select{font-size:13px!important;padding:8px 5px!important}
+}
+@media(max-width:360px){
+  .practice-timing-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+}
