@@ -21,7 +21,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  plan=JSON.parse(JSON.stringify(plan));
  const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
- const clockToken=token(),keys=[...new Set([teamId,...teamIds])];
+ const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])];
  return F.runTransaction(db,async tx=>{
   const directories=new Map();
   const lookupKeys=[...new Set([...keys,...allPeople.flatMap(p=>p.memberTeamIds||[])])];
@@ -61,7 +61,8 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
    tx.set(F.doc(db,'rpPortals',id),{name:p.name,role:p.role,active:Boolean(person),date,clockToken:person?clockToken:null,blocks:person?portalAssignments(plan,person,p.role):[]});
   }
   tx.set(F.doc(db,'rpClocks',clockToken),{clock:newClock(plan),date,teamId,teamIds});
-  const next={portals,clockToken,plan,date,teamIds,practiceKey:teamId};
+  tx.set(F.doc(db,'rpCheckinSessions',checkinToken),{date,clockToken,teamId,teamIds,facility:plan.facility,start:plan.start,players:plan.players.map(p=>({id:p.id,name:p.name}))});
+  const next={portals,clockToken,checkinToken,plan,date,teamIds,practiceKey:teamId};
   for(const key of keys){
    if(key===teamId){tx.set(F.doc(db,'rpTeams',key),next);continue;}
    const own={...directories.get(key).portals};
