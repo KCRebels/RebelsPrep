@@ -76,3 +76,5 @@ export async function watchClock(id,onValue,onError){const {F,db}=await services
 export async function watchPortal(id,onValue,onError){if(!/^[a-f0-9]{64}$/.test(id))throw Error('This portal link is invalid.');const {F,db}=await services();return F.onSnapshot(F.doc(db,'rpPortals',id),{includeMetadataChanges:true},s=>onValue(s.exists()?s.data():null,s.metadata),onError);}
 
 export async function checkinFeed(clockToken,onValue,onError){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Coach sign-in is required.');const q=F.query(F.collection(db,'rpCheckins'),F.where('clockToken','==',clockToken));return F.onSnapshot(q,s=>onValue(s.docs.map(d=>({id:d.id,...d.data()}))),onError);}
+
+export async function setGuestStatus(id,status){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Coach sign-in is required.');if(!['approved','declined'].includes(status))throw Error('Invalid guest decision.');await F.updateDoc(F.doc(db,'rpCheckins',id),{status});}
