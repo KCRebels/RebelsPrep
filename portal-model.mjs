@@ -15,7 +15,7 @@ export function changeClock(clock,action,now=Date.now()) {
  if(c.done)throw Error('This practice has finished. Activate a new practice.');
  if(action==='start'){if(!c.started){c.started=true;c.running=true;c.end=now+c.remaining;}else if(!c.running){c.running=true;c.end=now+c.remaining;}}
  else if(action==='pause'){c.running=false;}
- else if(action==='skip'){if(c.phase!=='work')throw Error('Already rotating.');c.phase=c.index===c.blocks-1?'wrap':'rotate';c.remaining=60000+(c.phase==='wrap'?c.extraMinutes*60000:0);c.end=now+c.remaining;c.running=true;c.started=true;}
+ else if(action==='skip'){if(!c.started)throw Error('Start the practice before skipping.');if(c.phase!=='work')throw Error('Already rotating.');c.phase=c.index===c.blocks-1?'wrap':'rotate';c.remaining=60000+(c.phase==='wrap'?c.extraMinutes*60000:0);c.end=now+c.remaining;c.running=true;c.started=true;}
  else throw Error('Unknown clock action.');
  return c;
 }
