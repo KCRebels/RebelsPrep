@@ -1,4 +1,4 @@
-import {rosterPlayers} from './team-rosters.mjs?v=rpbuild33';
+import {rosterPlayers} from './team-rosters.mjs?v=rpbuild34';
 const members=id=>rosterPlayers.filter(p=>p.memberTeamIds.includes(id));
 export const teams=[
  {id:'kc-rebels-nationals',name:'KC Rebels All Nationals',description:'',players:members('kc-rebels-nationals')},

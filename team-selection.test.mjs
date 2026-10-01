@@ -5,8 +5,8 @@ import {teams} from './teams.mjs';
 import {rosterPlayers} from './team-rosters.mjs';
 import {players as confirmed} from './roster.mjs';
 test('Imported roster preserves every confirmed player ID and position',()=>{
- assert.equal(rosterPlayers.length,242);
- assert.equal(new Set(rosterPlayers.map(p=>p.id)).size,242);
+ assert.equal(rosterPlayers.length,250);
+ assert.equal(new Set(rosterPlayers.map(p=>p.id)).size,250);
  for(const old of confirmed){const p=rosterPlayers.find(p=>p.id===old.id);assert.ok(p,old.name);assert.equal(p.pitcher,old.pitcher,old.name);assert.equal(p.catcher,old.catcher,old.name);}
  assert.equal(rosterPlayers.find(p=>p.id==='rp-p-29').name,'Ella Olson');
  assert.deepEqual(rosterPlayers.find(p=>p.name==='Addison Hull').aliases,['Addy Hull']);
@@ -14,13 +14,13 @@ test('Imported roster preserves every confirmed player ID and position',()=>{
 test('All groups share canonical records with individual teams without double attendance',()=>{
  const nationals=teams.find(t=>t.id==='kc-rebels-nationals');
  const regional=teams.find(t=>t.id==='kc-rebels-all-regional');
- assert.equal(nationals.players.length,46);assert.equal(regional.players.length,25);
+ assert.equal(nationals.players.length,46);assert.equal(regional.players.length,33);
  const individual=teams.find(t=>t.id==='kc-rebels-16-national');
  assert.equal(individual.players.length,15);
  for(const p of individual.players)assert.ok(nationals.players.includes(p));
  assert.equal(combinedTeam(teams,[nationals.id,individual.id]).players.length,46);
  assert.equal(combinedTeam(teams,['kc-rebels-16-national','kc-rebels-16-frans']).players.length,24);
- assert.equal(teams.find(t=>t.id==='kc-rebels-18-regional').players.length,0);
+ assert.equal(teams.find(t=>t.id==='kc-rebels-18-regional').players.length,8);
  assert.equal(teams.find(t=>t.id==='kc-rebels-9-sherman').players.length,0);
  const sameName=combinedTeam([{id:'a',name:'A',players:[{id:'a1',name:'Same Name'},{id:'a2',name:'Same Name'}]}],['a']);assert.equal(sameName.players.length,2);
 });
@@ -28,6 +28,16 @@ test('Combined practice key is stable regardless of selection order and retains 
  assert.equal(selectionKey(['b','a','b']),'combined--a--b');
  assert.equal(selectionKey(['a']),'a');
  assert.throws(()=>selectionKey([]));
+});
+test('Jenkins matches the eight HotB players and their pitching/catching positions',()=>{
+ const jenkins=teams.find(t=>t.id==='kc-rebels-18-regional');
+ assert.deepEqual(jenkins.players.map(p=>[p.name,p.pitcher,p.catcher]),[
+  ['Neveah Schlappi',false,false],['Lilliana Schlappi',false,true],
+  ['Taylor Woods',true,false],['Perri Wagner',true,false],
+  ['Pacie Dougherty',false,true],['Amelia Steffen',false,false],
+  ['Emmie Wible',false,false],['Leslie Cundiff',false,false]
+ ]);
+ assert.equal(combinedTeam(teams,['kc-rebels-all-regional',jenkins.id]).players.length,33);
 });
 test('Combined roster removes duplicate people and keeps pitching/catching eligibility',()=>{
  const result=combinedTeam([{id:'a',name:'A',players:[{id:'p1',name:'Grace Samuels',pitcher:false,catcher:true}]},{id:'b',name:'B',players:[{id:'p1',name:' Grace  Samuels ',pitcher:true},{id:'p2',name:'Stella Utter',pitcher:true}]}],['b','a']);

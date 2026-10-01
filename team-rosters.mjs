@@ -1,4 +1,4 @@
-// Imported names and memberships; confirmed Nationals roles take precedence.
+// Imported rosters; confirmed Nationals roles and HotB Jenkins positions take precedence.
 export const rosterPlayers=[
   {
     "id": "rp-p-01",
@@ -2735,6 +2735,102 @@ export const rosterPlayers=[
     "aliases": [],
     "memberTeamIds": [
       "kc-rebels-16-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-neveah-schlappi",
+    "name": "Neveah Schlappi",
+    "pitcher": false,
+    "catcher": false,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-lilliana-schlappi",
+    "name": "Lilliana Schlappi",
+    "pitcher": false,
+    "catcher": true,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-taylor-woods",
+    "name": "Taylor Woods",
+    "pitcher": true,
+    "catcher": false,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-perri-wagner",
+    "name": "Perri Wagner",
+    "pitcher": true,
+    "catcher": false,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-pacie-dougherty",
+    "name": "Pacie Dougherty",
+    "pitcher": false,
+    "catcher": true,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-amelia-steffen",
+    "name": "Amelia Steffen",
+    "pitcher": false,
+    "catcher": false,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-emmie-wible",
+    "name": "Emmie Wible",
+    "pitcher": false,
+    "catcher": false,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
+      "kc-rebels-all-regional"
+    ]
+  },
+  {
+    "id": "rp-player-leslie-cundiff",
+    "name": "Leslie Cundiff",
+    "pitcher": false,
+    "catcher": false,
+    "roleSource": "HotB Jenkins roster",
+    "aliases": [],
+    "memberTeamIds": [
+      "kc-rebels-18-regional",
       "kc-rebels-all-regional"
     ]
   }
