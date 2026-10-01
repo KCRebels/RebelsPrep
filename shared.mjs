@@ -23,6 +23,9 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
  const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])];
  return F.runTransaction(db,async tx=>{
+  const facilitySlug=String(plan.facility||'').toLowerCase().includes('barn')?'barn':String(plan.facility||'').toLowerCase().includes('shed')?'shed':'';
+  const locationRef=facilitySlug?F.doc(db,'rpCheckinLocations',facilitySlug):null;
+  const locationSnap=locationRef?await tx.get(locationRef):null;
   const directories=new Map();
   const lookupKeys=[...new Set([...keys,...allPeople.flatMap(p=>p.memberTeamIds||[])])];
   for(const key of lookupKeys){const doc=await tx.get(F.doc(db,'rpTeams',key));directories.set(key,doc.exists()?doc.data():{portals:{}});}
@@ -62,6 +65,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
   }
   tx.set(F.doc(db,'rpClocks',clockToken),{clock:newClock(plan),date,teamId,teamIds});
   tx.set(F.doc(db,'rpCheckinSessions',checkinToken),{date,clockToken,teamId,teamIds,facility:plan.facility,start:plan.start,players:plan.players.map(p=>({id:p.id,name:p.name})),active:true});
+  if(locationRef){const old=locationSnap?.exists()?locationSnap.data():{},kept=(old.sessions||[]).filter(x=>x.date===date&&x.checkinToken!==checkinToken);kept.push({date,start:plan.start,checkinToken,teamId,teamIds});tx.set(locationRef,{facility:facilitySlug,date,sessions:kept,updatedAt:Date.now()});}
   const next={portals,clockToken,checkinToken,checkinURL:checkinURL(base,checkinToken),plan,date,teamIds,practiceKey:teamId};
   for(const key of keys){
    if(key===teamId){tx.set(F.doc(db,'rpTeams',key),next);continue;}
