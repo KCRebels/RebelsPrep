@@ -33,7 +33,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 @media(max-width:680px){.person{padding:12px;gap:10px}.person .check{font-size:16px}.person button{padding:10px;font-size:13px}}
 @media(max-width:360px){.attendance-actions{gap:6px}.attendance-actions button{font-size:13px;padding:12px 5px}}
 
-@media(max-width:680px){.sticky-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 0}.sticky-actions button{min-width:0;padding:10px 5px;white-space:nowrap;font-size:13px}}
+@media(max-width:680px){.sticky-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:10px 0}.sticky-actions button{min-width:0;padding:10px 5px;white-space:nowrap;font-size:13px}}
 @media(max-width:360px){.sticky-actions button{font-size:12px;padding:10px 3px}}
 
 /* Consistent setup fields, including Safari date and time controls. */
@@ -45,3 +45,5 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .settings-grid input::-webkit-datetime-edit{display:inline-flex;padding:0;min-width:0}
 @media(max-width:680px){.settings-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:18px}.settings-grid label{font-size:14px;min-height:74px}.settings-grid input,.settings-grid select{font-size:16px}}
 @media(max-width:360px){.settings-grid{grid-template-columns:1fr}.settings-grid label{min-height:0}}
+
+.drill-guidance{padding:14px 16px;margin:12px 0;background:#fff;border:2px solid #adb8b3;border-radius:12px;color:#171717}.drill-guidance p{margin:8px 0 0;line-height:1.4;font-size:14px;color:#5c6476}
