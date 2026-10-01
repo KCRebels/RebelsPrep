@@ -26,6 +26,7 @@ try{
  // Public check-in: only an active, matching sanitized session can accept writes.
  const session='c'.repeat(64);await setDoc(doc(coach,'rpCheckinSessions',session),{active:true,clockToken:clock,date:'2026-10-01',start:'17:30',players:[{id:'p1',name:'Player One'}],playerIds:['p1'],playerNames:{p1:'Player One'}});
  await assertSucceeds(setDoc(doc(anonymous,'rpCheckins','valid-player'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'checked-in'}));
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','missing-date'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'17:30',status:'checked-in'}));
  await assertSucceeds(setDoc(doc(anonymous,'rpCheckins','valid-guest'),{kind:'guest-request',name:'Guest One',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'pending'}));
  await assertFails(setDoc(doc(anonymous,'rpCheckins','extra-field'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'checked-in',admin:true}));
  await assertFails(setDoc(doc(anonymous,'rpCheckins','wrong-name'),{kind:'player',name:'Someone Else',playerId:'p1',sessionToken:session,clockToken:clock,practiceTime:'17:30',practiceDate:'2026-10-01',status:'checked-in'}));
