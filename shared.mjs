@@ -69,7 +69,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
    for(const person of allPeople)if(person.role==='coach'||person.memberTeamIds?.includes(key))own[person.id]=portals[person.id];
    tx.set(F.doc(db,'rpTeams',key),{...next,portals:own});
   }
-  return {...next,links:Object.entries(portals).map(([id,p])=>({id,...p,url:portalURL(base,p.token)}))};
+  return {...next,checkinURL:checkinURL(base,checkinToken),links:Object.entries(portals).map(([id,p])=>({id,...p,url:portalURL(base,p.token)}))};
  });
 }
 export async function control(clockToken,action){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Coach sign-in is required.');const ref=F.doc(db,'rpClocks',clockToken);await F.runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw Error('The shared practice could not be found.');const nextClock=changeClock(s.data().clock,action);tx.update(ref,{clock:nextClock});if(nextClock.done){const q=F.query(F.collection(db,'rpCheckinSessions'),F.where('clockToken','==',clockToken));const snaps=await F.getDocs(q);for(const d of snaps.docs)tx.update(d.ref,{active:false});}});}
