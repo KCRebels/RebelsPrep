@@ -41,3 +41,17 @@ test('validator rejects missing human warmup, oversize group and repeat drills',
  const conflict=structuredClone(p);const block=conflict.blocks.find(b=>b.stations.some(s=>s.kind==='live'));block.stations.push({kind:'front',drill:'Front Toss',players:[],coach:coaches[0].id});assert.ok(validatePractice(conflict).includes('Tunnel conflict'));
  const duplicate=structuredClone(p);const drillBlock=duplicate.blocks.find(b=>b.stations.some(s=>s.kind==='drill'));drillBlock.stations.push(structuredClone(drillBlock.stations.find(s=>s.kind==='drill')));assert.ok(validatePractice(duplicate).includes('A drill station is used twice in one block'));
 });
+test('all 40 catalog drills have a supported scheduling role',()=>{
+ assert.equal(drills.length,40);
+ for(const d of drills){assert.ok(['drill','front','machine'].includes(d.kind));assert.ok(d.howItWorks);assert.ok(d.coachingCues);}
+ const extra=drills.filter(d=>d.kind==='drill');
+ for(const d of drills.filter(d=>d.kind!=='drill')){
+  const p=make(12,{drills:[...extra,d]});assert.deepEqual(validatePractice(p),[],d.name);
+  const station=p.blocks.flatMap(b=>b.stations).find(s=>s.drillId===d.id);assert.ok(station,d.name);assert.equal(station.drill,d.name);assert.equal(station.howItWorks,d.howItWorks);
+ }
+ const opening=make(12).blocks[1].stations.find(s=>s.drill==='Tee Work');assert.equal(opening.drillId,'drill-0');
+});
+test('multiple chosen machine variants appear and total tee capacity stays at six',()=>{
+ const p=make(12);const stations=p.blocks.flatMap(b=>b.stations);for(const d of drills.filter(d=>d.kind==='machine'))assert.ok(stations.some(s=>s.drillId===d.id),d.name);
+ for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.kind==='opening'&&s.drill==='Tee Work'?Math.min(6,s.players.length):(s.tees||0)),0)<=6);
+});

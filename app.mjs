@@ -1,41 +1,49 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild10';
-import {drills} from './drills.mjs?v=rpbuild10';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild10';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild11';
+import {drills} from './drills.mjs?v=rpbuild11';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild11';
+import {teams} from './teams.mjs?v=rpbuild11';
+import {settingsIssues,attendanceIssues,drillIssues,resetPractice} from './workflow.mjs?v=rpbuild11';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const blank=()=>({date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
-let state,view='setup',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null;
-try{state={...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
+const blank=(teamId=teams[0].id)=>({teamId,started:false,steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
+let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null;
+const teamKey=id=>KEY+':team:'+id;
+try{const id=localStorage.getItem(KEY+':active-team')||teams[0].id;const saved=localStorage.getItem(teamKey(id))||localStorage.getItem(KEY);state={...blank(id),...JSON.parse(saved||'{}')};if(saved&&state.started===undefined)state.started=true;if(saved)state.started=true;if(!teams.some(t=>t.id===state.teamId))state.teamId=teams[0].id;}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
 if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
-if(state.drillResetVersion!==1){if(!state.plan||state.clock?.done)state.selectedDrills=[];state.drillResetVersion=1;save();}
-const allPlayers=()=>[...roster,...state.guests];
+const team=()=>teams.find(t=>t.id===state.teamId)||teams[0];
+const allPlayers=()=>[...team().players,...state.guests];
 const name=id=>allPlayers().find(p=>p.id===id)?.name||coaches.find(c=>c.id===id)?.name||id;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{error='This device could not save the draft. Keep this page open or free storage before closing.';}}
-function dirty(){if(state.clock?.running){error='Pause or finish the local clock before changing this practice.';return false;}state.plan=null;state.clock=null;save();return true;}
+function save(){try{localStorage.setItem(teamKey(state.teamId),JSON.stringify(state));localStorage.setItem(KEY+':active-team',state.teamId);}catch{error='This device could not save the draft. Keep this page open or free storage before closing.';}}
+function dirty(scope='drills'){if(state.clock?.running){error='Pause or finish the local clock before changing this practice.';return false;}if(busy){error='Wait for this build to finish before changing the practice.';return false;}state.started=true;state.plan=null;state.clock=null;const invalid=scope==='setup'?['setup','attendance','drills']:scope==='attendance'?['attendance','drills']:['drills'];for(const step of invalid)delete state.steps[step];save();return true;}
 function setView(v){view=v;error='';render();window.scrollTo(0,0);}
-function nav(){return '<nav aria-label="Practice planner">'+['setup','attendance','drills','plan','history'].map(v=>'<button data-view="'+v+'" '+(v===view?'aria-current="page"':'')+'>'+({setup:'Setup',attendance:'Attendance',drills:'Drills',plan:'Plan',history:'History'}[v])+'</button>').join('')+'</nav>';}
+function issues(){return [...settingsIssues(state),...attendanceIssues(state,allPlayers(),coaches),...drillIssues(state,drills)];}
+function nav(){const active=['plan','review'].includes(view)?'review':view;return '<nav class="bottom-nav" aria-label="Practice planner">'+[['home','Home'],['setup','1 Setup'],['attendance','2 Attendance'],['drills','3 Drills'],['review','Build']].map(([v,label])=>'<button data-view="'+v+'" '+(v===active?'aria-current="page"':'')+'><span>'+label+'</span>'+(state.steps[v]?' <span class="step-check" aria-label="complete">✓</span>':'')+'</button>').join('')+'</nav>';}
+function home(){return heading('Teams','Choose a team to build its practice.')+'<div class="team-list">'+teams.map(t=>'<section class="panel team-card"><h2>'+esc(t.name)+'</h2><p class="muted">'+esc(t.description)+' · '+t.players.length+' players</p><div class="actions"><button class="primary" data-team="'+t.id+'">'+(t.id===state.teamId&&state.started?'Resume Practice':'Choose Team')+'</button>'+(t.id===state.teamId&&state.started?'<button id="new-practice">New Practice</button>':'')+'</div></section>').join('')+'</div><div class="actions"><button data-view="history">Practice History</button></div>';}
+function chooseTeam(id){if(id!==state.teamId){if(busy||state.clock?.running){error='Pause the clock or finish the build before changing teams.';render();return;}save();try{state={...blank(id),...JSON.parse(localStorage.getItem(teamKey(id))||'{}'),teamId:id};}catch{state=blank(id);}recommendationWorker?.terminate();recommendation=null;drillSearch='';drillCategory='All Drills';}state.started=true;save();setView('setup');}
+function stepActions(next,label){return '<div class="actions step-actions"><button id="save-draft">Save draft</button><button class="primary" data-next="'+next+'">'+label+'</button></div>';}
+function nextStep(next){const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();return;}state.steps[view]=true;state.started=true;save();setView(next);}
+function review(){const problems=issues(),chosen=drills.filter(d=>state.selectedDrills.includes(d.id));return heading('Review Practice',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><p>'+esc(state.date)+' · '+esc(state.facility)+' · '+timeLabel(clockMinutes(state.start))+'–'+timeLabel(clockMinutes(state.start)+Number(state.durationMinutes))+'</p><p>'+state.durationMinutes+' minutes · '+state.blockMinutes+' minute blocks</p><button data-view="setup">Edit Setup</button></section><section class="panel"><h2>Attendance</h2><p>'+state.included.length+' hitters · '+state.coachIds.length+' coaches</p><p class="muted">'+coaches.filter(c=>state.coachIds.includes(c.id)).map(c=>esc(c.name)).join(' · ')+'</p><button data-view="attendance">Edit Attendance</button></section><section class="panel"><h2>Drills</h2><p>'+chosen.length+' selected</p>'+(chosen.length?'<ul class="review-list">'+chosen.map(d=>'<li>'+esc(d.name)+'</li>').join(''):'<p class="muted">No additional drills selected.</p>')+'<p class="muted">Required: Warm Up · '+(state.included.length<=20?'Tee Work · ':'')+'Machine · Front Toss. '+(state.allowReplacements?'Live may be replaced by a second Front Toss session when needed.':'Live is required for every hitter.')+'</p><button data-view="drills">Edit Drills</button></section>'+(problems.length?'<div class="notice"><strong>Finish these choices</strong><ul>'+problems.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+'<div class="actions step-actions"><button id="save-draft">Save draft</button>'+(state.plan?'<button data-view="plan">View Practice</button>':'')+'<button id="build" class="primary" '+(busy||problems.length?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';}
 function options(vals,current){return vals.map(([v,label,disabled])=>'<option value="'+v+'" '+(String(v)===String(current)?'selected':'')+' '+(disabled?'disabled':'')+'>'+label+'</option>').join('');}
 function heading(title,sub){return '<h1>'+title+'</h1><p class="muted">'+sub+'</p>';}
 function setting(label,html){return '<label>'+label+html+'</label>';}
 function setup(){
  const end=timeLabel(clockMinutes(state.start)+Number(state.durationMinutes));
- return heading('Build Practice','KC Rebels Nationals')+'<section class="panel"><h2>Practice settings</h2><div class="grid settings-grid">'+
+ return heading('Setup',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><div class="grid settings-grid">'+
  setting('Date','<input id="date" type="date" value="'+state.date+'">')+
  setting('Facility','<select id="facility">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select>')+
  setting('Practice type','<select aria-label="Practice type"><option>Hitting</option><option disabled>Fielding — coming later</option><option disabled>Full Practice — coming later</option></select>')+
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
  setting('Duration (minutes)','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
  setting('Block length','<select id="blockMinutes">'+options([[10,'10 minutes'],[12,'12 minutes'],[15,'15 minutes']],state.blockMinutes)+'</select>')+
- '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section><div class="actions"><button id="new-practice">New Practice</button></div>';
+ '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>'+stepActions('attendance','Next: Attendance');
 
 }
 function resetDrillChoices(){state.selectedDrills=[];drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;}
 function newPractice(){
- if(busy){error='Wait for the current build to finish before starting a new practice.';render();return;}
- if(!dirty()){render();return;}
- resetDrillChoices();save();setView('setup');
+ if(busy||state.clock?.running){error='Pause the clock or finish the build before starting a new practice.';render();return;}
+ state=resetPractice(state,today());drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;save();setView('setup');
 }
 function person(p,coach=false){
  const inList=coach?state.coachIds:state.included,adjust=state.adjustments[p.id]||{},parts=[];
@@ -52,12 +60,12 @@ function attendance(){
  return heading('Attendance','Only included players and coaches will enter this draft.')+
  '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions attendance-actions"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-guest">Add Guest</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
  '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
- '<div class="actions"><button data-view="setup">Setup</button><button class="primary" data-view="drills">Choose drills</button></div>';
+ stepActions('drills','Next: Drills');
 }
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
-function recommendationKey(){return JSON.stringify({...practiceInput(),drills:[]});}
+function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
 function drillGuidance(){
- const selected=availableDrills().filter(d=>state.selectedDrills.includes(d.id)).length;
+ const selected=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length;
  if(state.included.length<3||!state.coachIds.length)return '<strong>Choose attendance first</strong><p>Include at least three hitters and one coach to calculate a drill count.</p>';
  const r=recommendation;
  if(!r||r.key!==recommendationKey()||r.pending)return '<strong>Calculating suggested drill count…</strong><p>'+selected+' selected</p>';
@@ -75,7 +83,7 @@ function calculateDrillCount(){
  if(state.included.length<3||!state.coachIds.length){recommendation=null;updateDrillGuidance();return;}
  recommendation={key,pending:true};updateDrillGuidance();
  try{
-  const w=new Worker('./worker.mjs?v=rpbuild10',{type:'module'});recommendationWorker=w;
+  const w=new Worker('./worker.mjs?v=rpbuild11',{type:'module'});recommendationWorker=w;
   w.onmessage=e=>{
    if(recommendation?.key===key){
     recommendation=e.data.error?{key,error:e.data.error}:{key,...e.data.recommendation};
@@ -84,16 +92,17 @@ function calculateDrillCount(){
    w.terminate();
   };
   w.onerror=()=>{if(recommendation?.key===key){recommendation={key,error:'The count calculator could not load. Refresh and retry.'};updateDrillGuidance();}w.terminate();};
-  w.postMessage({mode:'recommend',input:{...practiceInput(),drills:availableDrills()}});
+  w.postMessage({mode:'recommend',input:{...practiceInput(),drills:[...extraDrills(),...practiceInput().drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')]}});
  }catch(e){recommendation={key,error:e.message};updateDrillGuidance();}
 }
-function availableDrills(){return drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(state.included.length<=20||!d.tee));}
+function availableDrills(){return drills.filter(d=>state.included.length<=20||!d.tee);}
+function extraDrills(){return availableDrills().filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work');}
 function drillResults(){
- const available=availableDrills(),query=drillSearch.trim().toLowerCase();
+ const available=drills,query=drillSearch.trim().toLowerCase();
  const matches=available.filter(d=>(drillCategory==='All Drills'||d.category===drillCategory)&&(!query||[d.name,d.category,d.primaryPurpose,d.hittingMethod,d.equipment].join(' ').toLowerCase().includes(query)));
  return '<p class="drill-count" role="status">'+matches.length+' '+(matches.length===1?'drill':'drills')+' <span>· '+available.filter(d=>state.selectedDrills.includes(d.id)).length+' selected</span></p><div class="drills">'+matches.map(d=>{
- const selected=state.selectedDrills.includes(d.id);
- return '<article class="drill'+(selected?' selected':'')+'"><p class="drill-category">'+esc(d.category)+'</p><h3>'+esc(d.name)+'</h3><p class="drill-purpose">'+esc(d.primaryPurpose)+'</p><div class="drill-tags"><span>'+esc(d.hittingMethod)+'</span><span>'+esc(d.equipment)+'</span></div><div class="drill-controls"><button data-select-drill="'+d.id+'" aria-pressed="'+selected+'" aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'">'+'Select'+'</button><details><summary>Details</summary><div class="drill-details"><p>'+esc(d.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(d.coachingCues)+'</p></div></details></div></article>';
+ const selected=state.selectedDrills.includes(d.id),unavailable=state.included.length>20&&d.tee;
+ return '<article class="drill'+(selected?' selected':'')+'"><p class="drill-category">'+esc(d.category)+'</p><h3>'+esc(d.name)+'</h3><p class="drill-purpose">'+esc(d.primaryPurpose)+'</p><div class="drill-tags"><span>'+esc(d.hittingMethod)+'</span><span>'+esc(d.equipment)+'</span></div>'+(unavailable?'<p class="drill-availability">Unavailable above 20 hitters</p>':d.name==='Basic Tee Work'?'<p class="drill-availability">Opening Tee Work</p>':d.kind!=='drill'?'<p class="drill-availability">'+(d.kind==='front'?'Front Toss':'Machine')+' session</p>':'')+'<div class="drill-controls"><button data-select-drill="'+d.id+'" aria-pressed="'+selected+'" '+(unavailable&&!selected?'disabled ':'')+'aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'">'+'Select'+'</button><details><summary>Details</summary><div class="drill-details"><p>'+esc(d.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(d.coachingCues)+'</p></div></details></div></article>';
  }).join('')+'</div>'+(matches.length?'':'<p class="empty">No drills match. Try another search or category.</p>');
 }
 function bindDrillCards(){
@@ -101,30 +110,30 @@ function bindDrillCards(){
   if(!dirty()){render();return;}
   const id=el.dataset.selectDrill;
   state.selectedDrills=state.selectedDrills.includes(id)?state.selectedDrills.filter(x=>x!==id):[...state.selectedDrills,id];
-  save();refreshDrills();
+  save();refreshDrills();calculateDrillCount();
  });
 }
 function refreshDrills(){
- $('#drill-results').innerHTML=drillResults();bindDrillCards();updateDrillGuidance();
+ document.querySelector('.bottom-nav').outerHTML=nav();document.querySelectorAll('.bottom-nav [data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));$('#drill-results').innerHTML=drillResults();bindDrillCards();updateDrillGuidance();
  document.querySelectorAll('[data-category]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.category===drillCategory)));
 }
 function drillPage(){
  const noTees=state.included.length>20;
- const available=availableDrills();
+ const available=drills;
  const categories=['All Drills',...new Set(available.map(d=>d.category))];
  if(!categories.includes(drillCategory))drillCategory='All Drills';
  return heading('Choose Drills','Select drills whose equipment is available. Front Toss and Machine are mandatory.')+
  '<section class="panel"><h2>Required work</h2><p>Warm Up · '+(!noTees?'Tee Work · ':'')+'Machine · Front Toss</p><label class="check"><input id="allowReplacements" type="checkbox" '+(state.allowReplacements?'checked':'')+'>Allow a second Front Toss session to replace Live when needed</label><p class="muted">Live is the priority. The plan will identify replacements and any pitchers or catchers who could not get a Live role, so you can review the tradeoff.</p>'+
  (noTees?'<p class="notice">More than 20 hitters: tee drills are unavailable for this hitting practice.</p>':'')+'</section>'+
  '<section class="drill-library"><h2>Drill rotation</h2><div id="drill-guidance" class="drill-guidance" aria-live="polite">'+drillGuidance()+'</div><div class="actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><p class="muted">Front Toss and Machine may repeat. Other selected drills are used once per hitter, with one station for each drill in a block. Selecting a drill confirms you have its listed equipment; the small-ball and bunting machines are separate equipment from the tunnel machine.</p><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills…" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><div id="drill-results">'+drillResults()+'</div></section>'+
- '<div class="sticky-actions actions"><button id="save-draft">Save draft</button><button class="primary" id="build" '+(busy?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';
+ stepActions('review','Next: Review');
 }
 function stationsFor(block,filter){
  return block.stations.filter(s=>!filter||[...s.players,s.pitcher,s.catcher,s.coach].includes(filter)).map(s=>'<div class="station"><strong>'+esc(s.drill)+' <span class="muted">· '+esc(s.resource)+'</span></strong>'+s.players.map(id=>esc(name(id))).join(' · ')+
  (s.pitcher?'<div class="role">Pitching: '+esc(name(s.pitcher))+'</div>':'')+
  (s.catcher?'<div class="role">Catching: '+esc(name(s.catcher))+'</div>':'')+
  (s.coach?'<div class="role">Coach: '+esc(name(s.coach))+'</div>':'')+
- (s.equipment?'<div class="muted">'+esc(s.equipment)+'</div>':'')+'</div>').join('')+
+ (s.equipment?'<div class="muted">'+esc(s.equipment)+'</div>':'')+(s.howItWorks?'<details><summary>Drill instructions</summary><p>'+esc(s.howItWorks)+'</p><p><strong>Coach cues:</strong> '+esc(s.coachingCues)+'</p></details>':'')+'</div>').join('')+
  ((!filter||block.coaching.includes(filter))?'<div class="station"><strong>Coaching</strong>'+block.coaching.filter(id=>!filter||id===filter).map(id=>esc(name(id))).join(' · ')+'</div>':'');
 }
 function planPage(){
@@ -134,9 +143,9 @@ function planPage(){
  '<section class="panel"><div class="stat-line"><strong>'+p.players.length+' hitters</strong><strong>'+p.blocks.length+' blocks</strong><strong>'+p.blockMinutes+' minutes per block</strong></div>'+
  (p.warnings.length?'<div class="notice"><strong>Review this plan</strong><ul>'+p.warnings.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul>'+(p.replacements.length?'<p><strong>Live replaced by Front Toss:</strong> '+p.replacements.map(id=>esc(name(id))).join(', ')+'</p>':'')+'</div>':'<p class="ready">Every hitter has Machine, Front Toss and Live. All eligible pitchers/catchers have at least one Live role.</p>')+
  (p.requiresAcceptance&&!p.accepted?'<label class="check" style="margin-top:18px"><input id="accept-plan" type="checkbox">Continue with the listed pitching/catching shortfalls</label>':'')+
- '<div class="actions"><button data-view="attendance">Adjust attendance</button><button data-view="drills">Change drills</button><button id="rebuild">Rebuild</button><button class="primary" id="run-local" '+(p.requiresAcceptance&&!p.accepted?'disabled':'')+'>Run on this device</button></div>'+
+ '<div class="actions"><button data-view="review">Review / Rebuild</button><button class="primary" id="run-local" '+(p.requiresAcceptance&&!p.accepted?'disabled':'')+'>Run on this device</button></div>'+
  '<p class="status">Running here does not publish assignments to players or other coaches.</p></section>'+
- (state.clock?clockHTML():'')+
+ (p.unusedSelectedDrills?.length?'<p class="notice">Selected drills that did not fit this plan: '+p.unusedSelectedDrills.map(esc).join(' · ')+'</p>':'')+(state.clock?clockHTML():'')+
  '<section class="panel">'+setting('View assignments','<select id="assignment-filter">'+options([['','All stations'],...p.players.map(x=>[x.id,x.name]),...p.coaches.map(x=>[x.id,x.name+' (coach)'])],filter)+'</select>')+'</section>'+
  '<div id="blocks">'+blocksHTML(filter)+'</div>';
 }
@@ -147,25 +156,28 @@ function clockHTML(){
 }
 function historyPage(){return heading('Practice History','Completed practice previews saved on this device.')+'<section class="panel">'+(state.history.length?state.history.slice().reverse().map(h=>'<div class="history"><strong>'+esc(h.date)+' · '+h.players+' hitters</strong><p class="status">'+h.durationMinutes+' minutes · '+h.blockMinutes+' minute blocks · '+h.replacements+' Live replacements</p></div>').join(''):'<p class="empty">No completed practices.</p>')+'</section>';}
 function render(){
- $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({setup,attendance,drills:drillPage,plan:planPage,history:historyPage}[view]());
+ $('#team-name').textContent=view==='home'?'Practice Planner':team().name;
+ $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
  bind();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
 function bind(){
  document.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));
+ document.querySelectorAll('[data-next]').forEach(el=>el.onclick=()=>nextStep(el.dataset.next));
+ document.querySelectorAll('[data-team]').forEach(el=>el.onclick=()=>chooseTeam(el.dataset.team));
  for(const id of ['date','start','facility','durationMinutes','blockMinutes','allowReplacements']){
-  const el=$('#'+id);if(el)el.onchange=()=>{if(!dirty()){render();return;}if(id==='date'&&state.date!==el.value)resetDrillChoices();state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
+  const el=$('#'+id);if(el)el.onchange=()=>{if(!dirty(id==='allowReplacements'?'drills':'setup')){render();return;}state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
  }
- document.querySelectorAll('[data-include]').forEach(el=>el.onchange=()=>{if(!dirty()){render();return;}const key=el.hasAttribute('data-coach')?'coachIds':'included';state[key]=el.checked?[...new Set([...state[key],el.dataset.include])]:state[key].filter(id=>id!==el.dataset.include);save();render();});
+ document.querySelectorAll('[data-include]').forEach(el=>el.onchange=()=>{if(!dirty('attendance')){render();return;}const key=el.hasAttribute('data-coach')?'coachIds':'included';state[key]=el.checked?[...new Set([...state[key],el.dataset.include])]:state[key].filter(id=>id!==el.dataset.include);save();render();});
  document.querySelectorAll('[data-adjust]').forEach(el=>el.onclick=()=>adjust(el.dataset.adjust));
  bindDrillCards();
  if($('#drill-search'))$('#drill-search').oninput=e=>{drillSearch=e.target.value;refreshDrills();};
  document.querySelectorAll('[data-category]').forEach(el=>el.onclick=()=>{drillCategory=el.dataset.category;refreshDrills();});
  const click=(id,fn)=>{if($('#'+id))$('#'+id).onclick=fn;};
  click('new-practice',newPractice);
- click('include-all',()=>{if(dirty()){state.included=allPlayers().map(p=>p.id);save();render();}});
- click('clear-players',()=>{if(dirty()){state.included=[];save();render();}});
- click('all-coaches',()=>{if(dirty()){state.coachIds=coaches.map(c=>c.id);save();render();}});
- click('clear-coaches',()=>{if(dirty()){state.coachIds=[];save();render();}});
+ click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
+ click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
+ click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
+ click('clear-coaches',()=>{if(dirty('attendance')){state.coachIds=[];save();render();}});
  click('all-drills',()=>{if(dirty()){state.selectedDrills=availableDrills().map(d=>d.id);save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{save();error='Draft saved on this device.';render();});
@@ -182,18 +194,19 @@ function adjust(id){
  (p.catcher?'<label class="check"><input name="notCatching" type="checkbox" '+(a.canCatch===false?'checked':'')+'>Not catching</label>':'')+
  '<p id="adjust-error" class="error"></p><div class="actions"><button type="button" id="cancel">Cancel</button><button class="primary">Save adjustment</button></div></form>';
  $('#dialog').showModal();$('#cancel').onclick=()=>$('#dialog').close();
- $('#adjust-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),arrival=f.get('arrival'),departure=f.get('departure');if(clockMinutes(departure)<=clockMinutes(arrival)){$('#adjust-error').textContent='Departure must be after arrival.';return;}if(!dirty()){$('#dialog').close();render();return;}state.adjustments[id]={arrival,departure,noPitchWarmup:f.has('noPitchWarmup'),canPitch:!f.has('notPitching'),canCatch:!f.has('notCatching')};save();$('#dialog').close();render();};
+ $('#adjust-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),arrival=f.get('arrival'),departure=f.get('departure');if(clockMinutes(departure)<=clockMinutes(arrival)){$('#adjust-error').textContent='Departure must be after arrival.';return;}if(!dirty('attendance')){$('#dialog').close();render();return;}state.adjustments[id]={arrival,departure,noPitchWarmup:f.has('noPitchWarmup'),canPitch:!f.has('notPitching'),canCatch:!f.has('notCatching')};save();$('#dialog').close();render();};
 }
 function toTime(min){return String(Math.floor(min/60)%24).padStart(2,'0')+':'+String(min%60).padStart(2,'0');}
 function guest(){
  $('#dialog').innerHTML='<form id="guest-form"><h2>Add guest player</h2>'+setting('Name','<input name="name" required maxlength="80">')+'<div class="actions"><label class="check"><input name="pitcher" type="checkbox">Pitcher</label><label class="check"><input name="catcher" type="checkbox">Catcher</label></div><p class="muted">Guest players are saved in this device’s draft. Permanent roster management will use coach permissions when sign-in is connected.</p><div class="actions"><button type="button" id="cancel">Cancel</button><button class="primary">Add guest</button></div></form>';
- $('#dialog').showModal();$('#cancel').onclick=()=>$('#dialog').close();$('#guest-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),n=String(f.get('name')).trim();if(!n)return;if(!dirty()){$('#dialog').close();render();return;}const id='rp-guest-'+crypto.randomUUID();state.guests.push({id,name:n,pitcher:f.has('pitcher'),catcher:f.has('catcher'),guest:true});state.included.push(id);save();$('#dialog').close();render();};
+ $('#dialog').showModal();$('#cancel').onclick=()=>$('#dialog').close();$('#guest-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),n=String(f.get('name')).trim();if(!n)return;if(!dirty('attendance')){$('#dialog').close();render();return;}const id='rp-guest-'+crypto.randomUUID();state.guests.push({id,name:n,pitcher:f.has('pitcher'),catcher:f.has('catcher'),guest:true});state.included.push(id);save();$('#dialog').close();render();};
 }
 function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
- busy=true;error='';view='drills';render();
+ const problems=issues();if(problems.length){error=problems.join(' ');view='review';render();return;}
+ recommendationWorker?.terminate();busy=true;error='';view='review';render();
  const input=practiceInput();
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild10',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild11',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
@@ -205,7 +218,7 @@ function startClock(){
 }
 function pauseClock(){const c=state.clock;if(!c||c.done)return;if(c.running){c.remaining=Math.max(0,c.end-Date.now());c.running=false;}else{c.end=Date.now()+c.remaining;c.running=true;}save();render();}
 function skipClock(){const c=state.clock;if(!c||c.done||c.phase==='rotate')return;c.phase='rotate';c.remaining=60000;c.end=Date.now()+60000;c.running=true;save();speak('Rotate to your next station.');render();}
-function finish(){if(!state.clock||state.clock.done)return;state.clock.done=true;state.clock.running=false;state.clock.remaining=0;state.history.push({date:state.date,players:state.plan.players.length,durationMinutes:state.plan.durationMinutes,blockMinutes:state.plan.blockMinutes,replacements:state.plan.replacements.length,replacementIds:state.plan.replacements,completedAt:new Date().toISOString()});resetDrillChoices();save();speak('Practice is finished.');render();}
+function finish(){if(!state.clock||state.clock.done)return;state.clock.done=true;state.clock.running=false;state.clock.remaining=0;state.history.push({date:state.date,players:state.plan.players.length,durationMinutes:state.plan.durationMinutes,blockMinutes:state.plan.blockMinutes,replacements:state.plan.replacements.length,replacementIds:state.plan.replacements,completedAt:new Date().toISOString()});save();speak('Practice is finished.');render();}
 function tick(){
  const c=state.clock;if(!c)return;if(c.running&&!c.done){
   while(Date.now()>=c.end&&!c.done){
