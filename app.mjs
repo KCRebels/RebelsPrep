@@ -1,6 +1,6 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild6';
-import {drills} from './drills.mjs?v=rpbuild6';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild6';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild7';
+import {drills} from './drills.mjs?v=rpbuild7';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild7';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -27,10 +27,8 @@ function setup(){
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
  setting('Duration (minutes)','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
  setting('Block length','<select id="blockMinutes">'+options([[10,'10 minutes'],[12,'12 minutes'],[15,'15 minutes']],state.blockMinutes)+'</select>')+
- '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>'+
- '<section class="panel"><h2>The Barn</h2><p class="muted">One machine lane. The shared tunnel holds either one Live session or two Front Toss stations. Four pitching warm-up pairs outside the tunnel, up to ten additional drill stations, and six tees.</p>'+
- '<p class="muted">Warm Up starts every player’s practice. Tee Work follows for 20 or fewer hitters; above 20, all tee work is removed from hitting practices.</p></section>'+
- '<div class="actions"><button class="primary" data-view="attendance">Choose attendance</button></div>';
+ '</div><p class="muted">Ends at <strong>'+end+'</strong>. Each block includes one minute to rotate. Extra time is added only when you change the duration.</p></section>';
+
 }
 function person(p,coach=false){
  const inList=coach?state.coachIds:state.included,adjust=state.adjustments[p.id]||{},parts=[];
@@ -154,7 +152,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input={players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild6',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild7',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
