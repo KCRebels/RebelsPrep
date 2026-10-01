@@ -22,7 +22,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  plan=JSON.parse(JSON.stringify(plan));
  const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
- const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])];
+ const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])],candidateTokens=new Map(allPeople.map(p=>[p.id,token()]));
  return F.runTransaction(db,async tx=>{
   const facilitySlug=String(plan.facility||'').toLowerCase().includes('barn')?'barn':String(plan.facility||'').toLowerCase().includes('shed')?'shed':'';
   const locationRef=facilitySlug?F.doc(db,'rpCheckinLocations',facilitySlug):null;
@@ -46,7 +46,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
    for(const link of [p.token,...p.alternateTokens||[]])records.set(link,{...entry,token:link});portals[entry.id]??={token:p.token,name:entry.name,role:p.role};
   }
   for(const person of allPeople){
-   portals[person.id]??={token:token(),name:person.name,role:person.role};
+   portals[person.id]??={token:candidateTokens.get(person.id),name:person.name,role:person.role};
    const p=portals[person.id];records.set(p.token,{...p,id:person.id});
   }
   for(const [id,p] of Object.entries(portals))p.alternateTokens=[...records.entries()].filter(([link,record])=>record.id===id&&link!==p.token).map(([link])=>link);
