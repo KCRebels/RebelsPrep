@@ -1,4 +1,4 @@
-import {buildPractice,validatePractice} from './scheduler.mjs?v=rpbuild12';
+import {buildPractice,validatePractice} from './scheduler.mjs?v=rpbuild13';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
 self.onmessage=event=>{
  try{
@@ -17,6 +17,9 @@ self.onmessage=event=>{
    }
    const used=new Set(plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='drill').map(s=>s.drillId)));
    self.postMessage({recommendation:{count:used.size,names:best.filter(d=>used.has(d.id)).map(d=>d.name),warnings:plan.warnings}});
+  }else if(event.data.mode==='build'){
+   try{self.postMessage({plan:checked({...event.data.input,allowReplacements:false})});}
+   catch(original){try{const plan=checked({...event.data.input,allowReplacements:true});if(!plan.replacements.length)throw original;self.postMessage({replacementOffer:plan});}catch{throw original;}}
   }else self.postMessage({plan:checked(event.data)});
  }catch(error){self.postMessage({error:error.message});}
 };

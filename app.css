@@ -55,3 +55,5 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .bottom-nav button[aria-current=page]{background:#fff0f1;color:#a72535;border:0}
 .step-check{color:#087047}.step-actions{margin:22px 0 12px}.step-actions button{flex:1;max-width:260px}.team-card{max-width:620px}.team-card h2{font-size:22px}.drill-availability{font-size:12px!important;font-weight:700;color:#687184;margin:0 0 10px}.station details{font-size:14px;margin-top:8px}.station summary{cursor:pointer;color:#a72535}.sticky-actions{position:static}
 @media(max-width:680px){main{padding-bottom:calc(105px + env(safe-area-inset-bottom))}.bottom-nav button{font-size:12px;padding:10px 2px}.bottom-nav{gap:2px}.step-check{display:block;font-size:11px}.step-actions button{max-width:none}}
+
+.drill-guidance-simple{font-size:14px;color:#687184;margin:14px 0;line-height:1.4}.replacement-choice{border:2px solid #adb8b3}
