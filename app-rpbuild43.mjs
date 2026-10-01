@@ -1,5 +1,5 @@
 import {selectionKey,combinedTeam} from './team-selection.mjs?v=rpbuild33';
-import * as shared from './shared.mjs?v=rpcheckin64';
+import * as shared from './shared.mjs?v=rpcheckin65';
 import {clockState} from './portal-model.mjs?v=rpbuild18';
 import {openPortal} from './portal.mjs?v=rpbuild33';
 import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild33';
@@ -275,7 +275,7 @@ function bind(){
  if($('#accept-plan'))$('#accept-plan').onchange=e=>{state.plan.accepted=e.target.checked;save();render();};
  if($('#assignment-filter'))$('#assignment-filter').onchange=e=>{$('#blocks').innerHTML=blocksHTML(e.target.value);};
  click('coach-login',loginDialog);click('coach-logout',()=>sharedAction(()=>shared.signOut()));click('activate-shared',activateShared);
- document.querySelectorAll('[data-shared-control]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.control(sharedDirectory.clockToken,el.dataset.sharedControl)));document.querySelectorAll('[data-fix-checkin]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.correctCheckin(el.dataset.fixCheckin)));document.querySelectorAll('[data-guest-decline]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.setGuestStatus(el.dataset.guestDecline,'declined')));document.querySelectorAll('[data-guest-approve]').forEach(el=>el.onclick=()=>{const record=checkins.find(x=>x.id===el.dataset.guestApprove);if(record)rebuildForApprovedGuest(record)});
+ document.querySelectorAll('[data-shared-control]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.control(sharedDirectory.clockToken,el.dataset.sharedControl)));document.querySelectorAll('[data-fix-checkin]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.correctCheckin(el.dataset.fixCheckin)));document.querySelectorAll('[data-guest-decline]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.setGuestStatus(el.dataset.guestDecline,'declined',sharedClockToken)));document.querySelectorAll('[data-guest-approve]').forEach(el=>el.onclick=()=>{const record=checkins.find(x=>x.id===el.dataset.guestApprove);if(record)rebuildForApprovedGuest(record)});
  click('run-local',startClock);click('pause',pauseClock);click('skip',skipClock);click('done',finish);
  if($('#sound'))$('#sound').onchange=e=>{sound=e.target.checked;if(sound)speak('Voice announcements on.');};
 }
