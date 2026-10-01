@@ -79,6 +79,7 @@ function updateDrillGuidance(){
  const el=$('#drill-guidance');if(el)el.textContent=drillGuidance();
  const title=$('#drill-choice-title');if(title)title.textContent=drillChoiceTitle();
  const summary=$('#selection-summary');if(summary)summary.innerHTML=selectionSummary();const pickerHeading=$('#picker-title');if(pickerHeading)pickerHeading.textContent=pickerTitle();const warning=$('#equipment-warning');if(warning)warning.innerHTML=equipmentWarning();
+ updatePickerAvailability();
  const count=$('#drill-choice-count');if(count)count.textContent=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length+' selected';
 }
 function focusOptions(kind){const choices=drills.filter(d=>d.kind===kind),selected=choices.filter(d=>state.selectedDrills.includes(d.id));const value=selected.length>1?'multiple':selected[0]?.id||'';return options([['','Standard'],...(selected.length>1?[['multiple','Selected library drills',true]]:[]),...choices.map(d=>[d.id,esc(d.name),false])],value);}
@@ -107,17 +108,21 @@ function availableDrills(){return drills;}
 function extraDrills(){return availableDrills().filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work');}
 function drillInstructions(d){return [['Purpose',d.primaryPurpose],['Set Up',d.spaceSetup],['Equipment',d.equipment],['How To Do It',d.howItWorks],['Coaching Cues',d.coachingCues],['What Good Looks Like',d.success],['Best Used For',d.bestUsedFor],['Notes',d.notes]].filter(([,text])=>text).map(([label,text])=>'<section><h4>'+label+'</h4><p>'+esc(text)+'</p></section>').join('');}
 function equipmentWarning(){const n=teeRequirement(state.selectedDrills,drills);return n>6?'<p class="notice equipment-warning" role="status">These choices call for '+n+' tees. You have 6. The drills may need to run in different blocks.</p>':'';}
+function stationLimit(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null;}
+function pickerLocked(){const limit=stationLimit();return limit===null||extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length>=limit;}
+function updatePickerAvailability(){const locked=pickerLocked();document.querySelectorAll('[data-select-drill]').forEach(el=>{const disabled=locked&&!state.selectedDrills.includes(el.dataset.selectDrill);el.disabled=disabled;el.closest('.drill-row').classList.toggle('unavailable',disabled);});const all=$('#all-drills');if(all)all.disabled=locked;}
 function pickerTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Station '+(r.count===1?'Drill':'Drills'):'Choose Station Drills';}
 function selectionSummary(){const selected=practiceInput().drills,r=recommendation,target=r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null,stationChoices=selected.filter(d=>d.kind==='drill').length;let station=0;return '<strong>'+stationChoices+(target!==null?' of '+target:'')+' station drills selected</strong>'+(selected.length?'<ol>'+selected.map(d=>'<li>'+(d.kind==='drill'?++station+'. ':d.kind==='machine'?'Machine focus: ':'Front Toss focus: ')+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
 function drillResults(){
  const query=drillSearch.trim().toLowerCase();
  const matches=drills.filter(d=>(drillCategory==='All Drills'||d.category===drillCategory)&&(!query||[d.name,d.category,d.primaryPurpose,d.hittingMethod,d.equipment].join(' ').toLowerCase().includes(query)));
- return '<div class="drill-rows">'+matches.map(d=>{const selected=state.selectedDrills.includes(d.id),expanded=expandedDrills.has(d.id);return '<article class="drill-row'+(selected?' selected':'')+'"><div class="drill-row-head"><button class="drill-row-select" data-select-drill="'+d.id+'" aria-pressed="'+selected+'" aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'"><span class="drill-row-mark" aria-hidden="true">'+(selected?'✓':'+')+'</span><span class="drill-row-label"><strong>'+esc(d.name)+'</strong><small>'+esc(d.category)+' · '+esc(d.hittingMethod)+'</small></span></button><button class="drill-row-details" data-drill-details="'+d.id+'" aria-expanded="'+expanded+'" aria-controls="detail-'+d.id+'">Details</button></div><div class="drill-row-instructions" id="detail-'+d.id+'" '+(expanded?'':'hidden')+'>'+drillInstructions(d)+'</div></article>';}).join('')+'</div>'+(matches.length?'':'<p class="empty">No drills match. Try another search or category.</p>');
+ return '<div class="drill-rows">'+matches.map(d=>{const selected=state.selectedDrills.includes(d.id),expanded=expandedDrills.has(d.id),disabled=!selected&&pickerLocked();return '<article class="drill-row'+(selected?' selected':'')+(disabled?' unavailable':'')+'"><div class="drill-row-head"><button class="drill-row-select" data-select-drill="'+d.id+'" '+(disabled?'disabled ':'')+'aria-pressed="'+selected+'" aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'"><span class="drill-row-mark" aria-hidden="true">'+(selected?'✓':'+')+'</span><span class="drill-row-label"><strong>'+esc(d.name)+'</strong><small>'+esc(d.category)+' · '+esc(d.hittingMethod)+'</small></span></button><button class="drill-row-details" data-drill-details="'+d.id+'" aria-expanded="'+expanded+'" aria-controls="detail-'+d.id+'">Details</button></div><div class="drill-row-instructions" id="detail-'+d.id+'" '+(expanded?'':'hidden')+'>'+drillInstructions(d)+'</div></article>';}).join('')+'</div>'+(matches.length?'':'<p class="empty">No drills match. Try another search or category.</p>');
 }
 function bindDrillCards(){
  document.querySelectorAll('[data-select-drill]').forEach(el=>el.onclick=()=>{
-  if(!dirty()){render();return;}
   const id=el.dataset.selectDrill;
+  if(!state.selectedDrills.includes(id)&&pickerLocked())return;
+  if(!dirty()){render();return;}
   state.selectedDrills=state.selectedDrills.includes(id)?state.selectedDrills.filter(x=>x!==id):[...state.selectedDrills,id];
   save();refreshDrills();calculateDrillCount();
  });
@@ -187,7 +192,7 @@ function bind(){
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
  click('clear-coaches',()=>{if(dirty('attendance')){state.coachIds=[];save();render();}});
- click('all-drills',()=>{if(dirty()){state.selectedDrills=availableDrills().map(d=>d.id);save();render();}});
+ click('all-drills',()=>{const limit=stationLimit();if(limit===null||pickerLocked())return;if(dirty()){const chosen=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).map(d=>d.id);const remaining=extraDrills().filter(d=>!chosen.includes(d.id)).slice(0,Math.max(0,limit-chosen.length)).map(d=>d.id);state.selectedDrills=[...state.selectedDrills,...remaining];save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{if(!flushSetup()){render();return;}save();error='Draft saved on this device.';render();});
  click('use-replacements',useReplacements);click('cancel-replacements',()=>{replacementOffer=null;render();});click('build',build);click('rebuild',build);click('add-guest',guest);
