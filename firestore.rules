@@ -17,7 +17,7 @@ service cloud.firestore {
    allow delete: if false;
   }
   match /rpTeams/{team} {
-   allow get: if true;
+   allow get: if builder();
    allow create, update: if builder();
    allow list, delete: if false;
   }
@@ -27,7 +27,7 @@ service cloud.firestore {
                  && request.resource.data.name is string
                  && request.resource.data.practiceTime is string;
    allow get, list, update: if builder();
-   allow delete: if resource.data.kind == 'player';
+   allow delete: if false;
   }
  }
 }
