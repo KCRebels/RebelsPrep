@@ -1,0 +1,347 @@
+:root{font-family:Arial,sans-serif;color:#1a1a1a;background:#f4f5f6;font-size:16px;--red:#bc0824}
+*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;background:#fff;border:1px solid #c7cbd0;border-radius:10px;padding:12px 16px;color:#1b1b1b;min-height:44px;font-weight:700}button:hover{border-color:var(--red)}button:disabled{opacity:.5;cursor:default}.primary{background:var(--red);border-color:var(--red);color:white}.secondary{background:#181818;color:white;border-color:#181818}input,select{padding:10px;border:1px solid #bfc4cb;border-radius:8px;min-height:44px;background:white;color:#171717;width:100%}input[type=checkbox]{width:22px;min-height:22px;height:22px;accent-color:var(--red);flex:none}label{display:flex;flex-direction:column;gap:7px;font-weight:700}.check{flex-direction:row;align-items:center;font-weight:400;line-height:1.4}
+main{max-width:1100px;margin:auto;padding:26px 20px 40px}header{text-align:center;margin-bottom:24px}.logo{width:min(440px,100%);height:auto;display:block;margin:0 auto}header p{font-weight:700;color:#555;margin:12px 0}.preview{padding:12px 16px;border:1px solid #ddd;background:white;border-radius:10px;font-size:14px;line-height:1.5;margin-bottom:20px}.preview strong{color:var(--red)}nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}nav button[aria-current=page]{background:#181818;color:white;border-color:#181818}h1{font-size:28px;margin:0 0 6px}h2{font-size:20px;margin:0 0 15px}h3{font-size:16px}.muted{color:#666;line-height:1.5}.panel{background:white;border:1px solid #dde0e4;border-radius:16px;padding:22px;margin-bottom:18px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 0}.count{color:var(--red);font-weight:700}.people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.person{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #e0e2e5;border-radius:10px;background:white}.person.included{border-color:#bc0824;background:#fff8f9}.person .check{flex:1;min-width:0;font-weight:700}.person small{display:block;font-weight:400;font-size:12px;color:#626262;margin-top:4px}.person button{padding:9px 10px;font-size:13px}.badge{color:var(--red);font-size:12px}.drills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.drill{border:1px solid #ddd;border-radius:10px;padding:14px}.drill summary{cursor:pointer;margin-top:10px;color:#666;font-size:13px}.drill p{font-size:14px;line-height:1.5}.drill.disabled{opacity:.55}.notice{padding:14px 16px;background:#fff1f3;border-left:4px solid var(--red);line-height:1.5}.notice li{margin:8px 0}.block{border:1px solid #ddd;border-radius:12px;overflow:hidden;margin:16px 0;background:white}.block header{background:#191919;color:white;padding:14px;text-align:left;margin:0}.station{padding:14px 16px;border-bottom:1px solid #ececec;line-height:1.5}.station:last-child{border:0}.station strong{display:block}.station .role{color:var(--red);font-size:14px}.station .muted{font-size:13px}.large-time{font-size:64px;font-weight:700;letter-spacing:-2px;text-align:center;margin:16px 0}.clock-label{text-align:center;font-weight:700;color:var(--red)}dialog{max-width:520px;width:calc(100% - 32px);border:1px solid #ddd;border-radius:18px;padding:24px}dialog::backdrop{background:#0008}dialog .grid{grid-template-columns:1fr 1fr}.error{color:var(--red);font-weight:700}.hidden{display:none!important}.status{font-size:13px;color:#666}.ready{color:#087047}.empty{padding:30px 10px;text-align:center;color:#666}footer{text-align:center;color:#777;font-size:12px;margin-top:26px}.sticky-actions{position:sticky;bottom:0;background:#fffc;backdrop-filter:blur(10px);border-top:1px solid #ddd;padding:14px 0}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.stat-line{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0}a{color:var(--red)}.history{border-bottom:1px solid #ddd;padding:12px 0}.review-list{padding-left:20px;line-height:1.6}
+@media(max-width:680px){main{padding:20px 14px}.grid{grid-template-columns:1fr 1fr}.people,.drills{grid-template-columns:1fr}.panel{padding:18px}.logo{max-width:340px}h1{font-size:24px}nav button{flex:1;padding:10px;font-size:14px}.person{padding:10px}.large-time{font-size:56px}}
+@media(max-width:360px){.grid,dialog .grid{grid-template-columns:1fr}.person .check{font-size:14px}}
+
+/* Drill library matches the HotB card layout. */
+.drill-library{margin:24px 0}.drill-library>.actions{margin-bottom:18px}
+#drill-search{border:2px solid #d4d9d7;border-radius:18px;padding:18px 20px;font-size:20px;min-height:64px}
+#drill-search::placeholder{color:#8a919f}.drill-categories{display:flex;gap:12px;overflow-x:auto;padding:18px 0 8px;scrollbar-width:thin}
+.drill-categories button{flex:none;white-space:nowrap;border:2px solid #d4d9d7;border-radius:999px;padding:14px 22px;font-size:18px;color:#5c6476}
+.drill-categories button[aria-pressed=true]{border-color:#a72535;color:#a72535;background:#fff0f1}
+.drill-count{font-size:20px;font-weight:700;color:#687184;margin:22px 0}.drill-count span{font-size:15px;font-weight:400}
+.drills{gap:12px;align-items:start}.drill{background:white;border:2px solid #d4d9d7;border-radius:18px;padding:16px;box-shadow:0 4px 0 #e5e8e6}
+.drill .drill-category{font-size:12px;font-weight:800;letter-spacing:.8px;color:#a72535;text-transform:uppercase;margin:0 0 8px}
+.drill h3{font-size:20px;line-height:1.25;margin:0 0 10px;color:#121827}.drill .drill-purpose{font-size:15px;line-height:1.4;color:#5c6476;margin:0 0 12px}
+.drill-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.drill-tags span{background:#f0f2f1;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;color:#4e5869}
+.drill-controls{display:flex;gap:8px;align-items:start;flex-wrap:wrap}.drill-controls button,.drill-controls summary{border:2px solid #171717;border-radius:10px;padding:8px 12px;font-size:14px;color:#171717;background:white;min-height:44px;font-weight:700;margin:0;cursor:pointer}
+.drill-controls button[aria-pressed=true]{background:#a72535;border-color:#a72535;color:white}.drill-controls details{flex:1}.drill-controls summary{display:inline-block;list-style:none}.drill-controls summary::-webkit-details-marker{display:none}.drill-details{color:#5c6476;margin-top:14px}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+@media(max-width:680px){.drill{padding:15px}.drill h3{font-size:20px}.drill-categories button{font-size:16px;padding:12px 18px}}
+
+/* Clear attendance controls and stronger roster outlines. */
+.attendance-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.attendance-actions button{min-width:0;white-space:nowrap;padding:12px 8px;font-size:14px;border:2px solid #a7b1ad}
+.person{border:3px solid #adb8b3;border-radius:14px;padding:14px;gap:12px}
+.person.included{border-color:#a72535;background:#fff8f9}
+.person button{border:2px solid #adb8b3;color:#a72535;background:white;flex:none}
+.person .check{font-size:17px}.person .check>span{overflow-wrap:anywhere}
+.person input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;width:26px;height:26px;min-height:26px;padding:0;border:2px solid #747b79;border-radius:7px;background:#fff;margin:0;cursor:pointer}
+.person input[type=checkbox]:checked{background:#171717;border-color:#171717}
+.person input[type=checkbox]:checked::after{content:'';position:absolute;left:7px;top:3px;width:7px;height:13px;border:solid white;border-width:0 3px 3px 0;transform:rotate(45deg)}
+@media(max-width:680px){.person{padding:12px;gap:10px}.person .check{font-size:16px}.person button{padding:10px;font-size:13px}}
+@media(max-width:360px){.attendance-actions{gap:6px}.attendance-actions button{font-size:13px;padding:12px 5px}}
+
+@media(max-width:680px){.sticky-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:10px 0}.sticky-actions button{min-width:0;padding:10px 5px;white-space:nowrap;font-size:13px}}
+@media(max-width:360px){.sticky-actions button{font-size:12px;padding:10px 3px}}
+
+/* Consistent setup fields, including Safari date and time controls. */
+.settings-grid{align-items:start}
+.settings-grid label{min-width:0;font-size:15px;line-height:1.3}
+.settings-grid input,.settings-grid select{display:block;width:100%;min-width:0;max-width:100%;height:48px;min-height:48px;padding:10px 8px;font-size:16px;line-height:normal;border:2px solid #adb8b3;border-radius:10px}
+.settings-grid input[type=date],.settings-grid input[type=time]{appearance:none;-webkit-appearance:none;overflow:hidden;text-align:left}
+.settings-grid input::-webkit-date-and-time-value{min-width:0;text-align:left;margin:0}
+.settings-grid input::-webkit-datetime-edit{display:inline-flex;padding:0;min-width:0}
+@media(max-width:680px){.settings-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:18px}.settings-grid label{font-size:14px;min-height:74px}.settings-grid input,.settings-grid select{font-size:16px}}
+@media(max-width:360px){.settings-grid{grid-template-columns:1fr}.settings-grid label{min-height:0}}
+
+.drill-guidance{padding:14px 16px;margin:12px 0;background:#fff;border:2px solid #adb8b3;border-radius:12px;color:#171717}.drill-guidance p{margin:8px 0 0;line-height:1.4;font-size:14px;color:#5c6476}
+
+/* Guided practice flow and persistent navigation. */
+main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+.bottom-nav{position:fixed;z-index:20;bottom:0;left:0;right:0;margin:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px max(8px,calc((100vw - 1080px)/2)) calc(8px + env(safe-area-inset-bottom));background:#fff;border-top:2px solid #adb8b3;box-shadow:0 -3px 12px #0000000c}
+.bottom-nav button{border:0;border-radius:8px;padding:10px 4px;font-size:14px;min-height:48px;min-width:0;white-space:nowrap;background:#fff;color:#5c6476}
+.bottom-nav button[aria-current=page]{background:#fff0f1;color:#a72535;border:0}
+.step-check{color:#087047}.step-actions{margin:22px 0 12px}.step-actions button{flex:1;max-width:260px}.team-card{max-width:620px}.team-card h2{font-size:22px}.drill-availability{font-size:12px!important;font-weight:700;color:#687184;margin:0 0 10px}.station details{font-size:14px;margin-top:8px}.station summary{cursor:pointer;color:#a72535}.sticky-actions{position:static}
+@media(max-width:680px){main{padding-bottom:calc(105px + env(safe-area-inset-bottom))}.bottom-nav button{font-size:12px;padding:10px 2px}.bottom-nav{gap:2px}.step-check{display:block;font-size:11px}.step-actions button{max-width:none}}
+
+.drill-guidance-simple{font-size:14px;color:#687184;margin:14px 0;line-height:1.4}.replacement-choice{border:2px solid #adb8b3}
+
+.focus-card{border:2px solid #d4d9d7;border-radius:18px;box-shadow:0 3px 0 #e5e8e6;margin-top:18px;padding:18px}.focus-card .drill-category{color:#a72535;text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:.8px;margin:0 0 10px}.focus-card h2{font-size:22px;line-height:1.25;margin-bottom:12px;color:#121827}.focus-card>.muted{font-size:14px;margin-bottom:18px}.focus-fields{display:grid;gap:14px}.focus-fields label{font-size:13px;text-transform:uppercase;color:#5c6476}.focus-fields select{text-transform:none;font-weight:700;border:2px solid #adb8b3;border-radius:12px;min-height:48px;font-size:16px;color:#171717}.choose-drills-button{width:100%;margin-top:8px;border-radius:12px}.focus-card .drill-guidance-simple{margin-bottom:8px}.focus-card .status{margin:8px 0}.drill-library{scroll-margin-top:16px}
+
+/* Compact drill selector follows the supplied HotB reference. */
+.picker-screen{max-width:900px;margin:0 auto}.picker-back{border:0;background:transparent;color:#a72535;padding:0;min-height:44px;font-size:17px;margin:0 0 16px;text-align:left}.picker-intro{border:2px solid #d4d9d7;border-radius:18px;padding:22px;margin-bottom:18px}.picker-intro .drill-category{color:#a72535;font-weight:800;text-transform:uppercase;letter-spacing:1px;font-size:13px;margin:0 0 4px}.picker-intro h1{font-size:28px;color:#121827;margin:0 0 12px}.picker-intro>p:last-child{color:#5c6476;font-size:16px;font-weight:700;line-height:1.45;margin:0}.selection-summary{background:#111;color:#fff;border-radius:16px;padding:20px;margin-bottom:18px}.selection-summary>strong{display:block;font-size:22px}.selection-summary p{font-size:16px;font-weight:700;margin:10px 0 0}.selection-summary ol{list-style:none;padding:0;margin:10px 0 0;font-size:14px;line-height:1.7}.picker-actions{margin:4px 0 16px}.picker-actions button{padding:8px 12px;font-size:14px}.picker-screen .drill-library{margin-top:0}.picker-screen #drill-search{border-radius:12px;font-size:18px;padding:14px;min-height:54px}.picker-screen .drill-categories{gap:8px;padding:14px 0}.picker-screen .drill-categories button{padding:10px 14px;font-size:14px}.drill-rows{display:grid;gap:12px}.drill-row{border:2px solid #d4d9d7;border-radius:14px;background:#fff;overflow:hidden}.drill-row.selected{border-color:#a72535}.drill-row-head{display:flex;align-items:center;gap:8px;padding:12px}.drill-row-select{display:flex;align-items:center;gap:12px;flex:1;min-width:0;border:0;border-radius:0;background:transparent;padding:0;text-align:left;color:#121827;font-weight:700;min-height:48px}.drill-row-select:hover{border:0}.drill-row-mark{display:grid;place-items:center;background:#edf1ef;border-radius:10px;width:42px;min-width:42px;height:42px;font-size:26px;color:#5c6476}.drill-row-select[aria-pressed=true] .drill-row-mark{background:#a72535;color:#fff}.drill-row-label{min-width:0}.drill-row-label strong{display:block;font-size:18px;line-height:1.25;overflow-wrap:anywhere}.drill-row-label small{display:block;color:#687184;font-size:13px;line-height:1.3;margin-top:5px}.drill-row-details{font-size:12px;min-height:36px;padding:6px 8px;border:1px solid #adb8b3;border-radius:8px;flex:none;align-self:center}.drill-row-details[aria-expanded=true]{color:#a72535;border-color:#a72535;background:#fff0f1}.drill-row-instructions{padding:4px 16px 16px;border-top:1px solid #d4d9d7;font-size:14px;color:#5c6476;line-height:1.5}.drill-row-instructions h4{font-size:14px;color:#121827;margin:14px 0 5px}.drill-row-instructions p{margin:0}.equipment-warning{font-size:14px;border-radius:10px}.focus-fields{grid-template-columns:minmax(0,1fr)}.focus-fields label,.focus-fields select{min-width:0}
+@media(max-width:420px){.drill-row-head{padding:12px 10px;gap:6px}.drill-row-select{gap:10px}.drill-row-label strong{font-size:17px}.drill-row-label small{font-size:12px}.drill-row-mark{width:38px;min-width:38px;height:38px;font-size:24px}.drill-row-details{padding:6px;font-size:11px}.picker-intro h1{font-size:27px}}
+
+.drill-row.unavailable{background:#eef0f1;border-color:#d8dcde}.drill-row.unavailable .drill-row-select{opacity:1;color:#969da6;cursor:default}.drill-row.unavailable .drill-row-label small,.drill-row.unavailable .drill-row-mark{color:#a2a8ae}.drill-row.unavailable .drill-row-mark{background:#e1e5e7}
+.portal-links>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #d4d9d7}.portal-links small{display:block;color:#687184;margin-top:4px}.portal-open{display:block;border:1px solid #aeb5ba;border-radius:9px;padding:10px;white-space:nowrap;font-weight:700;text-decoration:none}.shared-clock{margin:20px 0}.shared-clock>strong{font-size:24px}.current-block{border:2px solid #a72535}.portal-station{border-top:1px solid #d4d9d7;margin-top:14px;padding-top:12px}.portal-station details{line-height:1.5}.portal-station summary{color:#a72535;font-weight:700;cursor:pointer}
+
+.practice-clock-stats{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:18px 0 0}
+.practice-clock-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:140px;padding:20px 10px;background:#fff;border:2px solid #cfd6d3;border-radius:16px}
+.practice-clock-box>span{font-size:14px;font-weight:800;text-transform:uppercase;color:#626d80}
+.practice-clock-box>strong{font-size:clamp(30px,8vw,48px);font-weight:800;line-height:1.1;color:#111827;font-variant-numeric:tabular-nums;white-space:nowrap}
+.practice-clock-phase{margin:12px 0 18px;text-align:center;color:#626d80;font-weight:700}
+
+.team-list{gap:8px}
+.team-card.panel{padding:12px 14px;margin:8px 0;border-radius:12px}
+.team-card h2{font-size:18px;line-height:1.25;margin:0 0 5px}
+.team-card p.muted{font-size:12px;line-height:1.3;margin:0 0 8px}
+.team-card .actions{display:flex;flex-wrap:nowrap;gap:8px;margin:0}
+.team-card .actions button{flex:0 1 auto;min-width:0;min-height:40px;padding:8px 14px;font-size:14px;white-space:nowrap;border-radius:8px}
+@media(max-width:360px){.team-card.panel{padding:10px 12px}.team-card .actions{gap:6px}.team-card .actions button{padding:8px 11px}}
+
+.team-card.selectable-team{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid #adb8b3;padding:10px 12px}
+.team-card.selectable-team.selected-team{border-color:#a72535;background:#fff8f9}
+.team-choice{display:flex;align-items:center;gap:10px;flex:1;min-width:0;margin:0;cursor:pointer}
+.team-choice input{flex:none;width:22px;height:22px;margin:0;accent-color:#a72535}
+.team-choice span{min-width:0}.team-choice strong{display:block;font-size:16px;line-height:1.2;color:#111827}
+.team-choice small{display:block;font-size:11px;font-weight:400;line-height:1.2;color:#687184;margin-top:3px}
+.team-card.selectable-team .team-card-actions{flex:none;gap:6px}
+.team-card.selectable-team .team-card-actions button{padding:7px 9px;min-height:36px;font-size:12px}
+@media(max-width:360px){.team-card.selectable-team{gap:6px;padding:9px 10px}.team-choice{gap:7px}.team-choice strong{font-size:14px}.team-card.selectable-team .team-card-actions button{padding:7px}}
+
+.team-choice{flex-direction:row}
+
+#team-name{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 18px;font-size:19px;font-weight:600;font-style:italic;letter-spacing:.06em;color:#a72535}
+#team-name::before,#team-name::after{content:"";width:26px;height:2px;background:#a72535;opacity:.6}
+.practice-type-field{grid-column:1/-1;min-width:0;font-weight:700}
+.practice-type-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.practice-type-buttons button{min-width:0;padding:12px 8px;min-height:44px;font-size:15px;border:2px solid #adb8b3}
+.practice-type-buttons button[aria-pressed=true]{background:#a72535;border-color:#a72535;color:white}
+.practice-type-buttons button:disabled{background:#e7e9e8;border-color:#d3d8d5;color:#919893;opacity:1;cursor:not-allowed}
+@media(max-width:680px){#team-name{font-size:16px;gap:10px}.practice-type-buttons button{font-size:14px}}
+
+
+/* Setup: keep Start time, Duration, and Block length on one row. */
+@media (min-width:361px) and (max-width:680px){
+  .settings-grid label:nth-of-type(3){grid-column:1;grid-row:4}
+  .settings-grid label:nth-of-type(4){grid-column:2;grid-row:4}
+  .settings-grid label:nth-of-type(5){grid-column:3;grid-row:4}
+  .settings-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1.15fr)}
+  .settings-grid label:nth-of-type(1){grid-column:1 / span 1}
+  .settings-grid label:nth-of-type(2){grid-column:2 / span 2}
+  .practice-type-field{grid-column:1/-1}
+  .settings-grid label:nth-of-type(3),
+  .settings-grid label:nth-of-type(4),
+  .settings-grid label:nth-of-type(5){min-width:0}
+  .settings-grid label:nth-of-type(3) input,
+  .settings-grid label:nth-of-type(4) input,
+  .settings-grid label:nth-of-type(5) select{font-size:14px;padding-left:7px;padding-right:7px}
+}
+
+
+/* Practice timing is a single explicit row. */
+.practice-timing-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.practice-timing-row label{min-width:0}
+@media(max-width:680px){
+  .practice-timing-row{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.1fr);gap:8px}
+  .practice-timing-row label{font-size:12px;min-height:0}
+  .practice-timing-row input,.practice-timing-row select{font-size:13px!important;padding:8px 5px!important}
+}
+@media(max-width:360px){
+  .practice-timing-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+}
+
+
+/* Correct setup layout: Date/Facility stay two columns; timing row alone uses three. */
+@media (max-width:680px){
+  .settings-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    column-gap:14px;
+    row-gap:18px;
+  }
+  .settings-grid > label:nth-of-type(1){
+    grid-column:1 !important;
+    grid-row:auto !important;
+  }
+  .settings-grid > label:nth-of-type(2){
+    grid-column:2 !important;
+    grid-row:auto !important;
+  }
+  .practice-type-field{grid-column:1/-1 !important}
+  .practice-timing-row{
+    grid-column:1/-1 !important;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,.88fr) minmax(0,1fr);
+    gap:10px;
+  }
+  .practice-timing-row label{
+    min-width:0;
+    min-height:0;
+    font-size:14px;
+    white-space:nowrap;
+  }
+  .practice-timing-row input,
+  .practice-timing-row select{
+    width:100%;
+    min-width:0;
+    font-size:15px !important;
+    padding:8px 10px !important;
+  }
+}
+
+
+/* Setup rows use explicit mobile proportions so Safari cannot reflow them. */
+.setup-primary-row{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);
+  gap:14px;
+  align-items:start;
+}
+.setup-primary-row label{min-width:0}
+.setup-primary-row input,
+.setup-primary-row select{width:100%;min-width:0}
+
+@media(max-width:680px){
+  .setup-primary-row{
+    grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);
+    gap:12px;
+  }
+  .setup-primary-row label{min-height:0}
+  .setup-primary-row input[type=date]{
+    font-size:15px !important;
+    padding-left:10px !important;
+    padding-right:6px !important;
+  }
+
+  .practice-timing-row{
+    grid-template-columns:minmax(0,1.08fr) minmax(0,.82fr) minmax(0,1.10fr) !important;
+    gap:8px !important;
+  }
+  .practice-timing-row label{
+    font-size:13px !important;
+    white-space:nowrap !important;
+  }
+  .practice-timing-row input,
+  .practice-timing-row select{
+    height:48px;
+    min-height:48px;
+    font-size:14px !important;
+    padding:8px 6px !important;
+  }
+}
+
+
+/* Final compact timing row: all three controls and labels stay on one line. */
+@media(max-width:680px){
+  .practice-timing-row{
+    grid-column:1/-1 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+    width:100% !important;
+  }
+  .practice-timing-row label{
+    min-width:0 !important;
+    width:auto !important;
+    min-height:0 !important;
+    font-size:13px !important;
+    line-height:1.15 !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+  }
+  .practice-timing-row input,
+  .practice-timing-row select{
+    box-sizing:border-box !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:48px !important;
+    min-height:48px !important;
+    font-size:14px !important;
+    padding:8px 6px !important;
+  }
+}
+
+
+/* Build 38: normalize timing control typography and vertical alignment on iPhone. */
+@media(max-width:680px){
+  .practice-timing-row{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+  .practice-timing-row label{
+    font-size:13px !important;
+    line-height:1.2 !important;
+    white-space:nowrap !important;
+  }
+  .practice-timing-row input,
+  .practice-timing-row select{
+    box-sizing:border-box !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:50px !important;
+    min-height:50px !important;
+    padding:0 9px !important;
+    font-size:16px !important;
+    font-weight:700 !important;
+    line-height:50px !important;
+    text-align:left !important;
+  }
+  .practice-timing-row input::-webkit-date-and-time-value{
+    display:flex !important;
+    align-items:center !important;
+    height:50px !important;
+    min-height:50px !important;
+    line-height:50px !important;
+    margin:0 !important;
+  }
+  .practice-timing-row input::-webkit-datetime-edit{
+    display:flex !important;
+    align-items:center !important;
+    height:50px !important;
+    line-height:50px !important;
+    padding:0 !important;
+  }
+  .practice-timing-row select{
+    padding-top:0 !important;
+    padding-bottom:0 !important;
+  }
+}
+
+
+/* Build 42: neutralize old nth-of-type positioning inside timing row. */
+@media(max-width:680px){
+  .settings-grid .practice-timing-row > label,
+  .settings-grid .practice-timing-row > label:nth-of-type(1),
+  .settings-grid .practice-timing-row > label:nth-of-type(2),
+  .settings-grid .practice-timing-row > label:nth-of-type(3){
+    grid-column:auto !important;
+    grid-row:auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    font-size:13px !important;
+    line-height:1.2 !important;
+    white-space:nowrap !important;
+  }
+  .settings-grid .practice-timing-row{
+    grid-column:1/-1 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+    width:100% !important;
+  }
+  .settings-grid .practice-timing-row > label > input,
+  .settings-grid .practice-timing-row > label > select{
+    box-sizing:border-box !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:50px !important;
+    min-height:50px !important;
+    margin:0 !important;
+    padding:0 8px !important;
+    font-size:16px !important;
+    font-weight:700 !important;
+    line-height:50px !important;
+  }
+}
+
+
+/* Build 44: tighten logo-to-slogan spacing. */
+header .logo{margin-bottom:2px !important}
+#team-name{margin-top:0 !important}
+
+
+
+
+/* Build 46: final header spacing without overlap. */
+#team-name{
+  transform:none !important;
+  position:relative !important;
+  top:-8px !important;
+  margin-top:0 !important;
+  margin-bottom:4px !important;
+}
