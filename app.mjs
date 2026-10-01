@@ -1,14 +1,14 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild13';
-import {drills} from './drills.mjs?v=rpbuild13';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild13';
-import {teams} from './teams.mjs?v=rpbuild13';
-import {settingsIssues,attendanceIssues,drillIssues,resetPractice} from './workflow.mjs?v=rpbuild13';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild14';
+import {drills} from './drills.mjs?v=rpbuild14';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild14';
+import {teams} from './teams.mjs?v=rpbuild14';
+import {settingsIssues,attendanceIssues,drillIssues,resetPractice} from './workflow.mjs?v=rpbuild14';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const blank=(teamId=teams[0].id)=>({teamId,started:false,steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
-let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null;
+let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false;
 const teamKey=id=>KEY+':team:'+id;
 try{const id=localStorage.getItem(KEY+':active-team')||teams[0].id;const saved=localStorage.getItem(teamKey(id))||localStorage.getItem(KEY);state={...blank(id),...JSON.parse(saved||'{}')};if(saved&&state.started===undefined)state.started=true;if(saved)state.started=true;if(!teams.some(t=>t.id===state.teamId))state.teamId=teams[0].id;}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
 if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
@@ -44,7 +44,7 @@ function setup(){
 function resetDrillChoices(){state.selectedDrills=[];drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;}
 function newPractice(){
  if(busy||state.clock?.running){error='Pause the clock or finish the build before starting a new practice.';render();return;}
- replacementOffer=null;state=resetPractice(state,today());drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;save();setView('setup');
+ replacementOffer=null;drillPickerOpen=false;state=resetPractice(state,today());drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;save();setView('setup');
 }
 function person(p,coach=false){
  const inList=coach?state.coachIds:state.included,adjust=state.adjustments[p.id]||{},parts=[];
@@ -72,9 +72,14 @@ function drillGuidance(){
  if(r.error)return 'Suggested drill count unavailable.';
  return 'Suggested: '+r.count+' additional '+(r.count===1?'drill':'drills');
 }
+function drillChoiceTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Practice '+(r.count===1?'Drill':'Drills'):'Choose Practice Drills';}
 function updateDrillGuidance(){
- const el=$('#drill-guidance');if(el)el.innerHTML=drillGuidance();
+ const el=$('#drill-guidance');if(el)el.textContent=drillGuidance();
+ const title=$('#drill-choice-title');if(title)title.textContent=drillChoiceTitle();
+ const count=$('#drill-choice-count');if(count)count.textContent=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length+' selected';
 }
+function focusOptions(kind){const choices=drills.filter(d=>d.kind===kind),selected=choices.filter(d=>state.selectedDrills.includes(d.id));const value=selected.length>1?'multiple':selected[0]?.id||'';return options([['','Standard'],...(selected.length>1?[['multiple','Selected library drills',true]]:[]),...choices.map(d=>[d.id,esc(d.name),state.included.length>20&&d.tee])],value);}
+function focusCards(){return '<section class="panel focus-card"><p class="drill-category">Built-in Hitting</p><h2>Machine + Front Toss Focus</h2><p class="muted">Use Standard or choose a library drill for these sessions.</p><div class="focus-fields">'+setting('Machine','<select id="machine-focus">'+focusOptions('machine')+'</select>')+setting('Front Toss','<select id="front-focus">'+focusOptions('front')+'</select>')+'</div></section><section class="panel focus-card"><p class="drill-category">Drill Stations</p><h2 id="drill-choice-title">'+drillChoiceTitle()+'</h2><p id="drill-guidance" class="drill-guidance-simple" aria-live="polite">'+drillGuidance()+'</p><p id="drill-choice-count" class="status">'+extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length+' selected</p><button class="primary choose-drills-button" id="open-drill-picker">Choose Drills</button></section>';}
 function calculateDrillCount(){
  if(view!=='drills'||busy)return;
  const key=recommendationKey();
@@ -83,7 +88,7 @@ function calculateDrillCount(){
  if(state.included.length<3||!state.coachIds.length){recommendation=null;updateDrillGuidance();return;}
  recommendation={key,pending:true};updateDrillGuidance();
  try{
-  const w=new Worker('./worker.mjs?v=rpbuild13',{type:'module'});recommendationWorker=w;
+  const w=new Worker('./worker.mjs?v=rpbuild14',{type:'module'});recommendationWorker=w;
   w.onmessage=e=>{
    if(recommendation?.key===key){
     recommendation=e.data.error?{key,error:e.data.error}:{key,...e.data.recommendation};
@@ -110,7 +115,7 @@ function bindDrillCards(){
   if(!dirty()){render();return;}
   const id=el.dataset.selectDrill;
   state.selectedDrills=state.selectedDrills.includes(id)?state.selectedDrills.filter(x=>x!==id):[...state.selectedDrills,id];
-  save();refreshDrills();calculateDrillCount();
+  save();render();
  });
 }
 function refreshDrills(){
@@ -120,7 +125,7 @@ function refreshDrills(){
 function drillPage(){
  const categories=['All Drills',...new Set(drills.map(d=>d.category))];
  if(!categories.includes(drillCategory))drillCategory='All Drills';
- return '<h1>Choose Drills</h1><section class="drill-library"><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills…" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><p id="drill-guidance" class="drill-guidance-simple" aria-live="polite">'+drillGuidance()+'</p><div class="actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><div id="drill-results">'+drillResults()+'</div></section>'+stepActions('review','Next: Review');
+ return '<h1>Choose Drills</h1>'+focusCards()+(drillPickerOpen?'<section class="drill-library" id="drill-picker"><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills…" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><div class="actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><div id="drill-results">'+drillResults()+'</div></section>':'')+stepActions('review','Next: Review');
 }
 function stationsFor(block,filter){
  return block.stations.filter(s=>!filter||[...s.players,s.pitcher,s.catcher,s.coach].includes(filter)).map(s=>'<div class="station"><strong>'+esc(s.drill)+' <span class="muted">· '+esc(s.resource)+'</span></strong>'+s.players.map(id=>esc(name(id))).join(' · ')+
@@ -166,7 +171,9 @@ function bind(){
  bindDrillCards();
  if($('#drill-search'))$('#drill-search').oninput=e=>{drillSearch=e.target.value;refreshDrills();};
  document.querySelectorAll('[data-category]').forEach(el=>el.onclick=()=>{drillCategory=el.dataset.category;refreshDrills();});
+ for(const [id,kind] of [['machine-focus','machine'],['front-focus','front']]){const el=$('#'+id);if(el)el.onchange=()=>{const value=el.value;if(!dirty()){render();return;}state.selectedDrills=state.selectedDrills.filter(x=>!drills.some(d=>d.id===x&&d.kind===kind));if(value)state.selectedDrills.push(value);save();render();};}
  const click=(id,fn)=>{if($('#'+id))$('#'+id).onclick=fn;};
+ click('open-drill-picker',()=>{drillPickerOpen=true;render();$('#drill-picker').scrollIntoView({behavior:'smooth',block:'start'});$('#drill-search').focus({preventScroll:true});});
  click('new-practice',newPractice);
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
@@ -202,7 +209,7 @@ function build(){
  const problems=issues();if(problems.length){error=problems.join(' ');view='review';render();return;}
  replacementOffer=null;state.allowReplacements=false;recommendationWorker?.terminate();busy=true;error='';view='review';render();
  const input=practiceInput();
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild13',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.replacementOffer){replacementOffer=e.data.replacementOffer;view='review';}else if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage({mode:'build',input});}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild14',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.replacementOffer){replacementOffer=e.data.replacementOffer;view='review';}else if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage({mode:'build',input});}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
