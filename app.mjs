@@ -1,6 +1,6 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild2';
-import {drills} from './drills.mjs?v=rpbuild2';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild2';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild3';
+import {drills} from './drills.mjs?v=rpbuild3';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild3';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -51,7 +51,7 @@ function attendance(){
 }
 function drillPage(){
  const noTees=state.included.length>20;
- const available=drills.filter(d=>d.kind==='drill'&&(!noTees||!d.tee));
+ const available=drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(!noTees||!d.tee));
  return heading('Choose Drills','Select drills whose equipment is available. Front Toss and Machine are mandatory.')+
  '<section class="panel"><h2>Required work</h2><p>Warm Up · '+(!noTees?'Tee Work · ':'')+'Machine · Front Toss</p><label class="check"><input id="allowReplacements" type="checkbox" '+(state.allowReplacements?'checked':'')+'>Allow a second Front Toss session to replace Live when needed</label><p class="muted">Live is the priority. The plan will identify replacements and any pitchers or catchers who could not get a Live role, so you can review the tradeoff.</p>'+
  (noTees?'<p class="notice">More than 20 hitters: tee drills are unavailable for this hitting practice.</p>':'')+'</section>'+
@@ -71,7 +71,7 @@ function planPage(){
  const p=state.plan,filter=$('#assignment-filter')?.value||'';
  return heading('Practice Plan',state.date+' · '+p.facility+' · '+timeLabel(clockMinutes(p.start))+'–'+timeLabel(clockMinutes(p.start)+p.durationMinutes))+
  '<section class="panel"><div class="stat-line"><strong>'+p.players.length+' hitters</strong><strong>'+p.blocks.length+' blocks</strong><strong>'+p.blockMinutes+' minutes per block</strong></div>'+
- (p.warnings.length?'<div class="notice"><strong>Review this plan</strong><ul>'+p.warnings.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul>'+(p.replacements.length?'<p><strong>Live replaced by Front Toss:</strong> '+p.replacements.map(id=>esc(name(id))).join(', ')+'</p>':'')+'</div>':'<p class="ready">Every hitter has Machine, Front Toss and Live. All included pitchers/catchers have at least one Live role.</p>')+
+ (p.warnings.length?'<div class="notice"><strong>Review this plan</strong><ul>'+p.warnings.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul>'+(p.replacements.length?'<p><strong>Live replaced by Front Toss:</strong> '+p.replacements.map(id=>esc(name(id))).join(', ')+'</p>':'')+'</div>':'<p class="ready">Every hitter has Machine, Front Toss and Live. All eligible pitchers/catchers have at least one Live role.</p>')+
  (p.requiresAcceptance&&!p.accepted?'<label class="check" style="margin-top:18px"><input id="accept-plan" type="checkbox">Continue with the listed pitching/catching shortfalls</label>':'')+
  '<div class="actions"><button data-view="attendance">Adjust attendance</button><button data-view="drills">Change drills</button><button id="rebuild">Rebuild</button><button class="primary" id="run-local" '+(p.requiresAcceptance&&!p.accepted?'disabled':'')+'>Run on this device</button></div>'+
  '<p class="status">Running here does not publish assignments to players or other coaches.</p></section>'+
@@ -102,7 +102,7 @@ function bind(){
  click('clear-players',()=>{if(dirty()){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty()){state.coachIds=coaches.map(c=>c.id);save();render();}});
  click('clear-coaches',()=>{if(dirty()){state.coachIds=[];save();render();}});
- click('all-drills',()=>{if(dirty()){state.selectedDrills=drills.filter(d=>d.kind==='drill'&&(state.included.length<=20||!d.tee)).map(d=>d.id);save();render();}});
+ click('all-drills',()=>{if(dirty()){state.selectedDrills=drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(state.included.length<=20||!d.tee)).map(d=>d.id);save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{save();error='Draft saved on this device.';render();});
  click('build',build);click('rebuild',build);click('add-guest',guest);
@@ -129,7 +129,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input={players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild2',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild3',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}

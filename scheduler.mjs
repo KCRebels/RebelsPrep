@@ -17,7 +17,7 @@ function prepare(input){
  if(people.some(p=>p.from>=p.until))throw Error('An included player has no complete available block. Adjust arrival/departure or attendance.');
  const coachIds=new Set(input.coaches.map(c=>c.id));if(coachIds.size!==input.coaches.length)throw Error('Each coach must have a unique ID.');
  const tee=people.length<=20;
- const extras=input.drills.filter(d=>d.kind==='drill'&&(!d.tee||tee));
+ const extras=input.drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&(!d.tee||tee));
  return {people,step,start,blocks,tee,extras,coaches:input.coaches,duration};
 }
 function attempt(input,prepared,pattern,seed){
@@ -200,6 +200,7 @@ export function validatePractice(plan){
    if(s.kind==='opening'){
     if(s.drill==='Tee Work'&&!tee)errors.push('Tee Work is removed above 20 hitters');
     if(s.drill==='Tee Work')tees+=Math.min(6,s.players.length);
+    if(s.drill==='Tee Work')for(const id of s.players)mem.get(id)?.seen.add('Basic Tee Work');
     for(const id of s.players){const p=people.find(p=>p.id===id);if(b!==p.from+(s.drill==='Tee Work'?1:0))errors.push('Opening order invalid');}
    }else if(s.kind==='warm'){
     warmPairs++;if(s.players.length!==1||(!s.catcher&&!s.coach))errors.push('Warm-up needs a human catcher or coach');
