@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function builder() { return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email.lower() in ['recruiting@rebelssoftball.org','chrisolsen@finditds.com','halley.rindom@gmail.com','dmayhugh425511@gmail.com']; }
+  function builder() { return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email in ['Recruiting@rebelssoftball.org','recruiting@rebelssoftball.org','chrisolsen@finditds.com','halley.rindom@gmail.com','dmayhugh425511@gmail.com']; }
   function validSession() { return request.resource.data.sessionToken is string && request.resource.data.sessionToken.matches('^[a-f0-9]{64}$') && exists(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)) && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.active == true && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.clockToken == request.resource.data.clockToken && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.date == request.resource.data.practiceDate && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.start == request.resource.data.practiceTime; }
   match /rpPortals/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpClocks/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
