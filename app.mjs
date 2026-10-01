@@ -1,3 +1,6 @@
+import * as shared from './shared.mjs?v=rpbuild18';
+import {clockState} from './portal-model.mjs?v=rpbuild18';
+import {openPortal} from './portal.mjs?v=rpbuild18';
 import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild16';
 import {drills} from './drills.mjs?v=rpbuild16';
 import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild16';
@@ -9,6 +12,7 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const blank=(teamId=teams[0].id)=>({teamId,started:false,steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
 let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false;
+let sharedUser=null,sharedDirectory=null,sharedData=null,sharedStop=null,sharedBusy=false,sharedMessage='';
 const teamKey=id=>KEY+':team:'+id;
 try{const id=localStorage.getItem(KEY+':active-team')||teams[0].id;const saved=localStorage.getItem(teamKey(id))||localStorage.getItem(KEY);state={...blank(id),...JSON.parse(saved||'{}')};if(saved&&state.started===undefined)state.started=true;if(saved)state.started=true;if(!teams.some(t=>t.id===state.teamId))state.teamId=teams[0].id;}catch{state=blank();error='Saved preview could not be read. Your original saved value has not been overwritten.';}
 if(state.plan&&validatePractice(state.plan).length){state.plan=null;state.clock=null;error='The saved practice needs to be rebuilt with the updated station checks. Attendance and settings were kept.';}
@@ -18,7 +22,7 @@ const expandedDrills=new Set();
 const allPlayers=()=>[...team().players,...state.guests];
 const name=id=>allPlayers().find(p=>p.id===id)?.name||coaches.find(c=>c.id===id)?.name||id;
 function save(){try{localStorage.setItem(teamKey(state.teamId),JSON.stringify(state));localStorage.setItem(KEY+':active-team',state.teamId);}catch{error='This device could not save the draft. Keep this page open or free storage before closing.';}}
-function dirty(scope='drills'){if(state.clock?.running){error='Pause or finish the local clock before changing this practice.';return false;}if(busy){error='Wait for this build to finish before changing the practice.';return false;}replacementOffer=null;state.started=true;state.plan=null;state.clock=null;const invalid=scope==='setup'?['setup','attendance','drills']:scope==='attendance'?['attendance','drills']:['drills'];for(const step of invalid)delete state.steps[step];save();return true;}
+function dirty(scope='drills'){if(sharedData&&!clockState(sharedData.clock)?.done){error='Finish the active shared practice before changing this draft.';return false;}if(state.clock?.running){error='Pause or finish the local clock before changing this practice.';return false;}if(busy){error='Wait for this build to finish before changing the practice.';return false;}replacementOffer=null;state.started=true;state.plan=null;state.clock=null;const invalid=scope==='setup'?['setup','attendance','drills']:scope==='attendance'?['attendance','drills']:['drills'];for(const step of invalid)delete state.steps[step];save();return true;}
 function flushSetup(){if(view!=='setup')return true;const values={};for(const id of ['date','start','facility','durationMinutes','blockMinutes']){const el=$('#'+id);if(el)values[id]=['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;}if(Object.entries(values).some(([id,value])=>state[id]!==value)){if(!dirty('setup'))return false;Object.assign(state,values);save();}return true;}
 function setView(v){if(!flushSetup()){render();return;}view=v;error='';render();window.scrollTo(0,0);}
 function issues(){return [...settingsIssues(state),...attendanceIssues(state,allPlayers(),coaches),...drillIssues(state,drills)];}
@@ -45,6 +49,7 @@ function setup(){
 }
 function resetDrillChoices(){state.selectedDrills=[];drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;}
 function newPractice(){
+ if(sharedData&&!clockState(sharedData.clock)?.done){error='Finish the active shared practice before starting a new practice.';render();return;}
  if(busy||state.clock?.running){error='Pause the clock or finish the build before starting a new practice.';render();return;}
  replacementOffer=null;drillPickerOpen=false;state=resetPractice(state,today());drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;save();setView('setup');
 }
@@ -153,8 +158,8 @@ function planPage(){
  '<section class="panel"><div class="stat-line"><strong>'+p.players.length+' hitters</strong><strong>'+p.blocks.length+' blocks</strong><strong>'+p.blockMinutes+' minutes per block</strong></div>'+
  (p.warnings.length?'<div class="notice"><strong>Review this plan</strong><ul>'+p.warnings.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul>'+(p.replacements.length?'<p><strong>Live replaced by Front Toss:</strong> '+p.replacements.map(id=>esc(name(id))).join(', ')+'</p>':'')+'</div>':'<p class="ready">Every hitter has Machine, Front Toss and Live. All eligible pitchers/catchers have at least one Live role.</p>')+
  (p.requiresAcceptance&&!p.accepted?'<label class="check" style="margin-top:18px"><input id="accept-plan" type="checkbox">Continue with the listed pitching/catching shortfalls</label>':'')+
- '<div class="actions"><button data-view="review">Review / Rebuild</button><button class="primary" id="run-local" '+(p.requiresAcceptance&&!p.accepted?'disabled':'')+'>Run on this device</button></div>'+
- '<p class="status">Running here does not publish assignments to players or other coaches.</p></section>'+
+ '<div class="actions"><button data-view="review">Review / Rebuild</button>'+(shared.configured?'':'<button class="primary" id="run-local" '+(p.requiresAcceptance&&!p.accepted?'disabled':'')+'>Run on this device</button>')+'</div>'+
+ '<p class="status">'+(shared.configured?'Activate Practice to publish assignments.':'Running here does not publish assignments to players or other coaches.')+'</p></section>'+sharedPanel()+
  (p.unusedSelectedDrills?.length?'<p class="notice">Selected drills that did not fit this plan: '+p.unusedSelectedDrills.map(esc).join(' · ')+'</p>':'')+(state.clock?clockHTML():'')+
  '<section class="panel">'+setting('View assignments','<select id="assignment-filter">'+options([['','All stations'],...p.players.map(x=>[x.id,x.name]),...p.coaches.map(x=>[x.id,x.name+' (coach)'])],filter)+'</select>')+'</section>'+
  '<div id="blocks">'+blocksHTML(filter)+'</div>';
@@ -166,9 +171,10 @@ function clockHTML(){
 }
 function historyPage(){return heading('Practice History','Completed practice previews saved on this device.')+'<section class="panel">'+(state.history.length?state.history.slice().reverse().map(h=>'<div class="history"><strong>'+esc(h.date)+' · '+h.players+' hitters</strong><p class="status">'+h.durationMinutes+' minutes · '+h.blockMinutes+' minute blocks · '+h.replacements+' Live replacements</p></div>').join(''):'<p class="empty">No completed practices.</p>')+'</section>';}
 function render(){
+ const preview=document.querySelector('.preview');if(shared.configured)preview.innerHTML='<strong>RebelsPrep</strong> · Build locally, then Activate Practice to publish assignments. Shared RSVPs are not connected yet.';
  const picker=view==='drills'&&drillPickerOpen;document.querySelector('main>header').hidden=picker;document.querySelector('.preview').hidden=picker;document.querySelector('main>footer').hidden=picker;
  $('#team-name').textContent=view==='home'?'Practice Planner':team().name;
- $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
+ $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]())+(view==='home'?sharedPanel():'' );
  bind();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
 function bind(){
@@ -196,8 +202,10 @@ function bind(){
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{if(!flushSetup()){render();return;}save();error='Draft saved on this device.';render();});
  click('use-replacements',useReplacements);click('cancel-replacements',()=>{replacementOffer=null;render();});click('build',build);click('rebuild',build);click('add-guest',guest);
- if($('#accept-plan'))$('#accept-plan').onchange=e=>{state.plan.accepted=e.target.checked;save();$('#run-local').disabled=!e.target.checked;};
+ if($('#accept-plan'))$('#accept-plan').onchange=e=>{state.plan.accepted=e.target.checked;save();render();};
  if($('#assignment-filter'))$('#assignment-filter').onchange=e=>{$('#blocks').innerHTML=blocksHTML(e.target.value);};
+ click('coach-login',loginDialog);click('coach-logout',()=>sharedAction(()=>shared.signOut()));click('activate-shared',activateShared);
+ document.querySelectorAll('[data-shared-control]').forEach(el=>el.onclick=()=>sharedAction(()=>shared.control(sharedDirectory.clockToken,el.dataset.sharedControl)));
  click('run-local',startClock);click('pause',pauseClock);click('skip',skipClock);click('done',finish);
  if($('#sound'))$('#sound').onchange=e=>{sound=e.target.checked;if(sound)speak('Voice announcements on.');};
 }
@@ -227,6 +235,7 @@ function build(){
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
 function startClock(){
+ if(sharedData&&!clockState(sharedData.clock)?.done){error='Use Start Shared Practice for the active published practice.';render();return;}
  if(!state.plan||state.plan.requiresAcceptance&&!state.plan.accepted)return;
  if(!state.clock||state.clock.done){state.clock={index:0,phase:'work',running:true,done:false,end:Date.now()+(state.plan.blockMinutes-1)*60000,remaining:(state.plan.blockMinutes-1)*60000};speak('Practice is starting. Begin Warm Up.');}
  else if(!state.clock.running){state.clock.running=true;state.clock.end=Date.now()+state.clock.remaining;}
@@ -249,4 +258,18 @@ function tick(){
 }
 window.addEventListener('pagehide',save);
 if(state.clock&&!state.clock.done)timer=setInterval(tick,500);
-render();
+const portalId=new URLSearchParams(location.hash.slice(1)).get('portal');
+if(portalId)openPortal(portalId);else{render();initShared();}
+function sharedPanel(){
+ if(!shared.configured)return '<section class="panel"><h2>Shared Practice</h2><p>Player and coach portals need the separate RebelsPrep backend connected.</p><button disabled>Activate Practice</button></section>';
+ const c=clockState(sharedData?.clock),active=c&&!c.done,links=sharedDirectory?.portals||{};
+ return '<section class="panel"><h2>Shared Practice</h2>'+(sharedMessage?'<p class="notice" role="status">'+esc(sharedMessage)+'</p>':'')+(!shared.allowed(sharedUser)?'<p>Sign in with your coach email to activate a practice.</p><button id="coach-login">Coach Sign In</button>':'<p>Signed in: '+esc(sharedUser.email)+'</p><div class="actions"><button id="coach-logout">Sign Out</button>'+(state.plan&&!active?'<button class="primary" id="activate-shared" '+(sharedBusy||state.clock?.running||state.plan.requiresAcceptance&&!state.plan.accepted?'disabled':'')+'>Activate Practice</button>':'')+'</div>'+(active?'<div class="shared-clock" data-shared-key="'+[c.index,c.phase,c.running,c.done,c.started].join('-')+'"><h3>Shared Practice '+(c.started?'· Block '+(c.index+1)+' of '+c.blocks:'· Ready to start')+'</h3><strong id="shared-time"></strong><div class="actions">'+[['start',c.started?'Resume':'Start Shared Practice'],['pause','Pause'],['skip','Skip'],['done','Done']].map(([a,label])=>'<button data-shared-control="'+a+'" '+(sharedBusy||(a==='start'&&c.running)||(a==='pause'&&!c.running)||(a==='skip'&&c.phase!=='work')?'disabled':'')+'>'+label+'</button>').join('')+'</div></div>':'')+(Object.keys(links).length?'<h3>Player &amp; Coach Portals</h3><div class="portal-links">'+Object.values(links).map(p=>'<div><span>'+esc(p.name)+'<small>'+esc(p.role)+'</small></span><a class="portal-open" target="_blank" rel="noopener noreferrer" href="'+esc(new URL('#portal='+p.token,new URL(location.pathname,location.origin)).href)+'">Open Portal</a></div>').join('')+'</div>':''))+'</section>';
+}
+async function sharedAction(fn){if(sharedBusy)return;sharedBusy=true;sharedMessage='';render();try{await fn();}catch(e){sharedMessage=e.message;}finally{sharedBusy=false;render();}}
+function loginDialog(){
+ $('#dialog').innerHTML='<form id="login-form"><h2>Coach Sign In</h2>'+setting('Coach email','<input type="email" name="email" required autocomplete="email">')+'<p>A sign-in link will be sent to your email.</p><p id="login-error" role="status"></p><div class="actions"><button type="button" id="cancel-login">Cancel</button><button class="primary">Send Sign-In Link</button></div></form>';
+ $('#dialog').showModal();$('#cancel-login').onclick=()=>$('#dialog').close();$('#login-form').onsubmit=async e=>{e.preventDefault();const submit=e.target.querySelector('button.primary');submit.disabled=true;try{await shared.sendLogin(new FormData(e.target).get('email').trim(),location.href);$('#login-error').textContent='Check your email and open the sign-in link.';}catch(err){$('#login-error').textContent=err.message;}finally{submit.disabled=false;}};
+}
+async function connectDirectory(){sharedStop?.();sharedDirectory=await shared.registry(state.teamId);sharedData=null;if(sharedDirectory.clockToken){sharedStop=await shared.watchClock(sharedDirectory.clockToken,(value,meta)=>{sharedData=value;sharedMessage=meta.fromCache?'Reconnecting. Shared controls may not reflect the latest practice.':'';if(value&&!clockState(value.clock)?.done&&sharedDirectory.plan){state.plan=sharedDirectory.plan;state.date=sharedDirectory.date;save();}render();},e=>{sharedMessage=e.message;render();});}render();}
+async function activateShared(){await sharedAction(async()=>{const people=[...allPlayers().map(p=>({...p,role:'player'})),...coaches.map(p=>({...p,role:'coach'}))];sharedDirectory=await shared.activate(state.plan,state.teamId,state.date,people,location.href);await connectDirectory();});}
+async function initShared(){if(!shared.configured)return;try{if(await shared.isLoginLink(location.href)){const email=localStorage.getItem('RebelsPrep:login-email')||window.prompt('Enter the coach email that received this sign-in link.');if(email){await shared.completeLogin(email.trim(),location.href);history.replaceState(null,'',location.pathname);}}await shared.observeAuth(async user=>{sharedUser=user;sharedDirectory=null;sharedData=null;sharedStop?.();if(shared.allowed(user)){try{await connectDirectory();}catch(e){sharedMessage=e.message;}}else if(user)sharedMessage='This email is not enabled for building practices.';render();});setInterval(()=>{const c=clockState(sharedData?.clock),el=$('#shared-time');if(el&&c){if(c.done||document.querySelector('[data-shared-key]')?.getAttribute('data-shared-key')!==[c.index,c.phase,c.running,c.done,c.started].join('-')){render();return;}const secs=Math.ceil(c.remaining/1000);el.textContent=({work:'Work',rotate:'Rotate',wrap:'Wrap up'}[c.phase])+' · '+String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');}},500);}catch(e){sharedMessage=e.message;render();}}

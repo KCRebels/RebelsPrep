@@ -1,0 +1,14 @@
+{
+  "name": "rebelsprep",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-rebelsprep 'node firestore.test.mjs'"
+  },
+  "devDependencies": {
+    "firebase": "12.19.0",
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase-tools": "14.27.0"
+  }
+}
