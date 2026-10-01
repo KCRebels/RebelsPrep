@@ -1,5 +1,6 @@
 export function settingsIssues(state){
  const issues=[];
+ if(state.practiceType!=='Hitting')issues.push('Choose a practice type. Select Hitting to continue.');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(state.date)||!Number.isFinite(Date.parse(state.date)))issues.push('Choose a practice date.');
  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(state.start))issues.push('Choose a valid start time.');
  if(!Number.isFinite(Number(state.durationMinutes))||Number(state.durationMinutes)<60||Number(state.durationMinutes)>360)issues.push('Choose a duration between 60 and 360 minutes.');
@@ -20,6 +21,6 @@ export function drillIssues(state,drills){
  for(const id of state.selectedDrills){const d=drills.find(d=>d.id===id);if(!d)issues.push('Remove an unknown drill.');}
  return issues;
 }
-export function resetPractice(state,date){return {...state,date,started:true,included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,steps:{}};}
+export function resetPractice(state,date){return {...state,date,started:true,practiceType:'',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,steps:{}};}
 
 export function teeRequirement(selectedIds,drills){return [...new Set(selectedIds)].reduce((n,id)=>n+(Number(drills.find(d=>d.id===id)?.tees)||0),0);}

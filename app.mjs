@@ -1,17 +1,17 @@
 import {selectionKey,combinedTeam} from './team-selection.mjs?v=rpbuild30';
-import * as shared from './shared.mjs?v=rpbuild30';
+import * as shared from './shared.mjs?v=rpbuild32';
 import {clockState} from './portal-model.mjs?v=rpbuild18';
-import {openPortal} from './portal.mjs?v=rpbuild30';
+import {openPortal} from './portal.mjs?v=rpbuild32';
 import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild16';
 import {drills} from './drills.mjs?v=rpbuild16';
 import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild16';
-import {teams} from './teams.mjs?v=rpbuild28';
-import {settingsIssues,attendanceIssues,drillIssues,resetPractice,teeRequirement} from './workflow.mjs?v=rpbuild16';
+import {teams} from './teams.mjs?v=rpbuild32';
+import {settingsIssues,attendanceIssues,drillIssues,resetPractice,teeRequirement} from './workflow.mjs?v=rpbuild32';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const blank=(teamId=teams[0].id)=>({teamId,teamIds:[teamId],started:false,steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
+const blank=(teamId=teams[0].id)=>({teamId,teamIds:[teamId],started:false,practiceType:'',steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
 let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false;
 let historyTeamId=null,homeTeamIds=[],directoryVersion=0;
 let sharedUser=null,sharedDirectory=null,sharedData=null,sharedStop=null,sharedBusy=false,sharedMessage='';
@@ -66,7 +66,7 @@ function chooseSelectedTeams(){
  state.started=true;save();setView('setup');
 }
 function stepActions(next,label){return '<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button><button class="primary" data-next="'+next+'">'+label+'</button></div>';}
-function nextStep(next){if(!flushSetup()){render();return;}const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();return;}state.steps[view]=true;state.started=true;save();setView(next);}
+function nextStep(next){if(!flushSetup()){render();return;}const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();window.scrollTo(0,0);return;}state.steps[view]=true;state.started=true;save();setView(next);}
 function review(){const problems=issues(),chosen=drills.filter(d=>state.selectedDrills.includes(d.id));return heading('Review Practice',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><p>'+esc(state.date)+' · '+esc(state.facility)+' · '+timeLabel(clockMinutes(state.start))+'–'+timeLabel(clockMinutes(state.start)+Number(state.durationMinutes))+'</p><p>'+state.durationMinutes+' minutes · '+state.blockMinutes+' minute blocks</p><button data-view="setup">Edit Setup</button></section><section class="panel"><h2>Attendance</h2><p>'+state.included.length+' hitters · '+state.coachIds.length+' coaches</p><p class="muted">'+coaches.filter(c=>state.coachIds.includes(c.id)).map(c=>esc(c.name)).join(' · ')+'</p><button data-view="attendance">Edit Attendance</button></section><section class="panel"><h2>Drills</h2><p>'+chosen.length+' selected</p>'+(chosen.length?'<ul class="review-list">'+chosen.map(d=>'<li>'+esc(d.name)+'</li>').join(''):'<p class="muted">No additional drills selected.</p>')+'<p class="muted">Required: Warm Up · '+'Machine · Front Toss. '+'Live is the priority.'+'</p>'+equipmentWarning()+'<button data-view="drills">Edit Drills</button></section>'+(problems.length?'<div class="notice"><strong>Finish these choices</strong><ul>'+problems.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+replacementOfferHTML()+'<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button>'+(state.plan?'<button data-view="plan">View Practice</button>':'')+'<button id="build" class="primary" '+(busy||problems.length?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';}
 function options(vals,current){return vals.map(([v,label,disabled])=>'<option value="'+v+'" '+(String(v)===String(current)?'selected':'')+' '+(disabled?'disabled':'')+'>'+label+'</option>').join('');}
 function heading(title,sub){return '<h1>'+title+'</h1><p class="muted">'+sub+'</p>';}
@@ -76,7 +76,7 @@ function setup(){
  return heading('Setup',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><div class="grid settings-grid">'+
  setting('Date','<input id="date" type="date" value="'+state.date+'">')+
  setting('Facility','<select id="facility">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select>')+
- setting('Practice type','<select aria-label="Practice type"><option>Hitting</option><option disabled>Fielding — coming later</option><option disabled>Full Practice — coming later</option></select>')+
+ '<div class="practice-type-field"><span>Practice type</span><div class="practice-type-buttons" role="group" aria-label="Practice type"><button type="button" data-practice-type="Hitting" aria-pressed="'+(state.practiceType==='Hitting')+'">Hitting</button><button type="button" disabled aria-disabled="true">Fielding</button><button type="button" disabled aria-disabled="true">Full Practice</button></div></div>'+
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
  setting('Duration (minutes)','<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'">')+
  setting('Block length','<select id="blockMinutes">'+options([[10,'10 minutes'],[12,'12 minutes'],[15,'15 minutes']],state.blockMinutes)+'</select>')+
@@ -235,11 +235,12 @@ function historyPage(){
 function render(){
  const preview=document.querySelector('.preview');preview.hidden=true;
  const picker=view==='drills'&&drillPickerOpen;document.querySelector('main>header').hidden=picker;document.querySelector('.preview').hidden=true;document.querySelector('main>footer').hidden=picker;
- $('#team-name').textContent='Practice With Purpose.';$('#team-name').hidden=false;
+ $('#team-name').textContent='Practice With Purpose';$('#team-name').hidden=false;
  $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
  bind();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
 function bind(){
+ document.querySelectorAll('[data-practice-type]').forEach(el=>el.onclick=()=>{if(!dirty('setup')){render();return;}state.practiceType=el.dataset.practiceType;error='';save();render();});
  document.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));
  document.querySelectorAll('[data-next]').forEach(el=>el.onclick=()=>nextStep(el.dataset.next));
  document.querySelectorAll('[data-team-check]').forEach(el=>el.onchange=()=>{homeTeamIds=el.checked?[...new Set([...homeTeamIds,el.dataset.teamCheck])]:homeTeamIds.filter(id=>id!==el.dataset.teamCheck);render();});
@@ -289,14 +290,14 @@ function guest(){
  $('#dialog').showModal();$('#cancel').onclick=()=>$('#dialog').close();$('#guest-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),n=String(f.get('name')).trim();if(!n)return;if(!dirty('attendance')){$('#dialog').close();render();return;}const id='rp-guest-'+crypto.randomUUID();state.guests.push({id,name:n,pitcher:f.has('pitcher'),catcher:f.has('catcher'),guest:true});state.included.push(id);save();$('#dialog').close();render();};
 }
 function replacementOfferHTML(){return replacementOffer?'<section class="panel replacement-choice"><h2>Live needs an adjustment</h2><p>This plan gives '+replacementOffer.replacements.length+' hitters a second Front Toss session instead of Live.</p><div class="actions"><button class="primary" id="use-replacements">Use Front Toss &amp; Build</button><button id="cancel-replacements">Keep Editing</button></div></section>':'';}
-function useReplacements(){if(!replacementOffer)return;state.plan=replacementOffer;state.allowReplacements=true;state.clock=null;replacementOffer=null;save();setView('plan');}
+function useReplacements(){if(!replacementOffer)return;state.plan={...replacementOffer,practiceType:state.practiceType};state.allowReplacements=true;state.clock=null;replacementOffer=null;save();setView('plan');}
 function build(){
  if(sharedData&&!clockState(sharedData.clock)?.done){error='Finish the active shared practice before rebuilding.';render();return;}
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  const problems=issues();if(problems.length){error=problems.join(' ');view='review';render();return;}
  replacementOffer=null;state.allowReplacements=false;recommendationWorker?.terminate();busy=true;error='';view='review';render();
  const input=practiceInput();
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild16',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.replacementOffer){replacementOffer=e.data.replacementOffer;view='review';}else if(e.data.error){error=e.data.error;view='review';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage({mode:'build',input});}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild16',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.replacementOffer){replacementOffer=e.data.replacementOffer;view='review';}else if(e.data.error){error=e.data.error;view='review';}else{state.plan={...e.data.plan,practiceType:state.practiceType};state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage({mode:'build',input});}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}
@@ -356,12 +357,12 @@ async function connectDirectory(){
    if(version!==directoryVersion)return;
    sharedData=value;sharedMessage=meta.fromCache?'Reconnecting. Shared controls may not reflect the latest practice.':'';
    if(value&&!clockState(value.clock)?.done&&directory.plan){
-    state.plan=directory.plan;state.date=directory.date;state.teamIds=directory.teamIds||state.teamIds;state.teamId=directory.practiceKey||state.teamId;state.started=true;save();
+    state.plan=directory.plan;state.practiceType=directory.plan.practiceType||state.practiceType;state.date=directory.date;state.teamIds=directory.teamIds||state.teamIds;state.teamId=directory.practiceKey||state.teamId;state.started=true;save();
    }
    if(value&&!meta.fromCache)recordSharedCompletion(value);
    render();
   },e=>{if(version===directoryVersion){sharedMessage=e.message;render();}});
  }render();
 }
-async function activateShared(){await sharedAction(async()=>{const people=[...allPlayers().map(p=>({...p,role:'player'})),...coaches.map(p=>({...p,role:'coach'}))];sharedDirectory=await shared.activate(state.plan,state.teamId,state.date,people,location.href,state.teamIds);await connectDirectory();});}
+async function activateShared(){if(state.practiceType!=='Hitting'){setView('setup');error='Choose a practice type. Select Hitting to continue.';render();return;}await sharedAction(async()=>{const people=[...allPlayers().map(p=>({...p,role:'player'})),...coaches.map(p=>({...p,role:'coach'}))];sharedDirectory=await shared.activate(state.plan,state.teamId,state.date,people,location.href,state.teamIds);await connectDirectory();});}
 async function initShared(){if(!shared.configured)return;try{if(await shared.isLoginLink(location.href)){const email=localStorage.getItem('RebelsPrep:login-email')||window.prompt('Enter the coach email that received this sign-in link.');if(email){await shared.completeLogin(email.trim(),location.href);history.replaceState(null,'',location.pathname);}}await shared.observeAuth(async user=>{sharedUser=user;sharedDirectory=null;sharedData=null;sharedStop?.();if(shared.allowed(user)){try{await connectDirectory();}catch(e){sharedMessage=e.message;}}else if(user)sharedMessage='This email is not enabled for building practices.';render();});setInterval(()=>{const c=clockState(sharedData?.clock),el=$('#shared-time');if(el&&c){if(c.done||document.querySelector('[data-shared-key]')?.getAttribute('data-shared-key')!==[c.index,c.phase,c.running,c.done,c.started].join('-')){render();return;}const secs=Math.ceil(c.remaining/1000);el.textContent=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');}},500);}catch(e){sharedMessage=e.message;render();}}

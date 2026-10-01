@@ -92,3 +92,12 @@ main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 @media(max-width:360px){.team-card.selectable-team{gap:6px;padding:9px 10px}.team-choice{gap:7px}.team-choice strong{font-size:14px}.team-card.selectable-team .team-card-actions button{padding:7px}}
 
 .team-choice{flex-direction:row}
+
+#team-name{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0 18px;font-size:19px;font-weight:600;font-style:italic;letter-spacing:.06em;color:#a72535}
+#team-name::before,#team-name::after{content:"";width:26px;height:2px;background:#a72535;opacity:.6}
+.practice-type-field{grid-column:1/-1;min-width:0;font-weight:700}
+.practice-type-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.practice-type-buttons button{min-width:0;padding:12px 8px;min-height:44px;font-size:15px;border:2px solid #adb8b3}
+.practice-type-buttons button[aria-pressed=true]{background:#a72535;border-color:#a72535;color:white}
+.practice-type-buttons button:disabled{background:#e7e9e8;border-color:#d3d8d5;color:#919893;opacity:1;cursor:not-allowed}
+@media(max-width:680px){#team-name{font-size:16px;gap:10px}.practice-type-buttons button{font-size:14px}}

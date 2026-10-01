@@ -12,11 +12,12 @@ try{
  const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function control')).replace('export async function','async function');
  const activate=new Function('services','allowed','token','newClock','clockState','portalAssignments','portalURL',body+'return activate;')(services,()=>true,token,newClock,clockState,portalAssignments,portalURL);
  const p={id:'p1',name:'Grace Samuels',memberTeamIds:['multi-a','multi-b']},p2={id:'p2',name:'Stella Utter',memberTeamIds:['multi-b']},coach={id:'c1',name:'Coach One'};
- const plan={players:[p,p2],coaches:[coach],blocks:[{number:1,start:1050,end:1062,stations:[{kind:'machine',drill:'Machine',resource:'Machine',players:['p1','p2'],coach:'c1'}],coaching:[]}],blockMinutes:12,durationMinutes:12,replacements:[]};
+ const plan={practiceType:'Hitting',players:[p,p2],coaches:[coach],blocks:[{number:1,start:1050,end:1062,stations:[{kind:'machine',drill:'Machine',resource:'Machine',players:['p1','p2'],coach:'c1'}],coaching:[]}],blockMinutes:12,durationMinutes:12,replacements:[]};
  const permanent='d'.repeat(64),alternate='e'.repeat(64);
  await F.setDoc(F.doc(db,'rpTeams','multi-a'),{portals:{p1:{name:p.name,role:'player',token:permanent}}});
  await F.setDoc(F.doc(db,'rpTeams','multi-b'),{portals:{p1:{name:p.name,role:'player',token:alternate}}});
  const people=[{...p,role:'player'},{...p2,role:'player'},{...coach,role:'coach'}];
+ await assert.rejects(()=>activate({...plan,practiceType:''},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Choose Hitting/);
  const result=await activate(plan,'combined--multi-a--multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-a','multi-b']);
  assert.equal(result.portals.p1.token,permanent);
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));

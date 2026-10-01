@@ -17,6 +17,7 @@ const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toStr
 export async function registry(teamId){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');const d=await F.getDocFromServer(F.doc(db,'rpTeams',teamId));return d.exists()?d.data():{portals:{}};}
 export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId]){
  if(!plan)throw Error('Build a practice first.');
+ if(plan.practiceType!=='Hitting')throw Error('Choose Hitting in Setup before activating this practice.');
  plan=JSON.parse(JSON.stringify(plan));
  const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
