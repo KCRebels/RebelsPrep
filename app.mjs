@@ -1,6 +1,6 @@
-import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild4';
-import {drills} from './drills.mjs?v=rpbuild4';
-import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild4';
+import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild5';
+import {drills} from './drills.mjs?v=rpbuild5';
+import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild5';
 const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -45,7 +45,7 @@ function person(p,coach=false){
 }
 function attendance(){
  return heading('Attendance','Only included players and coaches will enter this draft.')+
- '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-guest">Add guest player</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
+ '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions attendance-actions"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-guest">Add Guest</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
  '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
  '<div class="actions"><button data-view="setup">Setup</button><button class="primary" data-view="drills">Choose drills</button></div>';
 }
@@ -154,7 +154,7 @@ function build(){
  if(busy)return;if(state.clock?.running){error='Finish or pause the clock before rebuilding.';render();return;}
  busy=true;error='';view='drills';render();
  const input={players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:drills.filter(d=>state.selectedDrills.includes(d.id)),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};
- try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild4',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
+ try{worker?.terminate();worker=new Worker('./worker.mjs?v=rpbuild5',{type:'module'});worker.onmessage=e=>{busy=false;if(e.data.error){error=e.data.error;view='drills';}else{state.plan=e.data.plan;state.clock=null;save();view='plan';}render();window.scrollTo(0,0);worker.terminate();};worker.onerror=()=>{busy=false;error='The practice builder could not load. Refresh this page and retry; your draft remains saved.';render();};worker.postMessage(input);}
  catch(e){busy=false;error=e.message;render();}
 }
 function speak(text){if(sound&&'speechSynthesis' in window&&document.visibilityState==='visible'){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));}}

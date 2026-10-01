@@ -19,3 +19,16 @@ main{max-width:1100px;margin:auto;padding:26px 20px 40px}header{text-align:cente
 .drill-controls button[aria-pressed=true]{background:#a72535;border-color:#a72535;color:white}.drill-controls details{flex:1}.drill-controls summary{display:inline-block;list-style:none}.drill-controls summary::-webkit-details-marker{display:none}.drill-details{color:#5c6476;margin-top:14px}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
 @media(max-width:680px){.drill{padding:22px}.drill h3{font-size:25px}.drill-categories button{font-size:16px;padding:12px 18px}}
+
+/* Clear attendance controls and stronger roster outlines. */
+.attendance-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.attendance-actions button{min-width:0;white-space:nowrap;padding:12px 8px;font-size:14px;border:2px solid #a7b1ad}
+.person{border:3px solid #adb8b3;border-radius:14px;padding:14px;gap:12px}
+.person.included{border-color:#a72535;background:#fff8f9}
+.person button{border:2px solid #adb8b3;color:#a72535;background:white;flex:none}
+.person .check{font-size:17px}.person .check>span{overflow-wrap:anywhere}
+.person input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;width:26px;height:26px;min-height:26px;padding:0;border:2px solid #747b79;border-radius:7px;background:#fff;margin:0;cursor:pointer}
+.person input[type=checkbox]:checked{background:#171717;border-color:#171717}
+.person input[type=checkbox]:checked::after{content:'';position:absolute;left:7px;top:3px;width:7px;height:13px;border:solid white;border-width:0 3px 3px 0;transform:rotate(45deg)}
+@media(max-width:680px){.person{padding:12px;gap:10px}.person .check{font-size:16px}.person button{padding:10px;font-size:13px}}
+@media(max-width:360px){.attendance-actions{gap:6px}.attendance-actions button{font-size:13px;padding:12px 5px}}
