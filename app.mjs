@@ -74,8 +74,10 @@ function setting(label,html){return '<label>'+label+html+'</label>';}
 function setup(){
  const end=timeLabel(clockMinutes(state.start)+Number(state.durationMinutes));
  return heading('Setup',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><div class="grid settings-grid">'+
+ '<div class="setup-primary-row">'+
  setting('Date','<input id="date" type="date" value="'+state.date+'">')+
  setting('Facility','<select id="facility">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select>')+
+ '</div>'+
  '<div class="practice-type-field"><span>Practice type</span><div class="practice-type-buttons" role="group" aria-label="Practice type"><button type="button" data-practice-type="Hitting" aria-pressed="'+(state.practiceType==='Hitting')+'">Hitting</button><button type="button" disabled aria-disabled="true">Fielding</button><button type="button" disabled aria-disabled="true">Full Practice</button></div></div>'+
  '<div class="practice-timing-row">'+
  setting('Start time','<input id="start" type="time" value="'+state.start+'">')+
