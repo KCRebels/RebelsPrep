@@ -2,7 +2,15 @@ rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
   function builder() { return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email.lower() in ['recruiting@rebelssoftball.org','chrisolsen@finditds.com','halley.rindom@gmail.com','dmayhugh425511@gmail.com']; }
-  function validSession() { return request.resource.data.sessionToken is string && request.resource.data.sessionToken.matches('^[a-f0-9]{64}$') && exists(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)) && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.active == true && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.clockToken == request.resource.data.clockToken; }
+  function validSession() { return request.resource.data.sessionToken is string && request.resource.data.sessionToken.matches('^[a-f0-9]{64}
+  match /rpPortals/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
+  match /rpClocks/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
+  match /rpTeams/{team} { allow get, create, update: if builder(); allow list, delete: if false; }
+  match /rpCheckinSessions/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
+  match /rpCheckinLocations/{location} { allow get: if location in ['barn','shed']; allow list, delete: if false; allow create, update: if builder(); }
+  match /rpCheckins/{id} { allow create: if request.resource.data.kind in ['player','guest-request'] && request.resource.data.status in ['checked-in','pending'] && request.resource.data.name is string && request.resource.data.practiceTime is string && validSession(); allow get, list, update: if builder(); allow delete: if false; }
+ }
+}) && exists(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)) && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.active == true && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.clockToken == request.resource.data.clockToken && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.date == request.resource.data.practiceDate && get(/databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken)).data.start == request.resource.data.practiceTime; }
   match /rpPortals/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpClocks/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpTeams/{team} { allow get, create, update: if builder(); allow list, delete: if false; }
