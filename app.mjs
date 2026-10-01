@@ -48,6 +48,17 @@ function setup(){
 
 }
 function resetDrillChoices(){state.selectedDrills=[];drillSearch='';drillCategory='All Drills';recommendationWorker?.terminate();recommendation=null;}
+function startOverDraft(){
+ if(sharedData&&!clockState(sharedData.clock)?.done||state.clock&&!state.clock.done){error='Finish the active practice before starting over.';render();return;}
+ if(busy)return;
+ replacementOffer=null;drillPickerOpen=false;error='';
+ state=resetPractice({...blank(state.teamId),history:state.history},today());
+ resetDrillChoices();save();setView('setup');
+}
+function startOverButton(){
+ const active=Boolean(sharedData&&!clockState(sharedData.clock)?.done||state.clock&&!state.clock.done);
+ return state.started&&!active&&['setup','attendance','drills','review','plan'].includes(view)?'<div class="actions"><button id="start-over" '+(busy?'disabled':'')+'>Start Over</button></div>':'';
+}
 function newPractice(){
  if(sharedData&&!clockState(sharedData.clock)?.done){error='Finish the active shared practice before starting a new practice.';render();return;}
  if(busy||state.clock?.running){error='Pause the clock or finish the build before starting a new practice.';render();return;}
@@ -174,7 +185,7 @@ function render(){
  const preview=document.querySelector('.preview');if(shared.configured)preview.innerHTML='<strong>RebelsPrep</strong> · Build locally, then Activate Practice to publish assignments. Shared RSVPs are not connected yet.';
  const picker=view==='drills'&&drillPickerOpen;document.querySelector('main>header').hidden=picker;document.querySelector('.preview').hidden=picker;document.querySelector('main>footer').hidden=picker;
  $('#team-name').textContent=view==='home'?'Practice Planner':team().name;
- $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]())+(view==='home'?sharedPanel():'' );
+ $('#app').innerHTML=nav()+startOverButton()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]())+(view==='home'?sharedPanel():'' );
  bind();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
 function bind(){
@@ -193,7 +204,7 @@ function bind(){
  const click=(id,fn)=>{if($('#'+id))$('#'+id).onclick=fn;};
  click('open-drill-picker',()=>{drillPickerOpen=true;render();window.scrollTo(0,0);});
  click('close-drill-picker',()=>{drillPickerOpen=false;render();window.scrollTo(0,0);});
- click('new-practice',newPractice);
+ click('new-practice',newPractice);click('start-over',startOverDraft);
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
