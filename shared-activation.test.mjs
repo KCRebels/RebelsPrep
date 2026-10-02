@@ -25,7 +25,7 @@ try{
  await assert.rejects(()=>activate({...plan,players:[]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/at least one player/);
  await assert.rejects(()=>activate({...plan,players:[p,{...p}]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/duplicate player ID/);
  await assert.rejects(()=>activate(plan,'multi-a','2026-10-01',[...people,{...people[0]}],'https://kcrebels.github.io/RebelsPrep/'),/duplicate ID/);
- await assert.rejects(()=>activate(plan,'','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',[]),/Choose a team/);
+ await assert.rejects(()=>activate(plan,'','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',[]),/Choose a valid team/);
  await assert.rejects(()=>activate(plan,'multi-a','10/01/2026',people,'https://kcrebels.github.io/RebelsPrep/'),/valid practice date/);
  await assert.rejects(()=>activate(plan,'bad/team','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/valid team/);
  await assert.rejects(()=>activate(plan,'multi-a','2026-10-01',[{...p,memberTeamIds:['bad/team']},p2,coach],'https://kcrebels.github.io/RebelsPrep/'),/invalid team membership/);
