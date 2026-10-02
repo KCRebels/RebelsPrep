@@ -62,6 +62,8 @@ try{
  await updateDoc(doc(coach,'rpClocks',clock),{clock:{running:false,done:false}});
  await updateDoc(doc(coach,'rpCheckinSessions',session),{active:false});
  await assertFails(setDoc(doc(anonymous,'rpCheckins','closed-session'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,teamId:'nationals',teamIds:['nationals'],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'checked-in'}));
+ await assertFails(getDocs(collection(anonymous,'rpCheckinSessions')));
+ await assertSucceeds(getDocs(collection(coach,'rpCheckinSessions')));
  // Independent anonymous portal listener follows a coach's shared clock write.
  await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{stop();reject(Error('Clock listener timed out'));},8000);const stop=onSnapshot(doc(anonymous,'rpClocks',clock),s=>{if(s.data()?.clock.done){assert.equal(s.data().clock.running,false);clearTimeout(timeout);stop();resolve();}},reject);setDoc(doc(coach,'rpClocks',clock),{clock:{running:false,done:true}}).catch(reject);});
  console.log('PASS: coach permissions, bearer reads, no listing, denied unauthorized writes, synchronized Done listener');
