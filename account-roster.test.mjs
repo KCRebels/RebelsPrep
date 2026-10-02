@@ -35,7 +35,7 @@ test('player portal rollout is limited to 14U, 16U, and 18U teams',()=>{
   if(t.data.virtual)continue;
   const age=Number((t.data.name.match(/KC Rebels (\d+)/)||[])[1]||0);
   assert.equal(t.data.playerPortalEnabled,[14,16,18].includes(age),t.data.name);
-  assert.equal(t.data.archivedFromPlayerPortal,age>0&&age<14,t.data.name);
+  assert.equal(t.data.archivedFromPlayerPortal,![14,16,18].includes(age),t.data.name);
  }
  const eligible=new Set(playerPortalPlayers().map(p=>p.id));
  for(const p of playerSeedDocuments())assert.equal(p.data.playerPortalEnabled,eligible.has(p.id),p.data.name);
