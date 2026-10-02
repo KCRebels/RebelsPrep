@@ -11,12 +11,12 @@ try{
  const src=await readFile(new URL('./shared.mjs',import.meta.url),'utf8');
  const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function control')).replace('export async function','async function');
  const activate=new Function('services','allowed','token','newClock','clockState','portalAssignments','portalURL','checkinURL',body+'return activate;')(services,()=>true,token,newClock,clockState,portalAssignments,portalURL,(base,t)=>new URL('?checkin=1&session='+t,base).href);
- const p={id:'p1',name:'Grace Samuels',memberTeamIds:['multi-a','multi-b']},p2={id:'p2',name:'Stella Utter',memberTeamIds:['multi-b']},coach={id:'c1',name:'Coach One'};
+ const p={id:'p1',name:'Grace Samuels',role:'player',memberTeamIds:['multi-a','multi-b']},p2={id:'p2',name:'Stella Utter',role:'player',memberTeamIds:['multi-b']},coach={id:'c1',name:'Coach One',role:'coach'};
  const plan={practiceType:'Hitting',facility:'The Barn',start:'17:30',players:[p,p2],coaches:[coach],blocks:[{number:1,start:1050,end:1062,stations:[{kind:'machine',drill:'Machine',resource:'Machine',players:['p1','p2'],coach:'c1'}],coaching:[]}],blockMinutes:12,durationMinutes:12,replacements:[]};
  const permanent='d'.repeat(64),alternate='e'.repeat(64);
  await F.setDoc(F.doc(db,'rpTeams','multi-a'),{portals:{p1:{name:p.name,role:'player',token:permanent}}});
  await F.setDoc(F.doc(db,'rpTeams','multi-b'),{portals:{p1:{name:p.name,role:'player',token:alternate}}});
- const people=[{...p,role:'player'},{...p2,role:'player'},{...coach,role:'coach'}];
+ const people=[p,p2,coach];
  await assert.rejects(()=>activate({...plan,practiceType:''},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Choose Hitting/);
  await assert.rejects(()=>activate({...plan,facility:'Unknown'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Barn or The Shed/);
  await assert.rejects(()=>activate({...plan,start:'25:90'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/valid practice start time/);
@@ -45,11 +45,11 @@ try{
  assert.equal((await F.getDoc(F.doc(db,'rpPortals',permanent))).data().clockToken,next.clockToken);
  assert.equal((await F.getDoc(F.doc(db,'rpPortals',alternate))).data().clockToken,next.clockToken);
  await F.updateDoc(F.doc(db,'rpClocks',next.clockToken),{clock:{...newClock(plan),done:true}});
- const ella={id:'ella',name:'Ella Olson',aliases:['Ella Olsen'],memberTeamIds:['nationals','individual']};
+ const ella={id:'ella',name:'Ella Olson',role:'player',aliases:['Ella Olsen'],memberTeamIds:['nationals','individual']};
  const ellaToken='f'.repeat(64);
  await F.setDoc(F.doc(db,'rpTeams','nationals'),{portals:{legacy:{name:'Ella Olsen',role:'player',token:ellaToken}}});
  const ellaPlan={...plan,players:[ella],coaches:[]};
- const individual=await activate(ellaPlan,'individual','2026-10-01',[{...ella,role:'player'}],'https://kcrebels.github.io/RebelsPrep/',['individual']);
+ const individual=await activate(ellaPlan,'individual','2026-10-01',[ella],'https://kcrebels.github.io/RebelsPrep/',['individual']);
  assert.equal(individual.portals.ella.token,ellaToken);
  assert.equal((await F.getDoc(F.doc(db,'rpPortals',ellaToken))).data().name,'Ella Olson');
  assert.equal((await F.getDoc(F.doc(db,'rpTeams','nationals'))).data().portals.legacy.token,ellaToken);
