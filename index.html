@@ -30,7 +30,8 @@
 <dialog id="dialog"></dialog>
 <script type="module">
 const q=new URLSearchParams(location.search);
-if(q.has('player')) import('./player-account.mjs?v=rpplayer3');
+if(q.has('accounts')) import('./player-accounts-admin.mjs?v=rpadmin1');
+else if(q.has('player')) import('./player-account.mjs?v=rpplayer3');
 else if(q.has('checkin')) import('./checkin-rp49.mjs?v=rpqr50');
 else import('./app-rpbuild53.mjs?v=rpaccount56');
 </script>
