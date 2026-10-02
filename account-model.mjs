@@ -44,3 +44,24 @@ export async function provisionLegacyCoach({role='org_admin',teamIds=[]}={}){
  return normalizeAccount(user.uid,(await F.getDoc(ref)).data());
 }
 export async function accountContext(){const {auth}=await services();return {user:auth.currentUser,account:await currentAccount()};}
+
+
+export async function sendPlayerSignInLink(email){
+ const {A,auth}=await services();
+ const clean=String(email||'').trim().toLowerCase();
+ if(!clean||!clean.includes('@'))throw Error('Enter a valid email address.');
+ const url=new URL(location.href);url.search='?player=1';url.hash='';
+ await A.sendSignInLinkToEmail(auth,clean,{url:url.href,handleCodeInApp:true});
+ localStorage.setItem('RebelsPrep:player-signin-email',clean);
+ return clean;
+}
+export async function finishPlayerSignIn(link=location.href){
+ const {A,auth}=await services();
+ if(!A.isSignInWithEmailLink(auth,link))throw Error('Paste the complete RebelsPrep sign-in link.');
+ let email=localStorage.getItem('RebelsPrep:player-signin-email')||'';
+ if(!email)throw Error('Enter the same email address that received this sign-in link.');
+ const result=await A.signInWithEmailLink(auth,email,link);
+ localStorage.removeItem('RebelsPrep:player-signin-email');
+ return result.user;
+}
+export async function signOutAccount(){const {A,auth}=await services();await A.signOut(auth);}
