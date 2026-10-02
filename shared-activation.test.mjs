@@ -35,6 +35,7 @@ try{
  await control(result.clockToken,'pause');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.running,false);
  await control(result.clockToken,'resume');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.running,true);
  await control(result.clockToken,'next');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.phase,'wrap');
+ await assert.rejects(()=>control(result.clockToken,'bogus'),/clock action is invalid/);
 
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));
  assert.equal(first.data().clockToken,result.clockToken);
