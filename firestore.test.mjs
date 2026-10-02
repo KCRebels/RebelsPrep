@@ -68,6 +68,27 @@ try{
  await assertFails(setDoc(doc(anonymous,'rpCheckins','closed-session'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,teamId:'nationals',teamIds:['nationals'],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'checked-in'}));
  await assertFails(getDocs(collection(anonymous,'rpCheckinSessions')));
  await assertSucceeds(getDocs(collection(coach,'rpCheckinSessions')));
+ // Permanent account authorization: org-wide coaches, assigned team coaches, and private players.
+ await assertSucceeds(setDoc(doc(coach,'rpAccounts','org-admin'),{role:'org_admin',active:true,coachId:'coach-admin',displayName:'Admin',teamIds:[]}));
+ await assertSucceeds(setDoc(doc(coach,'rpAccounts','team-coach'),{role:'team_coach',active:true,coachId:'coach-team',displayName:'Team Coach',teamIds:['team-a','team-b']}));
+ await assertSucceeds(setDoc(doc(coach,'rpAccounts','player-user'),{role:'player',active:true,playerId:'player-1',displayName:'Player One',teamIds:['team-b']}));
+ await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-1'),{name:'Player One',teamIds:['team-b']}));
+ await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-2'),{name:'Player Two',teamIds:['team-c']}));
+ const orgDb=env.authenticatedContext('org-admin',{email:'admin@example.com',email_verified:true}).firestore();
+ const teamDb=env.authenticatedContext('team-coach',{email:'team@example.com',email_verified:true}).firestore();
+ const playerDb=env.authenticatedContext('player-user',{email:'player@example.com',email_verified:true}).firestore();
+ await assertSucceeds(getDoc(doc(orgDb,'rpPlayers','player-2')));
+ await assertSucceeds(getDoc(doc(teamDb,'rpPlayers','player-1')));
+ await assertFails(getDoc(doc(teamDb,'rpPlayers','player-2')));
+ await assertSucceeds(getDoc(doc(playerDb,'rpPlayers','player-1')));
+ await assertFails(getDoc(doc(playerDb,'rpPlayers','player-2')));
+ await assertFails(getDoc(doc(playerDb,'rpAccounts','team-coach')));
+ await assertSucceeds(setDoc(doc(teamDb,'rpFeedback','feedback-1'),{playerId:'player-1',teamId:'team-b',authorUid:'team-coach',authorCoachId:'coach-team',authorName:'Team Coach',body:'Keep working',createdAt:serverTimestamp()}));
+ await assertSucceeds(getDoc(doc(playerDb,'rpFeedback','feedback-1')));
+ await assertFails(setDoc(doc(playerDb,'rpFeedback','feedback-2'),{playerId:'player-1',teamId:'team-b',authorUid:'player-user',authorCoachId:'fake',authorName:'Fake',body:'No',createdAt:serverTimestamp()}));
+ await assertSucceeds(setDoc(doc(coach,'rpFacilities','barn'),{name:'The Barn',active:true}));
+ await assertSucceeds(getDoc(doc(playerDb,'rpFacilities','barn')));
+ await assertFails(getDoc(doc(anonymous,'rpFacilities','barn')));
  // Independent anonymous portal listener follows a coach's shared clock write.
  await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{stop();reject(Error('Clock listener timed out'));},8000);const stop=onSnapshot(doc(anonymous,'rpClocks',clock),s=>{if(s.data()?.clock.done){assert.equal(s.data().clock.running,false);clearTimeout(timeout);stop();resolve();}},reject);setDoc(doc(coach,'rpClocks',clock),{clock:{running:false,done:true}}).catch(reject);});
  console.log('PASS: coach permissions, bearer reads, no listing, denied unauthorized writes, synchronized Done listener');
