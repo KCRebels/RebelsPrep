@@ -5,7 +5,7 @@ async function services(){
  if(!servicesPromise)servicesPromise=(async()=>{
   const root='https://www.gstatic.com/firebasejs/12.19.0/';
   const [app,A,F]=await Promise.all(['app','auth','firestore'].map(x=>import(root+'firebase-'+x+'.js')));
-  const project=app.initializeApp(firebaseConfig,'RebelsPrepAccounts');
+  const project=app.getApps().find(x=>x.name==='RebelsPrep')||app.initializeApp(firebaseConfig,'RebelsPrep');
   return {A,F,auth:A.getAuth(project),db:F.getFirestore(project)};
  })();
  return servicesPromise;
