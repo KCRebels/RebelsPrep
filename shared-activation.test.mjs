@@ -18,11 +18,15 @@ try{
  await F.setDoc(F.doc(db,'rpTeams','multi-b'),{portals:{p1:{name:p.name,role:'player',token:alternate}}});
  const people=[{...p,role:'player'},{...p2,role:'player'},{...coach,role:'coach'}];
  await assert.rejects(()=>activate({...plan,practiceType:''},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Choose Hitting/);
+ await assert.rejects(()=>activate({...plan,facility:'Unknown'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Barn or The Shed/);
+ await assert.rejects(()=>activate({...plan,start:'25:90'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/valid practice start time/);
+ await assert.rejects(()=>activate({...plan,players:[]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/at least one player/);
+ await assert.rejects(()=>activate({...plan,players:[p,{...p}]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/duplicate player ID/);
  const result=await activate(plan,'combined--multi-a--multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-a','multi-b']);
  assert.equal(result.portals.p1.token,permanent);
  assert.match(result.checkinToken,/^[a-f0-9]{64}$/);
  assert.ok(result.checkinURL.includes('?checkin=1&session='));
- const sessionDoc=await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken));assert.equal(sessionDoc.data().active,true);assert.equal(sessionDoc.data().clockToken,result.clockToken);assert.deepEqual(sessionDoc.data().playerIds,['p1','p2']);assert.deepEqual(sessionDoc.data().playerNames,{p1:'Player One',p2:'Player Two'});assert.equal(sessionDoc.data().facility,'barn');
+ const sessionDoc=await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken));assert.equal(sessionDoc.data().active,true);assert.equal(sessionDoc.data().clockToken,result.clockToken);assert.deepEqual(sessionDoc.data().playerIds,['p1','p2']);assert.deepEqual(sessionDoc.data().playerNames,{p1:'Grace Samuels',p2:'Stella Utter'});assert.equal(sessionDoc.data().facility,'barn');
  const barnDoc=await F.getDoc(F.doc(db,'rpCheckinLocations','barn'));assert.ok(barnDoc.data().sessions.some(x=>x.checkinToken===result.checkinToken&&x.clockToken===result.clockToken&&x.start===plan.start));
 
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));
