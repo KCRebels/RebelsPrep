@@ -1,4 +1,5 @@
 name: RebelsPrep CI
+# validation branch marker: rpcheckin69
 on:
   workflow_dispatch:
   push:
