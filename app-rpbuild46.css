@@ -373,3 +373,8 @@ header .logo{margin-bottom:2px !important}
 .practice-hero-clock span{color:#596579;font-size:14px;font-weight:950;letter-spacing:.04em}
 .practice-hero-clock strong{margin-top:10px;color:#111827;font-size:32px;line-height:1}
 @media(max-width:420px){.practice-hero{margin-left:-12px;margin-right:-12px}.practice-hero-title{margin-left:-12px;margin-right:-12px}.practice-hero-stats strong{font-size:34px}.practice-hero-stats span{font-size:13px}.practice-hero-actions button{font-size:16px}}
+
+/* RebelsPrep uses its own clean white practice header, not HotB's red banner. */
+.practice-hero-title{background:#fff!important;color:#111827!important;border:2px solid #d7ddda;border-radius:16px;margin:0 0 14px!important;padding:18px 14px!important}
+.practice-hero-title small{color:#596579!important;opacity:1!important}
+.practice-hero-title h1{color:#111827!important}
