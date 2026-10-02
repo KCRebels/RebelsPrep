@@ -84,6 +84,9 @@ export async function registerPendingPlayerLogin(){
  await F.setDoc(ref,{role:'pending_player',active:false,displayName:user.displayName||'',email:user.email||'',teamIds:[],createdAt:F.serverTimestamp(),lastSeenAt:F.serverTimestamp()});
  return {uid:user.uid,role:'pending_player',active:false,displayName:user.displayName||'',email:user.email||'',teamIds:[]};
 }
+export async function pendingPlayerAccounts(){
+ const rows=await accountDirectory();return rows.filter(a=>a.role==='pending_player'&&a.active!==true).sort((a,b)=>String(a.email||'').localeCompare(String(b.email||'')));
+}
 export async function activatePlayerAccount(uid,player){
  const {F,db,auth}=await services();
  if(!auth.currentUser)throw Error('Coach sign-in is required.');
