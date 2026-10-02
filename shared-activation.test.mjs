@@ -26,6 +26,10 @@ try{
  await assert.rejects(()=>activate({...plan,players:[p,{...p}]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/duplicate player ID/);
  await assert.rejects(()=>activate(plan,'multi-a','2026-10-01',[...people,{...people[0]}],'https://kcrebels.github.io/RebelsPrep/'),/duplicate ID/);
  await assert.rejects(()=>activate(plan,'','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',[]),/Choose a team/);
+ await assert.rejects(()=>activate(plan,'multi-a','10/01/2026',people,'https://kcrebels.github.io/RebelsPrep/'),/valid practice date/);
+ await assert.rejects(()=>activate(plan,'bad/team','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/valid team/);
+ await assert.rejects(()=>activate(plan,'multi-a','2026-10-01',[{...p,memberTeamIds:['bad/team']},p2,coach],'https://kcrebels.github.io/RebelsPrep/'),/invalid team membership/);
+ await assert.rejects(()=>activate(plan,'multi-a','2026-10-01',[p,coach],'https://kcrebels.github.io/RebelsPrep/'),/not in the selected roster/);
  const result=await activate(plan,'combined--multi-a--multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-a','multi-b']);
  assert.equal(result.portals.p1.token,permanent);
  assert.match(result.checkinToken,/^[a-f0-9]{64}$/);
