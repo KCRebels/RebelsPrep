@@ -45,7 +45,9 @@ try{
   assert.deepEqual(data.teamIds,['combined--multi-a--multi-b','multi-a','multi-b']);
  }
  await assert.rejects(()=>activate(plan,'multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-b']),/Finish the active/);
- await F.updateDoc(F.doc(db,'rpClocks',result.clockToken),{clock:{...newClock(plan),done:true}});
+ await control(result.clockToken,'done');
+ assert.equal((await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken))).data().active,false);
+ assert.equal((await F.getDoc(F.doc(db,'rpCheckinLocations','barn'))).data().sessions.some(x=>x.checkinToken===result.checkinToken),false);
  const next=await activate(plan,'multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-b']);
  assert.equal(next.portals.p1.token,permanent);
  assert.equal((await F.getDoc(F.doc(db,'rpPortals',permanent))).data().clockToken,next.clockToken);
