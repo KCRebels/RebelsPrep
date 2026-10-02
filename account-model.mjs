@@ -65,3 +65,28 @@ export async function finishPlayerSignIn(link=location.href){
  return result.user;
 }
 export async function signOutAccount(){const {A,auth}=await services();await A.signOut(auth);}
+
+
+export async function eligiblePlayerDirectory(){
+ const {F,db}=await services();
+ const q=F.query(F.collection(db,'rpPlayers'),F.where('playerPortalEnabled','==',true));
+ const snap=await F.getDocs(q);
+ return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+}
+export async function accountDirectory(){
+ const {F,db}=await services();
+ const snap=await F.getDocs(F.collection(db,'rpAccounts'));
+ return snap.docs.map(d=>({uid:d.id,...d.data()}));
+}
+export async function activatePlayerAccount(uid,player){
+ const {F,db,auth}=await services();
+ if(!auth.currentUser)throw Error('Coach sign-in is required.');
+ if(!uid||!player?.id||player.playerPortalEnabled!==true)throw Error('Choose an eligible 14U, 16U or 18U player.');
+ const ref=F.doc(db,'rpAccounts',uid),snap=await F.getDoc(ref);
+ if(!snap.exists())throw Error('That login has not signed into RebelsPrep yet.');
+ const current=snap.data();
+ if(current.role==='player'&&current.playerId&&current.playerId!==player.id)throw Error('That login is already connected to another player.');
+ const teamIds=[...new Set(player.teamIds||[])];
+ await F.setDoc(ref,{...current,role:'player',active:true,playerId:player.id,coachId:'',displayName:player.name||current.displayName||'',teamIds,activatedAt:F.serverTimestamp(),activatedBy:auth.currentUser.uid},{merge:true});
+ return {uid,playerId:player.id,name:player.name,teamIds};
+}
