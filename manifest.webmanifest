@@ -1,8 +1,8 @@
 {
   "name": "RebelsPrep",
   "short_name": "RebelsPrep",
-  "id": "/RebelsPrep/?app=rp95",
-  "start_url": "/RebelsPrep/?app=rp95",
+  "id": "/RebelsPrep/?app=rp96",
+  "start_url": "/RebelsPrep/?app=rp96",
   "scope": "/RebelsPrep/",
   "display": "standalone",
   "background_color": "#ffffff",
