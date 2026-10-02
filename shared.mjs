@@ -30,8 +30,13 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
  if(!Array.isArray(allPeople)||allPeople.some(p=>!p||typeof p.id!=='string'||!p.id||p.id.length>128||typeof p.name!=='string'||!p.name.trim()||p.name.length>100||!['player','coach'].includes(p.role)))throw Error('The selected practice roster is invalid.');
  if(new Set(allPeople.map(p=>p.id)).size!==allPeople.length)throw Error('The selected practice roster contains a duplicate ID.');
- const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds].filter(x=>typeof x==='string'&&x))],candidateTokens=new Map(allPeople.map(p=>[p.id,token()]));
- if(!keys.length)throw Error('Choose a team before activating this practice.');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))||Number.isNaN(Date.parse(String(date)+'T12:00:00')))throw Error('Choose a valid practice date before activating.');
+ const validTeamId=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!x.includes('/');
+ if(!validTeamId(teamId)||!Array.isArray(teamIds)||teamIds.some(x=>!validTeamId(x)))throw Error('Choose a valid team before activating this practice.');
+ if(allPeople.some(p=>p.memberTeamIds!=null&&(!Array.isArray(p.memberTeamIds)||p.memberTeamIds.some(x=>!validTeamId(x)))))throw Error('The selected practice roster has invalid team membership.');
+ const planIds=new Set(plan.players.map(p=>p.id)),selectedPlayers=new Map(allPeople.filter(p=>p.role==='player').map(p=>[p.id,p]));
+ if([...planIds].some(id=>!selectedPlayers.has(id)))throw Error('The practice contains a player who is not in the selected roster.');
+ const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])],candidateTokens=new Map(allPeople.map(p=>[p.id,token()]));
  return F.runTransaction(db,async tx=>{
   const locationRef=facilitySlug?F.doc(db,'rpCheckinLocations',facilitySlug):null;
   const locationSnap=locationRef?await tx.get(locationRef):null;
