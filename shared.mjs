@@ -21,10 +21,13 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  if(plan.practiceType!=='Hitting')throw Error('Choose Hitting in Setup before activating this practice.');
  plan=JSON.parse(JSON.stringify(plan));
  const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');
+ const facilitySlug=String(plan.facility||'').toLowerCase().includes('barn')?'barn':String(plan.facility||'').toLowerCase().includes('shed')?'shed':'';
+ if(!facilitySlug)throw Error('Choose The Barn or The Shed before activating this practice.');
+ if(!/^\d{2}:\d{2}$/.test(String(plan.start||'')))throw Error('Choose a valid practice start time before activating.');
+ if(!Array.isArray(plan.players)||!plan.players.length)throw Error('Add at least one player before activating this practice.');
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
  const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])],candidateTokens=new Map(allPeople.map(p=>[p.id,token()]));
  return F.runTransaction(db,async tx=>{
-  const facilitySlug=String(plan.facility||'').toLowerCase().includes('barn')?'barn':String(plan.facility||'').toLowerCase().includes('shed')?'shed':'';
   const locationRef=facilitySlug?F.doc(db,'rpCheckinLocations',facilitySlug):null;
   const locationSnap=locationRef?await tx.get(locationRef):null;
   const directories=new Map();
