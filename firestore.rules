@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function builder() { return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email in ['Recruiting@rebelssoftball.org']; }
+  function builder() { return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email in ['Recruiting@rebelssoftball.org','recruiting@rebelssoftball.org','chrisolsen@finditds.com','halley.rindom@gmail.com','dmayhugh425511@gmail.com']; }
   function sessionPath() { return /databases/$(database)/documents/rpCheckinSessions/$(request.resource.data.sessionToken); }
   function validSession() { return request.resource.data.sessionToken is string && request.resource.data.sessionToken.matches('^[a-f0-9]{64}$') && exists(sessionPath()) && get(sessionPath()).data.active == true && get(sessionPath()).data.clockToken == request.resource.data.clockToken && get(sessionPath()).data.date == request.resource.data.practiceDate && get(sessionPath()).data.start == request.resource.data.practiceTime && get(sessionPath()).data.facility == request.resource.data.facility; }
   function validPlayer() { return request.resource.data.playerId is string && request.resource.data.playerId in get(sessionPath()).data.playerIds && request.resource.data.name == get(sessionPath()).data.playerNames[request.resource.data.playerId] && request.resource.data.teamId is string && request.resource.data.teamId in get(sessionPath()).data.teamIds && request.resource.data.teamIds is list && request.resource.data.teamIds.size() > 0 && request.resource.data.teamIds.size() <= get(sessionPath()).data.teamIds.size() && request.resource.data.teamIds.hasOnly(get(sessionPath()).data.teamIds); }
