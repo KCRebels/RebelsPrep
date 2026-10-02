@@ -22,6 +22,7 @@ try{
  await assert.rejects(()=>activate({...plan,start:'25:90'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/valid practice start time/);
  await assert.rejects(()=>activate({...plan,players:[]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/at least one player/);
  await assert.rejects(()=>activate({...plan,players:[p,{...p}]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/duplicate player ID/);
+ await assert.rejects(()=>activate(plan,'multi-a','2026-10-01',[...people,{...people[0]}],'https://kcrebels.github.io/RebelsPrep/'),/duplicate ID/);
  const result=await activate(plan,'combined--multi-a--multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-a','multi-b']);
  assert.equal(result.portals.p1.token,permanent);
  assert.match(result.checkinToken,/^[a-f0-9]{64}$/);
