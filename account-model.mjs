@@ -78,6 +78,12 @@ export async function accountDirectory(){
  const snap=await F.getDocs(F.collection(db,'rpAccounts'));
  return snap.docs.map(d=>({uid:d.id,...d.data()}));
 }
+export async function registerPendingPlayerLogin(){
+ const {F,db,auth}=await services();const user=auth.currentUser;if(!user?.emailVerified)throw Error('Verified sign-in is required.');
+ const ref=F.doc(db,'rpAccounts',user.uid),snap=await F.getDoc(ref);if(snap.exists())return normalizeAccount(user.uid,snap.data());
+ await F.setDoc(ref,{role:'pending_player',active:false,displayName:user.displayName||'',email:user.email||'',teamIds:[],createdAt:F.serverTimestamp(),lastSeenAt:F.serverTimestamp()});
+ return {uid:user.uid,role:'pending_player',active:false,displayName:user.displayName||'',email:user.email||'',teamIds:[]};
+}
 export async function activatePlayerAccount(uid,player){
  const {F,db,auth}=await services();
  if(!auth.currentUser)throw Error('Coach sign-in is required.');
