@@ -23,6 +23,11 @@ service cloud.firestore {
   function playerOnTeam(teamId) { return hasAccount() && account().active == true && account().role == 'player' && account().teamIds is list && teamId in account().teamIds; }
   function validAccountRole() { return request.resource.data.role in ['org_admin','org_coach','team_coach','player']; }
   function accountSelfFields() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','lastSeenAt']); }
+  match /rpSystem/{document} {
+   allow get: if builder() || orgCoach();
+   allow list, delete: if false;
+   allow create, update: if builder() || orgCoach();
+  }
   match /rpAccounts/{uid} {
    allow get: if signedIn() && (request.auth.uid == uid || orgCoach());
    allow list: if orgCoach();
