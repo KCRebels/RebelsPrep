@@ -28,7 +28,8 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  if(plan.players.some(p=>!p||typeof p.id!=='string'||!p.id||p.id.length>128||typeof p.name!=='string'||!p.name.trim()||p.name.length>100))throw Error('The practice roster contains an invalid player.');
  if(new Set(plan.players.map(p=>p.id)).size!==plan.players.length)throw Error('The practice roster contains a duplicate player ID.');
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
- if(!Array.isArray(allPeople)||allPeople.some(p=>!p||typeof p.id!=='string'||!p.id||typeof p.name!=='string'||!p.name.trim()||!['player','coach'].includes(p.role)))throw Error('The selected practice roster is invalid.');
+ if(!Array.isArray(allPeople)||allPeople.some(p=>!p||typeof p.id!=='string'||!p.id||p.id.length>128||typeof p.name!=='string'||!p.name.trim()||p.name.length>100||!['player','coach'].includes(p.role)))throw Error('The selected practice roster is invalid.');
+ if(new Set(allPeople.map(p=>p.id)).size!==allPeople.length)throw Error('The selected practice roster contains a duplicate ID.');
  const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds].filter(x=>typeof x==='string'&&x))],candidateTokens=new Map(allPeople.map(p=>[p.id,token()]));
  if(!keys.length)throw Error('Choose a team before activating this practice.');
  return F.runTransaction(db,async tx=>{
