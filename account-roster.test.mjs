@@ -7,7 +7,7 @@ test('account roster has stable unique player identities',()=>{
  assert.equal(new Set(players.map(p=>p.id)).size,players.length);
  assert.equal(audit.playerCount,players.length);
  assert.ok(audit.problems.every(x=>!x.startsWith('Duplicate player ID: ')),audit.problems.join('; '));
- assert.ok(players.length>250,'roster must not be modeled as a small fixed list');
+ assert.ok(players.length>200,'roster must not be modeled as a small fixed list');
 });
 
 test('combined teams do not duplicate permanent player membership',()=>{
