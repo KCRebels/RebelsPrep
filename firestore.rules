@@ -7,13 +7,14 @@ service cloud.firestore {
   function validPlayer() { return request.resource.data.playerId is string && request.resource.data.playerId in get(sessionPath()).data.playerIds && request.resource.data.name == get(sessionPath()).data.playerNames[request.resource.data.playerId] && request.resource.data.teamId is string && request.resource.data.teamId in get(sessionPath()).data.teamIds && request.resource.data.teamIds is list && request.resource.data.teamIds.size() > 0 && request.resource.data.teamIds.size() <= get(sessionPath()).data.teamIds.size() && request.resource.data.teamIds.hasOnly(get(sessionPath()).data.teamIds); }
   function playerFields() { return request.resource.data.keys().hasOnly(['kind','playerId','name','sessionToken','clockToken','teamId','teamIds','practiceTime','practiceDate','facility','createdAt','status']); }
   function guestFields() { return request.resource.data.keys().hasOnly(['kind','name','practiceTime','practiceDate','facility','sessionToken','sessionTokens','clockToken','clockTokens','createdAt','status']); }
+  function validGuest() { return request.resource.data.sessionTokens is list && request.resource.data.clockTokens is list && request.resource.data.sessionTokens.size() > 0 && request.resource.data.clockTokens.size() > 0 && request.resource.data.sessionTokens.size() <= 10 && request.resource.data.clockTokens.size() <= 10 && request.resource.data.sessionToken in request.resource.data.sessionTokens && request.resource.data.clockToken in request.resource.data.clockTokens; }
   match /rpPortals/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpClocks/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpTeams/{team} { allow get, create, update: if builder(); allow list, delete: if false; }
   match /rpCheckinSessions/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpCheckinLocations/{location} { allow get: if location in ['barn','shed']; allow list, delete: if false; allow create, update: if builder(); }
   match /rpCheckins/{id} {
-   allow create: if request.resource.data.name is string && request.resource.data.practiceTime is string && request.resource.data.practiceDate is string && validSession() && ((request.resource.data.kind == 'player' && request.resource.data.status == 'checked-in' && playerFields() && validPlayer()) || (request.resource.data.kind == 'guest-request' && request.resource.data.status == 'pending' && guestFields()));
+   allow create: if request.resource.data.name is string && request.resource.data.practiceTime is string && request.resource.data.practiceDate is string && validSession() && ((request.resource.data.kind == 'player' && request.resource.data.status == 'checked-in' && playerFields() && validPlayer()) || (request.resource.data.kind == 'guest-request' && request.resource.data.status == 'pending' && guestFields() && validGuest()));
    allow get, list, update: if builder();
    allow delete: if false;
   }
