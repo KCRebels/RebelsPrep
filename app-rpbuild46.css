@@ -351,3 +351,25 @@ header .logo{margin-bottom:2px !important}
 .account-activation{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1.35fr) auto;gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid #d4d9d7}
 .account-activation:last-child{border-bottom:0}.account-activation strong,.account-activation small{display:block}.account-activation small{color:#687184;margin-top:4px}.account-activation select{min-width:0;width:100%;min-height:46px;border:2px solid #adb8b3;border-radius:10px;padding:8px;font-size:15px}
 @media(max-width:680px){.account-activation{grid-template-columns:1fr}.account-activation button{width:100%}}
+
+
+/* HotB-inspired active practice header */
+.practice-hero{margin:-18px -16px 18px;padding:0 16px 18px;background:#f5f7f6}
+.practice-hero-title{margin:0 -16px 14px;padding:22px 18px 20px;text-align:center;background:linear-gradient(100deg,#3b0a0d,#9e1d24 68%,#cf2832);color:#fff;overflow:hidden}
+.practice-hero-title small{display:block;margin-bottom:4px;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;opacity:.82}
+.practice-hero-title h1{margin:0;color:#fff;font-size:clamp(31px,8vw,48px);line-height:1;font-weight:950;letter-spacing:-.035em}
+.practice-hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.practice-hero-stats>div,.practice-hero-clock>div{display:grid;place-items:center;min-width:0;border:2px solid #d7ddda;border-radius:15px;background:#fff;text-align:center}
+.practice-hero-stats>div{min-height:105px;padding:12px 6px}
+.practice-hero-stats strong{font-size:39px;line-height:1;color:#111827}
+.practice-hero-stats span{margin-top:10px;color:#596579;font-size:15px;font-weight:900;white-space:nowrap}
+.practice-hero-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:9px}
+.practice-hero-actions button{min-height:58px;border:2px solid #d1d8d4;border-radius:13px;background:#fff;color:#111827;font-size:18px;font-weight:950}
+.practice-hero-actions .primary{border-color:#a92329;background:#c43d36;color:#fff}
+.practice-hero-actions button:last-child{border-color:#111;background:#111;color:#fff}
+.practice-hero-actions button:disabled{opacity:.38}
+.practice-hero-clock{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.practice-hero-clock>div{min-height:100px;padding:10px}
+.practice-hero-clock span{color:#596579;font-size:14px;font-weight:950;letter-spacing:.04em}
+.practice-hero-clock strong{margin-top:10px;color:#111827;font-size:32px;line-height:1}
+@media(max-width:420px){.practice-hero{margin-left:-12px;margin-right:-12px}.practice-hero-title{margin-left:-12px;margin-right:-12px}.practice-hero-stats strong{font-size:34px}.practice-hero-stats span{font-size:13px}.practice-hero-actions button{font-size:16px}}
