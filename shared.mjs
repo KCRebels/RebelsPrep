@@ -21,7 +21,7 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  if(plan.practiceType!=='Hitting')throw Error('Choose Hitting in Setup before activating this practice.');
  plan=JSON.parse(JSON.stringify(plan));
  const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');
- const facilitySlug=String(plan.facility||'').toLowerCase().includes('barn')?'barn':String(plan.facility||'').toLowerCase().includes('shed')?'shed':'';
+ const facilityName=String(plan.facility||'').trim().toLowerCase(),facilitySlug=facilityName==='the barn'||facilityName==='barn'?'barn':facilityName==='the shed'||facilityName==='shed'?'shed':'';
  if(!facilitySlug)throw Error('Choose The Barn or The Shed before activating this practice.');
  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(plan.start||'')))throw Error('Choose a valid practice start time before activating.');
  if(!Array.isArray(plan.players)||!plan.players.length)throw Error('Add at least one player before activating this practice.');
