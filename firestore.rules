@@ -10,6 +10,86 @@ service cloud.firestore {
   function guestFields() { return request.resource.data.keys().hasOnly(['kind','name','practiceTime','practiceDate','facility','sessionToken','sessionTokens','clockToken','clockTokens','createdAt','status']); }
   function validGuest() { return request.resource.data.name is string && request.resource.data.sessionTokens is list && request.resource.data.clockTokens is list && request.resource.data.sessionTokens.size() > 0 && request.resource.data.clockTokens.size() > 0 && request.resource.data.sessionTokens.size() == request.resource.data.clockTokens.size() && request.resource.data.sessionTokens.size() <= 10 && request.resource.data.clockTokens.size() <= 10 && request.resource.data.sessionToken in request.resource.data.sessionTokens && request.resource.data.clockToken in request.resource.data.clockTokens && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100; }
   function samePublicCheckin() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['createdAt']) && request.resource.data.createdAt == request.time; }
+
+  // Permanent account model. The hard-coded builder allowlist above is migration/bootstrap only.
+  function signedIn() { return request.auth != null; }
+  function accountPath() { return /databases/$(database)/documents/rpAccounts/$(request.auth.uid); }
+  function hasAccount() { return signedIn() && exists(accountPath()); }
+  function account() { return get(accountPath()).data; }
+  function orgCoach() { return hasAccount() && account().active == true && account().role in ['org_admin','org_coach']; }
+  function teamCoach(teamId) { return hasAccount() && account().active == true && account().role == 'team_coach' && account().teamIds is list && teamId in account().teamIds; }
+  function coachFor(teamId) { return orgCoach() || teamCoach(teamId); }
+  function ownPlayer(playerId) { return hasAccount() && account().active == true && account().role == 'player' && account().playerId == playerId; }
+  function playerOnTeam(teamId) { return hasAccount() && account().active == true && account().role == 'player' && account().teamIds is list && teamId in account().teamIds; }
+  function validAccountRole() { return request.resource.data.role in ['org_admin','org_coach','team_coach','player']; }
+  function accountSelfFields() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','lastSeenAt']); }
+  match /rpAccounts/{uid} {
+   allow get: if signedIn() && (request.auth.uid == uid || orgCoach());
+   allow list: if orgCoach();
+   // During migration only an existing legacy builder can provision identities/permissions.
+   allow create, delete: if builder() && validAccountRole();
+   allow update: if (builder() && validAccountRole()) || (signedIn() && request.auth.uid == uid && accountSelfFields());
+  }
+  match /rpPlayers/{playerId} {
+   allow get: if ownPlayer(playerId) || orgCoach() || (resource.data.teamIds is list && resource.data.teamIds.size() > 0 && resource.data.teamIds[0] is string && teamCoach(resource.data.teamIds[0]));
+   allow list: if orgCoach();
+   allow create, update: if builder() || orgCoach();
+   allow delete: if false;
+   match /private/{document=**} {
+    allow read: if ownPlayer(playerId) || orgCoach();
+    allow write: if orgCoach();
+   }
+  }
+  match /rpPractices/{practiceId} {
+   allow get: if orgCoach() || coachFor(resource.data.teamId) || playerOnTeam(resource.data.teamId);
+   allow list: if hasAccount();
+   allow create: if builder() || coachFor(request.resource.data.teamId);
+   allow update: if builder() || coachFor(resource.data.teamId);
+   allow delete: if false;
+   match /assignments/{playerId} {
+    allow get: if ownPlayer(playerId) || orgCoach() || coachFor(resource.data.teamId);
+    allow list: if orgCoach();
+    allow create, update: if builder() || coachFor(request.resource.data.teamId);
+    allow delete: if false;
+   }
+  }
+  match /rpFeedback/{feedbackId} {
+   allow get: if ownPlayer(resource.data.playerId) || orgCoach() || coachFor(resource.data.teamId);
+   allow list: if hasAccount();
+   allow create: if coachFor(request.resource.data.teamId)
+    && request.resource.data.authorUid == request.auth.uid
+    && request.resource.data.authorCoachId is string
+    && request.resource.data.authorName is string
+    && request.resource.data.playerId is string;
+   allow update: if coachFor(resource.data.teamId)
+    && request.resource.data.authorUid == resource.data.authorUid
+    && request.resource.data.authorCoachId == resource.data.authorCoachId
+    && request.resource.data.authorName == resource.data.authorName
+    && request.resource.data.playerId == resource.data.playerId
+    && request.resource.data.teamId == resource.data.teamId;
+   allow delete: if orgCoach();
+  }
+  match /rpFacilities/{facilityId} {
+   allow get, list: if hasAccount();
+   allow create, update: if orgCoach();
+   allow delete: if false;
+  }
+  match /rpAccountCheckins/{checkinId} {
+   allow get: if hasAccount() && (resource.data.uid == request.auth.uid || orgCoach() || coachFor(resource.data.teamId));
+   allow list: if hasAccount();
+   allow create: if hasAccount()
+    && account().role == 'player'
+    && request.resource.data.uid == request.auth.uid
+    && request.resource.data.playerId == account().playerId
+    && playerOnTeam(request.resource.data.teamId)
+    && request.resource.data.facilityId is string
+    && request.resource.data.practiceId is string
+    && request.resource.data.createdAt == request.time;
+   allow update: if orgCoach() || coachFor(resource.data.teamId);
+   allow delete: if false;
+  }
+
+  // Legacy compatibility collections remain until authenticated accounts replace them.
   match /rpPortals/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpClocks/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpTeams/{team} { allow get, create, update: if builder(); allow list, delete: if false; }
