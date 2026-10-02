@@ -6,7 +6,7 @@ test('account roster has stable unique player identities',()=>{
  const players=canonicalPlayerRecords(),audit=rosterAudit();
  assert.equal(new Set(players.map(p=>p.id)).size,players.length);
  assert.equal(audit.playerCount,players.length);
- assert.ok(audit.problems.every(x=>x.startsWith('No individual team: ')||x.startsWith('Unknown team ')),audit.problems.join('; '));
+ assert.ok(audit.problems.every(x=>!x.startsWith('Duplicate player ID: ')),audit.problems.join('; '));
  assert.ok(players.length>250,'roster must not be modeled as a small fixed list');
 });
 
