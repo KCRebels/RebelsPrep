@@ -9,8 +9,9 @@ try{
  let seq=100;const token=()=> (++seq).toString(16).padStart(64,'0');
  const services=async()=>({F,db,auth:{currentUser:{emailVerified:true,email:'recruiting@rebelssoftball.org'}}});
  const src=await readFile(new URL('./shared.mjs',import.meta.url),'utf8');
- const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function control')).replace('export async function','async function');
- const activate=new Function('services','allowed','token','newClock','clockState','portalAssignments','portalURL','checkinURL',body+'return activate;')(services,()=>true,token,newClock,clockState,portalAssignments,portalURL,(base,t)=>new URL('?checkin=1&session='+t,base).href);
+ const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function watchClock')).replaceAll('export async function','async function');
+ const api=new Function('services','allowed','token','newClock','changeClock','clockState','portalAssignments','portalURL','checkinURL',body+'return {activate,control};')(services,()=>true,token,newClock,changeClock,clockState,portalAssignments,portalURL,(base,t)=>new URL('?checkin=1&session='+t,base).href);
+ const {activate,control}=api;
  const p={id:'p1',name:'Grace Samuels',role:'player',memberTeamIds:['multi-a','multi-b']},p2={id:'p2',name:'Stella Utter',role:'player',memberTeamIds:['multi-b']},coach={id:'c1',name:'Coach One',role:'coach'};
  const plan={practiceType:'Hitting',facility:'The Barn',start:'17:30',players:[p,p2],coaches:[coach],blocks:[{number:1,start:1050,end:1062,stations:[{kind:'machine',drill:'Machine',resource:'Machine',players:['p1','p2'],coach:'c1'}],coaching:[]}],blockMinutes:12,durationMinutes:12,replacements:[]};
  const permanent='d'.repeat(64),alternate='e'.repeat(64);
@@ -30,6 +31,10 @@ try{
  assert.ok(result.checkinURL.includes('?checkin=1&session='));
  const sessionDoc=await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken));assert.equal(sessionDoc.data().active,true);assert.equal(sessionDoc.data().clockToken,result.clockToken);assert.deepEqual(sessionDoc.data().playerIds,['p1','p2']);assert.deepEqual(sessionDoc.data().playerNames,{p1:'Grace Samuels',p2:'Stella Utter'});assert.deepEqual(sessionDoc.data().teamIds,['combined--multi-a--multi-b','multi-a','multi-b']);assert.equal(sessionDoc.data().facility,'barn');
  const barnDoc=await F.getDoc(F.doc(db,'rpCheckinLocations','barn'));assert.ok(barnDoc.data().sessions.some(x=>x.checkinToken===result.checkinToken&&x.clockToken===result.clockToken&&x.start===plan.start));
+ await control(result.clockToken,'start');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.running,true);
+ await control(result.clockToken,'pause');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.running,false);
+ await control(result.clockToken,'resume');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.running,true);
+ await control(result.clockToken,'next');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.phase,'wrap');
 
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));
  assert.equal(first.data().clockToken,result.clockToken);
