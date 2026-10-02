@@ -7,7 +7,7 @@ const env=await initializeTestEnvironment({projectId:'demo-rebelsprep',firestore
 try{
  const db=env.authenticatedContext('multi-coach',{email:'Recruiting@rebelssoftball.org',email_verified:true}).firestore();
  let seq=100;const token=()=> (++seq).toString(16).padStart(64,'0');
- const services=async()=>({F,db,auth:{currentUser:{emailVerified:true}}});
+ const services=async()=>({F,db,auth:{currentUser:{emailVerified:true,email:'recruiting@rebelssoftball.org'}}});
  const src=await readFile(new URL('./shared.mjs',import.meta.url),'utf8');
  const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function control')).replace('export async function','async function');
  const activate=new Function('services','allowed','token','newClock','clockState','portalAssignments','portalURL','checkinURL',body+'return activate;')(services,()=>true,token,newClock,clockState,portalAssignments,portalURL,(base,t)=>new URL('?checkin=1&session='+t,base).href);
