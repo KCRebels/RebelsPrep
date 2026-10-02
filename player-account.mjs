@@ -1,4 +1,4 @@
-import {accountContext,isPlayer,sendPlayerSignInLink,finishPlayerSignIn,signOutAccount} from './account-model.mjs?v=rpplayer2';
+import {accountContext,isPlayer,sendPlayerSignInLink,finishPlayerSignIn,signOutAccount,registerPendingPlayerLogin} from './account-model.mjs?v=rpplayer3';
 
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,7 +23,7 @@ function playerHome(){
 function render(){const app=$('#app');app.innerHTML=(message?'<div class="notice">'+esc(message)+'</div>':'')+(!ctx?.user?login():!isPlayer(ctx.account)?unclaimed():playerHome());bind();}
 function bind(){
  $('#send-player-link')?.addEventListener('click',async()=>{const email=$('#player-email')?.value;busy=true;message='';render();try{await sendPlayerSignInLink(email);message='Sign-in link sent. Open that email on this device.';}catch(e){message=e.message;}busy=false;render();});
- $('#finish-player-link')?.addEventListener('click',async()=>{const link=$('#player-link')?.value?.trim();busy=true;message='';render();try{await finishPlayerSignIn(link);await load();return;}catch(e){message=e.message;}busy=false;render();});
+ $('#finish-player-link')?.addEventListener('click',async()=>{const link=$('#player-link')?.value?.trim();busy=true;message='';render();try{await finishPlayerSignIn(link);await registerPendingPlayerLogin();await load();return;}catch(e){message=e.message;}busy=false;render();});
  $('#player-signout')?.addEventListener('click',async()=>{await signOutAccount();ctx=null;profile=null;message='Signed out.';render();});
 }
 async function load(){
