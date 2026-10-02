@@ -4,10 +4,11 @@ import {doc,setDoc,getDoc,getDocs,collection,writeBatch,onSnapshot,updateDoc} fr
 import assert from 'node:assert/strict';
 const env=await initializeTestEnvironment({projectId:'demo-rebelsprep',firestore:{rules:await readFile(new URL('./firestore.rules',import.meta.url),'utf8')}});
 try{
- const coach=env.authenticatedContext('dan',{email:'Recruiting@rebelssoftball.org',email_verified:true}).firestore();
+ const coach=env.authenticatedContext('dan',{email:'recruiting@rebelssoftball.org',email_verified:true}).firestore();
  const anonymous=env.unauthenticatedContext().firestore();
  const outsider=env.authenticatedContext('outside',{email:'other@example.com',email_verified:true}).firestore();
- const unverified=env.authenticatedContext('unverified',{email:'Recruiting@rebelssoftball.org',email_verified:false}).firestore();
+ const unverified=env.authenticatedContext('unverified',{email:'recruiting@rebelssoftball.org',email_verified:false}).firestore();
+ for(const [i,email] of ['chrisolsen@finditds.com','halley.rindom@gmail.com','dmayhugh425511@gmail.com'].entries()){const db=env.authenticatedContext('coach'+i,{email,email_verified:true}).firestore();await assertSucceeds(setDoc(doc(db,'rpTeams','allowlist-'+i),{ok:true}));}
  const player='a'.repeat(64),clock='b'.repeat(64);
  const batch=writeBatch(coach);batch.set(doc(coach,'rpTeams','nationals'),{portals:{one:{token:player}}});batch.set(doc(coach,'rpPortals',player),{name:'Player One',clockToken:clock,blocks:[]});batch.set(doc(coach,'rpClocks',clock),{clock:{running:false,done:false}});await assertSucceeds(batch.commit());
  await assertSucceeds(getDoc(doc(anonymous,'rpPortals',player)));
