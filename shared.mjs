@@ -72,10 +72,10 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
    const person=(p.role==='coach'?plan.coaches:plan.players).find(x=>x.id===p.id);
    tx.set(F.doc(db,'rpPortals',id),{name:p.name,role:p.role,active:Boolean(person),date,clockToken:person?clockToken:null,blocks:person?portalAssignments(plan,person,p.role):[]});
   }
-  tx.set(F.doc(db,'rpClocks',clockToken),{clock:newClock(plan),date,teamId,teamIds});
-  tx.set(F.doc(db,'rpCheckinSessions',checkinToken),{date,clockToken,teamId,teamIds,facility:facilitySlug,start:plan.start,players:plan.players.map(p=>({id:p.id,name:p.name})),playerIds:plan.players.map(p=>p.id),playerNames:Object.fromEntries(plan.players.map(p=>[p.id,p.name])),active:true});
-  if(locationRef){const old=locationSnap?.exists()?locationSnap.data():{},kept=(old.sessions||[]).filter(x=>x.date===date&&x.checkinToken!==checkinToken);kept.push({date,start:plan.start,checkinToken,clockToken,teamId,teamIds});tx.set(locationRef,{facility:facilitySlug,date,sessions:kept,updatedAt:Date.now()});}
-  const next={portals,clockToken,checkinToken,checkinURL:checkinURL(base,checkinToken),plan,date,teamIds,practiceKey:teamId};
+  tx.set(F.doc(db,'rpClocks',clockToken),{clock:newClock(plan),date,teamId,teamIds:keys});
+  tx.set(F.doc(db,'rpCheckinSessions',checkinToken),{date,clockToken,teamId,teamIds:keys,facility:facilitySlug,start:plan.start,players:plan.players.map(p=>({id:p.id,name:p.name})),playerIds:plan.players.map(p=>p.id),playerNames:Object.fromEntries(plan.players.map(p=>[p.id,p.name])),active:true});
+  if(locationRef){const old=locationSnap?.exists()?locationSnap.data():{},kept=(old.sessions||[]).filter(x=>x.date===date&&x.checkinToken!==checkinToken);kept.push({date,start:plan.start,checkinToken,clockToken,teamId,teamIds:keys});tx.set(locationRef,{facility:facilitySlug,date,sessions:kept,updatedAt:Date.now()});}
+  const next={portals,clockToken,checkinToken,checkinURL:checkinURL(base,checkinToken),plan,date,teamIds:keys,practiceKey:teamId};
   for(const key of keys){
    if(key===teamId){tx.set(F.doc(db,'rpTeams',key),next);continue;}
    const own={...directories.get(key).portals};
