@@ -62,6 +62,7 @@ try{
  await assertFails(setDoc(doc(anonymous,'rpCheckins','bad-clock-format'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:'bad',teamId:'nationals',teamIds:['nationals'],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'checked-in'}));
  await updateDoc(doc(coach,'rpClocks',clock),{clock:{running:false,done:true}});
  await assertFails(setDoc(doc(anonymous,'rpCheckins','done-clock'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,teamId:'nationals',teamIds:['nationals'],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'checked-in'}));
+ await assertFails(setDoc(doc(anonymous,'rpCheckins','done-clock-guest'),{kind:'guest-request',name:'Guest One',sessionToken:session,sessionTokens:[session],clockToken:clock,clockTokens:[clock],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'pending'}));
  await updateDoc(doc(coach,'rpClocks',clock),{clock:{running:false,done:false}});
  await updateDoc(doc(coach,'rpCheckinSessions',session),{active:false});
  await assertFails(setDoc(doc(anonymous,'rpCheckins','closed-session'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,teamId:'nationals',teamIds:['nationals'],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'checked-in'}));
