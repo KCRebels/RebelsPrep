@@ -34,8 +34,9 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  const validTeamId=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!x.includes('/');
  if(!validTeamId(teamId)||!Array.isArray(teamIds)||teamIds.some(x=>!validTeamId(x)))throw Error('Choose a valid team before activating this practice.');
  if(allPeople.some(p=>p.memberTeamIds!=null&&(!Array.isArray(p.memberTeamIds)||p.memberTeamIds.some(x=>!validTeamId(x)))))throw Error('The selected practice roster has invalid team membership.');
- const planIds=new Set(plan.players.map(p=>p.id)),selectedPlayers=new Map(allPeople.filter(p=>p.role==='player').map(p=>[p.id,p]));
+ const planIds=new Set(plan.players.map(p=>p.id)),selectedPlayers=new Map(allPeople.filter(p=>p.role==='player').map(p=>[p.id,p])),selectedCoaches=new Map(allPeople.filter(p=>p.role==='coach').map(p=>[p.id,p]));
  if([...planIds].some(id=>!selectedPlayers.has(id)))throw Error('The practice contains a player who is not in the selected roster.');
+ if(!Array.isArray(plan.coaches)||plan.coaches.some(p=>!p||typeof p.id!=='string'||!p.id||!selectedCoaches.has(p.id)))throw Error('The practice contains a coach who is not in the selected roster.');
  const clockToken=token(),checkinToken=token(),keys=[...new Set([teamId,...teamIds])],candidateTokens=new Map(allPeople.map(p=>[p.id,token()]));
  return F.runTransaction(db,async tx=>{
   const locationRef=facilitySlug?F.doc(db,'rpCheckinLocations',facilitySlug):null;
