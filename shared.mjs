@@ -30,7 +30,8 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  if(plan.requiresAcceptance&&!plan.accepted)throw Error('Accept the listed shortfalls before activating.');
  if(!Array.isArray(allPeople)||allPeople.some(p=>!p||typeof p.id!=='string'||!p.id||p.id.length>128||typeof p.name!=='string'||!p.name.trim()||p.name.length>100||!['player','coach'].includes(p.role)))throw Error('The selected practice roster is invalid.');
  if(new Set(allPeople.map(p=>p.id)).size!==allPeople.length)throw Error('The selected practice roster contains a duplicate ID.');
- const dateText=String(date||''),dateParts=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText),dateObj=dateParts?new Date(Date.UTC(Number(dateParts[1]),Number(dateParts[2])-1,Number(dateParts[3]))):null;\n if(!dateParts||dateObj.getUTCFullYear()!==Number(dateParts[1])||dateObj.getUTCMonth()!==Number(dateParts[2])-1||dateObj.getUTCDate()!==Number(dateParts[3]))throw Error('Choose a valid practice date before activating.');
+ const dateText=String(date||''),dateParts=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText),dateObj=dateParts?new Date(Date.UTC(Number(dateParts[1]),Number(dateParts[2])-1,Number(dateParts[3]))):null;
+ if(!dateParts||dateObj.getUTCFullYear()!==Number(dateParts[1])||dateObj.getUTCMonth()!==Number(dateParts[2])-1||dateObj.getUTCDate()!==Number(dateParts[3]))throw Error('Choose a valid practice date before activating.');
  const validTeamId=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!x.includes('/');
  if(!validTeamId(teamId)||!Array.isArray(teamIds)||teamIds.some(x=>!validTeamId(x)))throw Error('Choose a valid team before activating this practice.');
  if(allPeople.some(p=>p.memberTeamIds!=null&&(!Array.isArray(p.memberTeamIds)||p.memberTeamIds.some(x=>!validTeamId(x)))))throw Error('The selected practice roster has invalid team membership.');
