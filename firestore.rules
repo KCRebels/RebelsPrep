@@ -22,6 +22,7 @@ service cloud.firestore {
   function ownPlayer(playerId) { return hasAccount() && account().active == true && account().role == 'player' && account().playerId == playerId; }
   function playerOnTeam(teamId) { return hasAccount() && account().active == true && account().role == 'player' && account().teamIds is list && teamId in account().teamIds; }
   function validAccountRole() { return request.resource.data.role in ['org_admin','org_coach','team_coach','player']; }
+  function pendingPlayerCreate(uid) { return signedIn() && request.auth.uid == uid && request.resource.data.role == 'pending_player' && request.resource.data.active == false && request.resource.data.email == request.auth.token.email && request.resource.data.teamIds is list && request.resource.data.teamIds.size() == 0 && request.resource.data.keys().hasOnly(['role','active','displayName','email','teamIds','createdAt','lastSeenAt']); }
   function eligiblePlayerAccount() { return request.resource.data.role != 'player' || (request.resource.data.playerId is string && exists(/databases/$(database)/documents/rpPlayers/$(request.resource.data.playerId)) && get(/databases/$(database)/documents/rpPlayers/$(request.resource.data.playerId)).data.playerPortalEnabled == true); }
   function accountSelfFields() { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','lastSeenAt']); }
   match /rpSystem/{document} {
@@ -33,7 +34,7 @@ service cloud.firestore {
    allow get: if signedIn() && (request.auth.uid == uid || orgCoach());
    allow list: if orgCoach();
    // During migration only an existing legacy builder can provision identities/permissions.
-   allow create: if builder() && validAccountRole() && eligiblePlayerAccount();
+   allow create: if (builder() && validAccountRole() && eligiblePlayerAccount()) || pendingPlayerCreate(uid);
    allow delete: if builder();
    allow update: if (builder() && validAccountRole() && eligiblePlayerAccount()) || (signedIn() && request.auth.uid == uid && accountSelfFields());
   }
