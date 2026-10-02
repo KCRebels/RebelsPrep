@@ -31,7 +31,7 @@ service cloud.firestore {
    allow update: if (builder() && validAccountRole()) || (signedIn() && request.auth.uid == uid && accountSelfFields());
   }
   match /rpPlayers/{playerId} {
-   allow get: if ownPlayer(playerId) || orgCoach() || (resource.data.teamIds is list && resource.data.teamIds is list && account().teamIds is list && account().teamIds.toSet().hasAny(resource.data.teamIds.toSet()));
+   allow get: if ownPlayer(playerId) || orgCoach() || (hasAccount() && account().active == true && account().role == 'team_coach' && resource.data.teamIds is list && account().teamIds is list && account().teamIds.toSet().hasAny(resource.data.teamIds.toSet()));
    allow list: if orgCoach();
    allow create, update: if builder() || orgCoach();
    allow delete: if false;
