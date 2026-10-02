@@ -71,7 +71,7 @@ service cloud.firestore {
   }
   match /rpFacilities/{facilityId} {
    allow get, list: if hasAccount();
-   allow create, update: if orgCoach();
+   allow create, update: if builder() || orgCoach();
    allow delete: if false;
   }
   match /rpAccountCheckins/{checkinId} {
