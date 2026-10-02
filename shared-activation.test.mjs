@@ -2,7 +2,7 @@ import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {initializeTestEnvironment} from '@firebase/rules-unit-testing';
 import * as F from 'firebase/firestore';
-import {newClock,clockState,portalAssignments,portalURL} from './portal-model.mjs';
+import {newClock,changeClock,clockState,portalAssignments,portalURL} from './portal-model.mjs';
 const env=await initializeTestEnvironment({projectId:'demo-rebelsprep',firestore:{rules:await readFile(new URL('./firestore.rules',import.meta.url),'utf8')}});
 try{
  const db=env.authenticatedContext('multi-coach',{email:'Recruiting@rebelssoftball.org',email_verified:true}).firestore();
