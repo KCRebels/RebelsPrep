@@ -20,6 +20,7 @@ try{
  const people=[p,p2,coach];
  await assert.rejects(()=>activate({...plan,practiceType:''},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Choose Hitting/);
  await assert.rejects(()=>activate({...plan,facility:'Unknown'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Barn or The Shed/);
+ await assert.rejects(()=>activate({...plan,facility:'Barnyard'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/Barn or The Shed/);
  await assert.rejects(()=>activate({...plan,start:'25:90'},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/valid practice start time/);
  await assert.rejects(()=>activate({...plan,players:[]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/at least one player/);
  await assert.rejects(()=>activate({...plan,players:[p,{...p}]},'multi-a','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/'),/duplicate player ID/);
