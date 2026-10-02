@@ -13,7 +13,17 @@ service cloud.firestore {
   match /rpPortals/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpClocks/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
   match /rpTeams/{team} { allow get, create, update: if builder(); allow list, delete: if false; }
-  match /rpCheckinSessions/{token} { allow get: if token.matches('^[a-f0-9]{64}$'); allow list, delete: if false; allow create, update: if builder(); }
+  match /rpCheckinSessions/{token} { allow get: if token.matches('^[a-f0-9]{64}
+  match /rpCheckinLocations/{location} { allow get: if location in ['barn','shed']; allow list, delete: if false; allow create, update: if builder(); }
+  match /rpCheckins/{id} {
+   allow create: if request.resource.data.createdAt == request.time && request.resource.data.name is string && request.resource.data.practiceTime is string && request.resource.data.practiceDate is string && validSession() && ((request.resource.data.kind == 'player' && request.resource.data.status == 'checked-in' && playerFields() && validPlayer()) || (request.resource.data.kind == 'guest-request' && request.resource.data.status == 'pending' && guestFields() && validGuest()));
+   allow get, list: if builder();
+   allow update: if builder() || (resource.data.kind == 'player' && resource.data.status == 'checked-in' && request.resource.data.kind == 'player' && request.resource.data.status == 'checked-in' && playerFields() && validSession() && validPlayer() && samePublicCheckin()) || (resource.data.kind == 'guest-request' && resource.data.status == 'pending' && request.resource.data.kind == 'guest-request' && request.resource.data.status == 'pending' && guestFields() && validSession() && validGuest() && samePublicCheckin());
+   allow delete: if false;
+  }
+ }
+}
+); allow list: if builder(); allow delete: if false; allow create, update: if builder(); }
   match /rpCheckinLocations/{location} { allow get: if location in ['barn','shed']; allow list, delete: if false; allow create, update: if builder(); }
   match /rpCheckins/{id} {
    allow create: if request.resource.data.createdAt == request.time && request.resource.data.name is string && request.resource.data.practiceTime is string && request.resource.data.practiceDate is string && validSession() && ((request.resource.data.kind == 'player' && request.resource.data.status == 'checked-in' && playerFields() && validPlayer()) || (request.resource.data.kind == 'guest-request' && request.resource.data.status == 'pending' && guestFields() && validGuest()));
