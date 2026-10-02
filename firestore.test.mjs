@@ -68,6 +68,11 @@ try{
  await assertFails(setDoc(doc(anonymous,'rpCheckins','closed-session'),{kind:'player',name:'Player One',playerId:'p1',sessionToken:session,clockToken:clock,teamId:'nationals',teamIds:['nationals'],practiceTime:'17:30',practiceDate:'2026-10-01',facility:'barn',createdAt:serverTimestamp(),status:'checked-in'}));
  await assertFails(getDocs(collection(anonymous,'rpCheckinSessions')));
  await assertSucceeds(getDocs(collection(coach,'rpCheckinSessions')));
+ // Pending player logins may register only themselves and cannot self-select a player.
+ const pendingDb=env.authenticatedContext('pending-user',{email:'pending@example.com',email_verified:true}).firestore();
+ await assertSucceeds(setDoc(doc(pendingDb,'rpAccounts','pending-user'),{role:'pending_player',active:false,displayName:'',email:'pending@example.com',teamIds:[],createdAt:serverTimestamp(),lastSeenAt:serverTimestamp()}));
+ await assertFails(setDoc(doc(pendingDb,'rpAccounts','someone-else'),{role:'pending_player',active:false,displayName:'',email:'pending@example.com',teamIds:[],createdAt:serverTimestamp(),lastSeenAt:serverTimestamp()}));
+ await assertFails(setDoc(doc(pendingDb,'rpAccounts','self-player'),{role:'player',active:true,playerId:'player-1',displayName:'Player One',email:'pending@example.com',teamIds:['team-b']}));
  // Permanent account authorization: org-wide coaches, assigned team coaches, and private players.
  await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-1'),{name:'Player One',teamIds:['team-b'],playerPortalEnabled:true}));
  await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-2'),{name:'Player Two',teamIds:['team-c'],playerPortalEnabled:true}));
