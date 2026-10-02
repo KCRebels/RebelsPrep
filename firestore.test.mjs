@@ -69,11 +69,13 @@ try{
  await assertFails(getDocs(collection(anonymous,'rpCheckinSessions')));
  await assertSucceeds(getDocs(collection(coach,'rpCheckinSessions')));
  // Permanent account authorization: org-wide coaches, assigned team coaches, and private players.
+ await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-1'),{name:'Player One',teamIds:['team-b'],playerPortalEnabled:true}));
+ await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-2'),{name:'Player Two',teamIds:['team-c'],playerPortalEnabled:true}));
+ await assertSucceeds(setDoc(doc(coach,'rpPlayers','younger-player'),{name:'Younger Player',teamIds:['team-12u'],playerPortalEnabled:false}));
  await assertSucceeds(setDoc(doc(coach,'rpAccounts','org-admin'),{role:'org_admin',active:true,coachId:'coach-admin',displayName:'Admin',teamIds:[]}));
  await assertSucceeds(setDoc(doc(coach,'rpAccounts','team-coach'),{role:'team_coach',active:true,coachId:'coach-team',displayName:'Team Coach',teamIds:['team-a','team-b']}));
  await assertSucceeds(setDoc(doc(coach,'rpAccounts','player-user'),{role:'player',active:true,playerId:'player-1',displayName:'Player One',teamIds:['team-b']}));
- await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-1'),{name:'Player One',teamIds:['team-b']}));
- await assertSucceeds(setDoc(doc(coach,'rpPlayers','player-2'),{name:'Player Two',teamIds:['team-c']}));
+ await assertFails(setDoc(doc(coach,'rpAccounts','younger-player-user'),{role:'player',active:true,playerId:'younger-player',displayName:'Younger Player',teamIds:['team-12u']}));
  const orgDb=env.authenticatedContext('org-admin',{email:'admin@example.com',email_verified:true}).firestore();
  const teamDb=env.authenticatedContext('team-coach',{email:'team@example.com',email_verified:true}).firestore();
  const playerDb=env.authenticatedContext('player-user',{email:'player@example.com',email_verified:true}).firestore();
