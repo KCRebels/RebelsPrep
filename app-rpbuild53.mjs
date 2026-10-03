@@ -14,7 +14,7 @@ const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const blank=(teamId=teams[0].id)=>({teamId,teamIds:[teamId],started:false,practiceType:'',steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
-let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false,attendanceStage='coaches';
+let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false,attendanceStage='players';
 let historyTeamId=null,homeTeamIds=[],directoryVersion=0;
 let sharedUser=null,sharedDirectory=null,sharedData=null,sharedStop=null,sharedBusy=false,sharedMessage='',checkins=[],checkinStop=null;
 const teamKey=id=>KEY+':team:'+id;
@@ -118,12 +118,12 @@ function person(p,coach=false){
  return '<div class="person '+(inList.includes(p.id)?'included':'')+'"><label class="check"><input type="checkbox" data-include="'+p.id+'" '+(coach?'data-coach ':'')+(inList.includes(p.id)?'checked':'')+'><span>'+esc(p.name)+'<small>'+esc(parts.join(' | ')||(coach?'Coach':'Hitter'))+'</small></span></label>'+(!coach?'<button data-adjust="'+p.id+'">Adjust</button>':'')+'</div>';
 }
 function attendance(){
- if(attendanceStage==='coaches')return heading('Attendance · Coaches','Step 1 of 2 · Select the coaches working this practice.')+
- '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
- '<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button><button class="primary" id="next-attendance-players">Next: Players</button></div>';
- return heading('Attendance · Players','Step 2 of 2 · Select the players attending this practice.')+
+ if(attendanceStage==='players')return heading('Attendance · Players','Step 1 of 2 · Select the players attending this practice.')+
  '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions attendance-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-other-rebels">Add Other Rebels</button><button id="add-guest">Add Guest</button></div><p class="muted">Only selected players will be scheduled into this practice.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
- '<div class="actions step-actions">'+startOverButton()+'<button id="back-attendance-coaches">Back: Coaches</button><button id="save-draft">Save draft</button><button class="primary" data-next="drills">Next: Drills</button></div>';
+ '<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button><button class="primary" id="next-attendance-coaches">Next: Coaches</button></div>';
+ return heading('Attendance · Coaches','Step 2 of 2 · Select the coaches working this practice.')+
+ '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
+ '<div class="actions step-actions">'+startOverButton()+'<button id="back-attendance-players">Back: Players</button><button id="save-draft">Save draft</button><button class="primary" data-next="drills">Next: Drills</button></div>';
 }
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:state.selectedDrills.map(id=>drills.find(d=>d.id===id)).filter(Boolean),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
 function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
@@ -272,8 +272,8 @@ function bind(){
  click('open-drill-picker',()=>{drillPickerOpen=true;render();window.scrollTo(0,0);});
  click('close-drill-picker',()=>{drillPickerOpen=false;render();window.scrollTo(0,0);});
  click('new-practice',newPractice);click('start-over',startOverDraft);
- click('next-attendance-players',()=>{if(!state.coachIds.length){error='Select at least one coach before choosing players.';render();window.scrollTo(0,0);return;}error='';attendanceStage='players';render();window.scrollTo(0,0);});
- click('back-attendance-coaches',()=>{error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
+ click('next-attendance-coaches',()=>{if(state.included.length<3){error='Select at least three players before choosing coaches.';render();window.scrollTo(0,0);return;}error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
+ click('back-attendance-players',()=>{error='';attendanceStage='players';render();window.scrollTo(0,0);});
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
