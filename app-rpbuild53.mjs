@@ -272,7 +272,7 @@ function render(){
 function bind(){
  document.querySelectorAll('[data-practice-type]').forEach(el=>el.onclick=()=>{if(!dirty('setup')){render();return;}state.practiceType=el.dataset.practiceType;error='';save();render();});
  document.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));
- document.querySelectorAll('[data-next]').forEach(el=>el.onclick=()=>{if(view==='attendance'&&attendanceStage==='coaches'){if(!staffing||staffing.key!==staffingKey()||staffing.pending){error='Wait for the coach staffing check to finish.';render();return;}if(!staffing.minimum){error=staffingMessage();render();return;}if(state.coachIds.length<staffing.minimum){error='Select at least '+staffing.minimum+' coaches for this practice. You currently have '+state.coachIds.length+'.';render();return;}}nextStep(el.dataset.next);});
+ document.querySelectorAll('[data-next]').forEach(el=>el.onclick=()=>{if(view==='attendance'&&attendanceStage==='coaches'){const minimum=roughCoachMinimum();if(state.coachIds.length<minimum){error='Select at least '+minimum+' coaches for this practice. You currently have '+state.coachIds.length+'.';render();return;}}nextStep(el.dataset.next);});
  document.querySelectorAll('[data-team-check]').forEach(el=>el.onchange=()=>{homeTeamIds=el.checked?[...new Set([...homeTeamIds,el.dataset.teamCheck])]:homeTeamIds.filter(id=>id!==el.dataset.teamCheck);render();});
  if($('#build-selected-teams'))$('#build-selected-teams').onclick=chooseSelectedTeams;
  document.querySelectorAll('[data-resume-team]').forEach(el=>el.onclick=()=>resumeTeam(el.dataset.resumeTeam));
