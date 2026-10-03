@@ -6,6 +6,7 @@ import {players as roster,coaches,rosterReview} from './roster.mjs?v=rpbuild33';
 import {drills} from './drills.mjs?v=rpbuild16';
 import {timeLabel,clockMinutes,validatePractice} from './scheduler.mjs?v=rpbuild16';
 import {teams} from './teams.mjs?v=rpbuild34';
+import {rosterPlayers as organizationPlayers} from './team-rosters.mjs?v=rpcleanup1';
 import {playerSeedDocuments,teamSeedDocuments} from './account-roster.mjs?v=rpaccount55';
 import {settingsIssues,attendanceIssues,drillIssues,resetPractice,teeRequirement} from './workflow.mjs?v=rpbuild32';
 const KEY='RebelsPrep:coach-pilot:1';
@@ -79,7 +80,7 @@ function setup(){
  '<label style="min-width:0">Date<input id="date" type="date" value="'+state.date+'" style="box-sizing:border-box;width:100%;height:48px;font-size:16px;line-height:48px;padding:0 10px"></label>'+
  '<label style="min-width:0">Facility<select id="facility" style="box-sizing:border-box;width:100%;height:48px;font-size:16px;line-height:48px;padding:0 10px">'+options([['The Barn','The Barn'],['The Shed','The Shed — setup later',true],['Lone Elm','Lone Elm — setup later',true],['The Fields','The Fields — setup later',true]],state.facility)+'</select></label>'+
  '</div>'+
- '<div class="practice-type-field"><span>Practice type</span><div class="practice-type-buttons" role="group" aria-label="Practice type"><button type="button" data-practice-type="Hitting" aria-pressed="'+(state.practiceType==='Hitting')+'">Hitting</button><button type="button" disabled aria-disabled="true">Fielding</button><button type="button" disabled aria-disabled="true">Full</button></div></div>'+
+ '<div class="practice-type-field"><span>Practice type <strong style="color:#c8102e;font-size:.9em">(Pick one | Required)</strong></span><div class="practice-type-buttons" role="group" aria-label="Practice type"><button type="button" data-practice-type="Hitting" aria-pressed="'+(state.practiceType==='Hitting')+'">Hitting</button><button type="button" disabled aria-disabled="true">Fielding</button><button type="button" disabled aria-disabled="true">Full</button></div></div>'+
  '<div class="practice-timing-row" style="grid-column:1/-1;display:flex;gap:8px;width:100%;align-items:flex-start">'+
  '<label style="flex:1 1 0;width:0;min-width:0;font-size:13px;line-height:1.2;white-space:nowrap">Start time<input id="start" type="time" value="'+state.start+'" style="box-sizing:border-box;display:block;width:100%;min-width:0;height:50px;min-height:50px;margin:8px 0 0;padding:0 8px;font-size:16px;font-weight:700;line-height:50px"></label>'+
  '<label style="flex:1 1 0;width:0;min-width:0;font-size:13px;line-height:1.2;white-space:nowrap">Duration<input id="durationMinutes" type="number" min="60" max="360" step="1" value="'+state.durationMinutes+'" style="box-sizing:border-box;display:block;width:100%;min-width:0;height:50px;min-height:50px;margin:8px 0 0;padding:0 8px;font-size:16px;font-weight:700;line-height:50px"></label>'+
@@ -118,7 +119,7 @@ function person(p,coach=false){
 }
 function attendance(){
  return heading('Attendance','Only included players and coaches will enter this draft.')+
- '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions attendance-actions"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-guest">Add Guest</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
+ '<section class="panel"><h2>Players <span class="count">'+state.included.length+' / '+allPlayers().length+'</span></h2><p class="status">'+esc(rosterReview.message)+'</p><div class="actions attendance-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button id="include-all">Select All</button><button id="clear-players">Clear All</button><button id="add-other-rebels">Add Other Rebels</button><button id="add-guest">Add Guest</button></div><p class="muted">No shared responses are connected yet. These checkboxes are your manual attendance choices for this device.</p><div class="people">'+allPlayers().map(p=>person(p)).join('')+'</div></section>'+
  '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
  stepActions('drills','Next: Drills');
 }
@@ -272,7 +273,7 @@ function bind(){
  click('all-drills',()=>{const limit=stationLimit();if(limit===null||pickerLocked())return;if(dirty()){const chosen=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).map(d=>d.id);const remaining=extraDrills().filter(d=>!chosen.includes(d.id)).slice(0,Math.max(0,limit-chosen.length)).map(d=>d.id);state.selectedDrills=[...state.selectedDrills,...remaining];save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{if(!flushSetup()){render();return;}save();error='Draft saved on this device.';render();});
- click('use-replacements',useReplacements);click('cancel-replacements',()=>{replacementOffer=null;render();});click('build',build);click('rebuild',build);click('add-guest',guest);
+ click('use-replacements',useReplacements);click('cancel-replacements',()=>{replacementOffer=null;render();});click('build',build);click('rebuild',build);click('add-other-rebels',otherRebels);click('add-guest',guest);
  if($('#accept-plan'))$('#accept-plan').onchange=e=>{state.plan.accepted=e.target.checked;save();render();};
  if($('#assignment-filter'))$('#assignment-filter').onchange=e=>{$('#blocks').innerHTML=blocksHTML(e.target.value);};
  click('coach-login',loginDialog);click('coach-logout',()=>sharedAction(()=>shared.signOut()));click('activate-shared',activateShared);
@@ -290,6 +291,15 @@ function adjust(id){
  $('#adjust-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),arrival=f.get('arrival'),departure=f.get('departure');if(clockMinutes(departure)<=clockMinutes(arrival)){$('#adjust-error').textContent='Departure must be after arrival.';return;}if(!dirty('attendance')){$('#dialog').close();render();return;}state.adjustments[id]={arrival,departure,noPitchWarmup:f.has('noPitchWarmup'),canPitch:!f.has('notPitching'),canCatch:!f.has('notCatching')};save();$('#dialog').close();render();};
 }
 function toTime(min){return String(Math.floor(min/60)%24).padStart(2,'0')+':'+String(min%60).padStart(2,'0');}
+function otherRebels(){
+ const currentIds=new Set(team().players.map(p=>p.id));
+ const existingIds=new Set(allPlayers().map(p=>p.id));
+ const candidates=organizationPlayers.filter(p=>!currentIds.has(p.id)&&!existingIds.has(p.id)).sort((a,b)=>{const al=a.name.trim().split(/\\s+/).at(-1),bl=b.name.trim().split(/\\s+/).at(-1);return al.localeCompare(bl)||a.name.localeCompare(b.name);});
+ $('#dialog').innerHTML='<form id="other-rebels-form"><h2>Add Other Rebels</h2><input id="other-rebels-search" type="search" placeholder="Search players…" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:12px"><div id="other-rebels-list" class="people" style="max-height:55vh;overflow:auto"></div><div class="actions"><button type="button" id="cancel-other">Cancel</button><button class="primary">Add Selected</button></div></form>';
+ const draw=()=>{const q=($('#other-rebels-search').value||'').trim().toLowerCase();const shown=candidates.filter(p=>p.name.toLowerCase().includes(q));$('#other-rebels-list').innerHTML=shown.length?shown.map(p=>'<label class="person check"><input type="checkbox" name="player" value="'+esc(p.id)+'"><span>'+esc(p.name)+'</span></label>').join(''):'<p class="muted">No matching Rebels players.</p>';};
+ $('#dialog').showModal();draw();$('#other-rebels-search').oninput=draw;$('#cancel-other').onclick=()=>$('#dialog').close();
+ $('#other-rebels-form').onsubmit=e=>{e.preventDefault();const ids=[...new FormData(e.target).getAll('player')];if(!ids.length){$('#dialog').close();return;}if(!dirty('attendance')){$('#dialog').close();render();return;}for(const id of ids){const p=organizationPlayers.find(x=>x.id===id);if(p&&!state.guests.some(x=>x.id===id)){state.guests.push({...p,guest:false,otherRebel:true});state.included.push(id);}}state.included=[...new Set(state.included)];save();$('#dialog').close();render();};
+}
 function guest(){
  $('#dialog').innerHTML='<form id="guest-form"><h2>Add guest player</h2>'+setting('Name','<input name="name" required maxlength="80">')+'<div class="actions"><label class="check"><input name="pitcher" type="checkbox">Pitcher</label><label class="check"><input name="catcher" type="checkbox">Catcher</label></div><p class="muted">Guest players are saved in this device’s draft. Permanent roster management will use coach permissions when sign-in is connected.</p><div class="actions"><button type="button" id="cancel">Cancel</button><button class="primary">Add guest</button></div></form>';
  $('#dialog').showModal();$('#cancel').onclick=()=>$('#dialog').close();$('#guest-form').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),n=String(f.get('name')).trim();if(!n)return;if(!dirty('attendance')){$('#dialog').close();render();return;}const id='rp-guest-'+crypto.randomUUID();state.guests.push({id,name:n,pitcher:f.has('pitcher'),catcher:f.has('catcher'),guest:true});state.included.push(id);save();$('#dialog').close();render();};
