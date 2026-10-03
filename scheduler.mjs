@@ -85,7 +85,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
     if(!partitionable(remaining.length))return;
     const coreTees=chosen.reduce((n,s)=>n+(s.tees||0),0);
     if(coreTees>facility.tees)return;
-    const fill=fillDrills(remaining,extras,memory,rng,coreTees,preferThree);
+    const fill=fillDrills(remaining,extras,memory,rng,coreTees,preferThree,facility);
     if(fill){settled=[...chosen,...fill];return true;}return false;
    }
    const c=core[at],saved=pool;pool=remaining;
@@ -142,15 +142,15 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
  plan.requiresAcceptance=(!input.allowReplacements&&missingLive.length>0)||pitching.length>0||catching.length>0;
  return plan;
 }
-function fillDrills(pool,drills,memory,rng,reservedTees=0,preferThree=true){
+function fillDrills(pool,drills,memory,rng,reservedTees=0,preferThree=true,facility={tees:5,outsideStations:15}){
  if(!pool.length)return [];
  if(!partitionable(pool.length)||!drills.length)return null;
  let budget=1800;
  function visit(remaining,stations,tees){
   if(!remaining.length)return stations;
-  if(stations.length>=10||--budget<0)return null;
+  if(stations.length>=facility.outsideStations||--budget<0)return null;
   const usedDrills=new Set(stations.map(s=>s.drill));
-  const options=p=>drills.filter(d=>!usedDrills.has(d.name)&&tees+(d.tees||0)<=6);
+  const options=p=>drills.filter(d=>!usedDrills.has(d.name)&&tees+(d.tees||0)<=facility.tees);
   const sorted=remaining.slice().sort((a,b)=>options(a).length-options(b).length);
   const first=sorted[0];const choices=options(first).map(d=>({d,compat:sorted.slice().sort((a,b)=>Number(memory.get(a.id).seen.has(d.name))-Number(memory.get(b.id).seen.has(d.name))),unseen:sorted.filter(p=>!memory.get(p.id).seen.has(d.name)).length,r:rng()})).sort((a,b)=>b.unseen-a.unseen||a.r-b.r);
   for(const {d,compat} of choices){
@@ -175,7 +175,7 @@ export function buildPractice(input){
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
   if(!input.allowReplacements&&4*live<people.length)continue;
-  const frontCapacity=Math.min(2,coaches.length)*4*(total-live);
+  const frontCapacity=Math.min(prepared.facility.tunnels*2,coaches.length)*4*(total-live);
   if(frontCapacity<people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0))continue;
   for(let trial=0;trial<100;trial++){
    const pattern=Array(blocks).fill(false);
@@ -185,7 +185,7 @@ export function buildPractice(input){
    else if(trial%3===1)positions.sort((a,b)=>b-a);
    else positions.sort((a,b)=>(a%2)-(b%2)||a-b);
    positions.slice(0,live).forEach(i=>pattern[i]=true);
-   const threeCapacity=Math.min(2,coaches.length)*3*(total-live);
+   const threeCapacity=Math.min(prepared.facility.tunnels*2,coaches.length)*3*(total-live);
    const preferThree=threeCapacity>=people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0);
    const candidate=attempt(input,prepared,pattern,12577+trial*37+live*1000,preferThree);
    if(candidate&&(!best||candidate.score>best.score))best=candidate;
@@ -197,7 +197,7 @@ export function buildPractice(input){
  throw Error('No valid plan found with these selections. Add more different drills, include coaches, adjust attendance or arrival/departure, allow Front Toss replacements, or explicitly extend the practice. No station-size or mandatory-work rule was relaxed.');
 }
 export function validatePractice(plan){
- const errors=[],people=plan.players,ids=new Set(people.map(p=>p.id)),coachIds=new Set(plan.coaches.map(c=>c.id)),mem=new Map(people.map(p=>[p.id,{warm:p.noPitchWarmup,machine:0,front:0,live:0,pitch:0,catch:0,seen:new Set()}]));
+ const facility={tees:5,nets:14,machines:1,nineSquare:2,tunnels:2,outsideStations:15},errors=[],people=plan.players,ids=new Set(people.map(p=>p.id)),coachIds=new Set(plan.coaches.map(c=>c.id)),mem=new Map(people.map(p=>[p.id,{warm:p.noPitchWarmup,machine:0,front:0,live:0,pitch:0,catch:0,seen:new Set()}]));
  for(const [b,block] of plan.blocks.entries()){
   const assigned=new Set(),usedCoaches=new Set(),stationDrills=new Set();let machine=0,front=0,live=0,warmPairs=0,other=0,tees=0;const pending=[];
   function take(id){if(!ids.has(id))errors.push('Unknown player');if(assigned.has(id))errors.push('Conflicting assignment in block '+(b+1));assigned.add(id);const p=people.find(p=>p.id===id);if(p&&(b<p.from||b>=p.until))errors.push('Unavailable player in block '+(b+1));}
@@ -227,7 +227,9 @@ export function validatePractice(plan){
     else if(s.kind==='drill'){m.seen.add(s.drill);}
    }
   }
-  if(machine>1||front>2||live>1||front&&live)errors.push('Tunnel conflict');if(warmPairs>4||other>10||tees>6)errors.push('Barn capacity exceeded');
+  const tunnelUnits=machine*2+live*2+front;
+  if(machine>facility.machines||live>facility.tunnels||tunnelUnits>facility.tunnels*2)errors.push('Tunnel conflict');
+  if(warmPairs>4||other>facility.outsideStations||tees>facility.tees)errors.push('Barn capacity exceeded');
   for(const p of people){
    if(b>=p.from&&b<p.until&&!assigned.has(p.id))errors.push('Missing assignment');
    if(b===p.from&&!block.stations.some(s=>s.drill==='Warm Up'&&s.players.includes(p.id)))errors.push('Missing opening Warm Up');
