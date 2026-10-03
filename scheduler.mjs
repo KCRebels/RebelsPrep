@@ -7,6 +7,7 @@ function prepare(input){
  const step=Number(input.blockMinutes),duration=Number(input.durationMinutes),start=clockMinutes(input.start);
  if(![10,12,15].includes(step)||!Number.isFinite(start)||!Number.isFinite(duration)||duration<step||duration>360)throw Error('Choose valid time and block settings. Maximum duration is 360 minutes.');
  if(input.facility!=='The Barn')throw Error('Only The Barn is configured.');
+ const facility={tees:5,nets:14,machines:1,nineSquare:2,tunnels:2,outsideStations:15};
  const blocks=Math.floor(duration/step);
  const people=input.players.map(p=>{
   const arrival=p.arrival?clockMinutes(p.arrival):start,depart=p.departure?clockMinutes(p.departure):start+duration;
@@ -18,10 +19,10 @@ function prepare(input){
  const coachIds=new Set(input.coaches.map(c=>c.id));if(coachIds.size!==input.coaches.length)throw Error('Each coach must have a unique ID.');
  const extras=input.drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work');
  const variants={front:input.drills.filter(d=>d.kind==='front'),machine:input.drills.filter(d=>d.kind==='machine')};
- return {people,step,start,blocks,extras,variants,coaches:input.coaches,duration};
+ return {people,step,start,blocks,extras,variants,coaches:input.coaches,duration,facility};
 }
 function attempt(input,prepared,pattern,seed,preferThree=true){
- const {people,step,start,blocks,extras,variants,coaches,duration}=prepared,rng=random(seed);
+ const {people,step,start,blocks,extras,variants,coaches,duration,facility}=prepared,rng=random(seed);
  const memory=new Map(people.map(p=>[p.id,{machine:0,front:0,live:0,pitched:0,caught:0,warm:p.noPitchWarmup,seen:new Set()}]));
  const plan={blockMinutes:step,durationMinutes:duration,start:input.start,facility:input.facility,players:people,coaches,blocks:[],replacements:[],warnings:[],score:0,selectedDrills:input.drills.map(d=>({...d}))};
  const needsOpening=(p,b)=>b===p.from;
@@ -71,7 +72,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
    )+(kind==='live'&&(input.previousReplacements||[]).includes(p.id)?300:0)+100/Math.max(1,p.until-b)+(memory.get(p.id).machine===0&&kind==='front'?-35:0)+rng()*50})).sort((a,z)=>z.score-a.score).map(x=>x.p);
   }
   const coreDrill=(kind,index=0)=>{const list=variants[kind],d=list[((kind==='machine'?b:b*2)+index)%list.length];return {kind,drill:kind==='front'?'Front Toss':'Machine',...(d?{drill:d.name,drillId:d.id,tees:d.tees||0,equipment:d.equipment,howItWorks:d.howItWorks,coachingCues:d.coachingCues}:{})};};
-  const fronts=!pattern[b]?[...Array(Math.min(2,coaches.filter(c=>!usedCoaches.has(c.id)).length))].map((_,i)=>({...coreDrill('front',i),resource:'Front Toss'})):[];
+  const fronts=!pattern[b]?[...Array(Math.min(facility.tunnels*2,coaches.filter(c=>!usedCoaches.has(c.id)).length))].map((_,i)=>({...coreDrill('front',i),resource:'Front Toss'})):[];
   const core=[];
   if(livePitcher)core.push({kind:'live',drill:'Live',resource:'Shared tunnel',pitcher:livePitcher.id,catcher:liveCatcher?.id||null,equipment:liveCatcher?'Player catcher':'9Square'});
   // Alternate allocation order to avoid starving either mandatory hitting method.
@@ -83,7 +84,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
    if(at===core.length){
     if(!partitionable(remaining.length))return;
     const coreTees=chosen.reduce((n,s)=>n+(s.tees||0),0);
-    if(coreTees>6)return;
+    if(coreTees>facility.tees)return;
     const fill=fillDrills(remaining,extras,memory,rng,coreTees,preferThree);
     if(fill){settled=[...chosen,...fill];return true;}return false;
    }
