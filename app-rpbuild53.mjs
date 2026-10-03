@@ -131,7 +131,7 @@ function calculateStaffing(){
  try{const w=new Worker('./worker.mjs?v=rpstaff1',{type:'module'});staffingWorker=w;
   w.onmessage=e=>{if(staffing?.key===key)staffing={key,...e.data.staffing};w.terminate();render();};
   w.onerror=()=>{if(staffing?.key===key)staffing={key,error:'The staffing check could not load.'};w.terminate();render();};
-  w.postMessage({mode:'staffing',input:{...practiceInput(),coaches:[...coaches],drills:[...extraDrills(),...practiceInput().drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')]}});
+  w.postMessage({mode:'staffing',input:{...practiceInput(),coaches:[...coaches],drills:practiceInput().drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')}});
  }catch(e){staffing={key,error:e.message};}
 }
 function attendance(){
