@@ -2,7 +2,15 @@ import {buildPractice,validatePractice} from './scheduler.mjs?v=rpbuild16';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
 self.onmessage=event=>{
  try{
-  if(event.data.mode==='recommend'){
+  if(event.data.mode==='staffing'){
+   const input=event.data.input,max=Math.max(1,input.coaches.length),results=[];
+   let minimum=null,lastError='';
+   for(let n=1;n<=max;n++){
+    try{checked({...input,coaches:input.coaches.slice(0,n),allowReplacements:true});minimum=n;break;}
+    catch(e){lastError=e.message;results.push({coaches:n,error:e.message});}
+   }
+   self.postMessage({staffing:{minimum,available:max,error:minimum?null:lastError,attempts:results}});
+  }else if(event.data.mode==='recommend'){
    const plan=checked(event.data.input);
    const stationBlocks=plan.blocks.map(b=>{
     const hitting=b.stations.filter(s=>['drill','machine','front','live'].includes(s.kind));
