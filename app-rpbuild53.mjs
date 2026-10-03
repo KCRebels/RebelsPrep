@@ -68,7 +68,7 @@ function chooseSelectedTeams(){
  state.started=true;save();setView('setup');
 }
 function stepActions(next,label){return '<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button><button class="primary" data-next="'+next+'">'+label+'</button></div>';}
-function nextStep(next){if(!flushSetup()){render();return;}const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(errors.length){error=errors.join(' ');render();window.scrollTo(0,0);return;}state.steps[view]=true;state.started=true;save();setView(next);}
+function nextStep(next){if(!flushSetup()){render();return;}const errors=view==='setup'?settingsIssues(state):view==='attendance'?attendanceIssues(state,allPlayers(),coaches):drillIssues(state,drills);if(view==='drills'){const gate=feasibilityIssue();if(gate)errors.push(gate);if(!recommendation||recommendation.key!==recommendationKey()||recommendation.pending)errors.push('Wait for the practice feasibility check to finish before continuing.');}if(errors.length){error=errors.join(' ');render();window.scrollTo(0,0);return;}state.steps[view]=true;state.started=true;save();setView(next);}
 function review(){const problems=issues(),chosen=drills.filter(d=>state.selectedDrills.includes(d.id));return heading('Review Practice',esc(team().name))+'<section class="panel"><h2>Practice settings</h2><p>'+esc(state.date)+' · '+esc(state.facility)+' · '+timeLabel(clockMinutes(state.start))+'–'+timeLabel(clockMinutes(state.start)+Number(state.durationMinutes))+'</p><p>'+state.durationMinutes+' minutes · '+state.blockMinutes+' minute blocks</p><button data-view="setup">Edit Setup</button></section><section class="panel"><h2>Attendance</h2><p>'+state.included.length+' hitters · '+state.coachIds.length+' coaches</p><p class="muted">'+coaches.filter(c=>state.coachIds.includes(c.id)).map(c=>esc(c.name)).join(' · ')+'</p><button data-view="attendance">Edit Attendance</button></section><section class="panel"><h2>Drills</h2><p>'+chosen.length+' selected</p>'+(chosen.length?'<ul class="review-list">'+chosen.map(d=>'<li>'+esc(d.name)+'</li>').join(''):'<p class="muted">No additional drills selected.</p>')+'<p class="muted">Required: Warm Up · '+'Machine · Front Toss. '+'Live is the priority.'+'</p>'+equipmentWarning()+'<button data-view="drills">Edit Drills</button></section>'+(problems.length?'<div class="notice"><strong>Finish these choices</strong><ul>'+problems.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+replacementOfferHTML()+'<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button>'+(state.plan?'<button data-view="plan">View Practice</button>':'')+'<button id="build" class="primary" '+(busy||problems.length?'disabled':'')+'>'+(busy?'Building…':'Build Practice')+'</button></div>';}
 function options(vals,current){return vals.map(([v,label,disabled])=>'<option value="'+v+'" '+(String(v)===String(current)?'selected':'')+' '+(disabled?'disabled':'')+'>'+label+'</option>').join('');}
 function heading(title,sub){return '<h1>'+title+'</h1><p class="muted">'+sub+'</p>';}
@@ -125,12 +125,16 @@ function attendance(){
 }
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:state.selectedDrills.map(id=>drills.find(d=>d.id===id)).filter(Boolean),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
 function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
+function feasibilityIssue(){
+ const r=recommendation;
+ return r&&r.key===recommendationKey()&&!r.pending&&r.error?'This practice cannot be built with the current attendance, duration, block length, and station limits. '+r.error:'';
+}
 function drillGuidance(){
  if(state.included.length<3||!state.coachIds.length)return 'Choose attendance to see the suggested drill count.';
  const r=recommendation;
- if(!r||r.key!==recommendationKey()||r.pending)return 'Calculating drill count…';
- if(r.error)return 'Suggested drill count unavailable.';
- return r.total+' hitting stations total · '+r.frontCount+' additional with Front Toss'+(r.liveCount?' · '+r.liveCount+' additional with Live':'');
+ if(!r||r.key!==recommendationKey()||r.pending)return 'Checking whether this practice fits…';
+ if(r.error)return feasibilityIssue();
+ return 'Practice fits. '+r.total+' hitting stations total · '+r.frontCount+' additional with Front Toss'+(r.liveCount?' · '+r.liveCount+' additional with Live':'');
 }
 function drillChoiceTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Set Up '+r.count+' Drill '+(r.count===1?'Station':'Stations'):'Choose Practice Drills';}
 function updateDrillGuidance(){
@@ -167,7 +171,7 @@ function extraDrills(){return availableDrills().filter(d=>d.kind==='drill'&&d.na
 function drillInstructions(d){return [['Purpose',d.primaryPurpose],['Set Up',d.spaceSetup],['Equipment',d.equipment],['How To Do It',d.howItWorks],['Coaching Cues',d.coachingCues],['What Good Looks Like',d.success],['Best Used For',d.bestUsedFor],['Notes',d.notes]].filter(([,text])=>text).map(([label,text])=>'<section><h4>'+label+'</h4><p>'+esc(text)+'</p></section>').join('');}
 function equipmentWarning(){const n=teeRequirement(state.selectedDrills,drills);return n>6?'<p class="notice equipment-warning" role="status">These choices call for '+n+' tees. You have 6. The drills may need to run in different blocks.</p>':'';}
 function stationLimit(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null;}
-function pickerLocked(){const limit=stationLimit();return limit===null||extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length>=limit;}
+function pickerLocked(){const limit=stationLimit();return Boolean(feasibilityIssue())||limit===null||extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length>=limit;}
 function updatePickerAvailability(){const locked=pickerLocked();document.querySelectorAll('[data-select-drill]').forEach(el=>{const disabled=locked&&!state.selectedDrills.includes(el.dataset.selectDrill);el.disabled=disabled;el.closest('.drill-row').classList.toggle('unavailable',disabled);});const all=$('#all-drills');if(all)all.disabled=locked;}
 function pickerTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Station '+(r.count===1?'Drill':'Drills'):'Choose Station Drills';}
 function selectionSummary(){const selected=practiceInput().drills,r=recommendation,target=r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null,stationChoices=selected.filter(d=>d.kind==='drill').length;let station=0;return '<strong>'+stationChoices+(target!==null?' of '+target:'')+' station drills selected</strong>'+(selected.length?'<ol>'+selected.map(d=>'<li>'+(d.kind==='drill'?++station+'. ':d.kind==='machine'?'Machine focus: ':'Front Toss focus: ')+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
