@@ -117,22 +117,22 @@ function person(p,coach=false){
  if(adjust.canCatch===false)parts.push('Not catching');
  return '<div class="person '+(inList.includes(p.id)?'included':'')+'"><label class="check"><input type="checkbox" data-include="'+p.id+'" '+(coach?'data-coach ':'')+(inList.includes(p.id)?'checked':'')+'><span>'+esc(p.name)+'<small>'+esc(parts.join(' | ')||(coach?'Coach':'Hitter'))+'</small></span></label>'+(!coach?'<button data-adjust="'+p.id+'">Adjust</button>':'')+'</div>';
 }
-function staffingKey(){const input=practiceInput();return JSON.stringify({...input,coaches:coaches.map(c=>c.id),drills:[]});}
+function staffingKey(){const input=practiceInput();return JSON.stringify({players:state.included,start:input.start,durationMinutes:input.durationMinutes,blockMinutes:input.blockMinutes,facility:input.facility});}
+function roughCoachMinimum(){
+ const n=state.included.length;
+ // Staffing-only planning estimate. Final station/drill feasibility is checked later.
+ // About one coach per 9 hitters, with at least two coaches once the group is larger than a single small station group.
+ return Math.max(1,Math.ceil(n/9));
+}
 function staffingMessage(){
  if(attendanceStage!=='coaches')return '';
- if(!staffing||staffing.key!==staffingKey()||staffing.pending)return 'Checking coach staffing for this practice…';
- if(staffing.minimum)return 'This practice needs at least '+staffing.minimum+' '+(staffing.minimum===1?'coach':'coaches')+' with the current players, time, and station rules.';
- return 'The current practice cannot be made feasible with the available coaches. '+(staffing.error||'Adjust attendance or practice time.');
+ const minimum=roughCoachMinimum(),n=state.included.length;
+ return 'For '+n+' players, plan on at least '+minimum+' '+(minimum===1?'coach':'coaches')+'. This is the minimum staffing estimate; drill stations, equipment, and the final practice plan will be checked in the next steps.';
 }
 function calculateStaffing(){
  if(view!=='attendance'||attendanceStage!=='coaches'||state.included.length<3)return;
- const key=staffingKey();if(staffing?.key===key)return;
- staffingWorker?.terminate();staffing={key,pending:true};
- try{const w=new Worker('./worker.mjs?v=rpstaff1',{type:'module'});staffingWorker=w;
-  w.onmessage=e=>{if(staffing?.key===key)staffing={key,...e.data.staffing};w.terminate();render();};
-  w.onerror=()=>{if(staffing?.key===key)staffing={key,error:'The staffing check could not load.'};w.terminate();render();};
-  w.postMessage({mode:'staffing',input:{...practiceInput(),coaches:[...coaches],drills:[]}});
- }catch(e){staffing={key,error:e.message};}
+ const key=staffingKey(),minimum=roughCoachMinimum();
+ staffingWorker?.terminate();staffing={key,pending:false,minimum,available:coaches.length};
 }
 function attendance(){
  if(attendanceStage==='players')return heading('Attendance · Players','Step 1 of 2 · Select the players attending this practice.')+
