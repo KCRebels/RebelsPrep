@@ -74,7 +74,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
    )+(kind==='live'&&(input.previousReplacements||[]).includes(p.id)?300:0)+100/Math.max(1,p.until-b)+(memory.get(p.id).machine===0&&kind==='front'?-35:0)+rng()*50})).sort((a,z)=>z.score-a.score).map(x=>x.p);
   }
   const coreDrill=(kind,index=0)=>{const list=variants[kind],d=list[((kind==='machine'?b:b*2)+index)%list.length];return {kind,drill:kind==='front'?'Front Toss':'Machine',...(d?{drill:d.name,drillId:d.id,tees:d.tees||0,equipment:d.equipment,howItWorks:d.howItWorks,coachingCues:d.coachingCues}:{})};};
-  const fronts=!pattern[b]?[...Array(Math.min(facility.tunnels*2,coaches.filter(c=>!usedCoaches.has(c.id)).length))].map((_,i)=>({...coreDrill('front',i),resource:'Front Toss'})):[];
+  const tunnelUnits=facility.tunnels*2;const machineUnits=2;const liveUnits=livePitcher?2:0;const frontSlots=Math.max(0,tunnelUnits-machineUnits-liveUnits);const fronts=[...Array(Math.min(frontSlots,coaches.filter(c=>!usedCoaches.has(c.id)).length))].map((_,i)=>({...coreDrill('front',i),resource:'Front Toss'}));
   const core=[];
   if(livePitcher)core.push({kind:'live',drill:'Live',resource:'Shared tunnel',pitcher:livePitcher.id,catcher:liveCatcher?.id||null,equipment:liveCatcher?'Player catcher':'9Square'});
   // Alternate allocation order to avoid starving either mandatory hitting method.
