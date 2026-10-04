@@ -30,7 +30,7 @@ self.onmessage=event=>{
     if(plan.missingLive?.length){
      try{
       const replacement=checked({...event.data.input,allowReplacements:true});
-      if(replacement.replacements.length&&replacement.missingLive.length<plan.missingLive.length)self.postMessage({replacementOffer:replacement});
+      if(replacement.replacements.length)self.postMessage({replacementOffer:replacement});
       else self.postMessage({plan});
      }catch{self.postMessage({plan});}
     }else self.postMessage({plan});
