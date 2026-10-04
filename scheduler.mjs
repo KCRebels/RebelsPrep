@@ -50,8 +50,6 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
     if(pool.length<3){livePitcher=null;liveCatcher=null;pool=available.filter(p=>!needsOpening(p,b));}
    }
   }
-  // Pitching warm-ups are human pairs outside the tunnel. Four pairs at most.
-  // Coaches are preferred here so catchers remain available as hitters.
   const pairs=[];
   if(!pattern[b]&&b<lastLive){
    const pending=pool.filter(p=>p.canPitch&&!memory.get(p.id).warm).sort((a,z)=>a.until-z.until||rng()-.5);
@@ -61,7 +59,6 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
     const catcher=coach?null:pool.find(q=>q.id!==p.id&&q.canCatch&&!pending.some(v=>v.id===q.id));
     if(!coach&&!catcher)continue;
     const next=pool.filter(q=>q.id!==p.id&&q.id!==catcher?.id);
-    // Leave enough hitters for at least one 3–4 player core station.
     if(next.length<3)continue;
     pool=next;
     const s={kind:'warm',drill:'Pitching Warm Up',players:[p.id],catcher:catcher?.id||null,coach:coach?.id||null,resource:'Warm-up pair '+(pairs.length+1)};
@@ -69,17 +66,13 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
    }
   }
   function order(kind){
-   return pool.map(p=>({p,score:(
-    kind==='live'?(memory.get(p.id).live===0?250:0)-(memory.get(p.id).front>=2?180:0):
-    kind==='machine'?(memory.get(p.id).machine===0?220:0):
-    ((memory.get(p.id).front===0?230:0)+(input.allowReplacements&&memory.get(p.id).live===0&&memory.get(p.id).front<2?100:0))
-   )+(kind==='live'&&(input.previousReplacements||[]).includes(p.id)?300:0)+100/Math.max(1,p.until-b)+(memory.get(p.id).machine===0&&kind==='front'?-35:0)+rng()*50})).sort((a,z)=>z.score-a.score).map(x=>x.p);
+   return pool.map(p=>({p,score:(kind==='live'?(memory.get(p.id).live===0?250:0)-(memory.get(p.id).front>=2?180:0):kind==='machine'?(memory.get(p.id).machine===0?220:0):((memory.get(p.id).front===0?230:0)+(input.allowReplacements&&memory.get(p.id).live===0&&memory.get(p.id).front<2?100:0)))+(kind==='live'&&(input.previousReplacements||[]).includes(p.id)?300:0)+100/Math.max(1,p.until-b)+(memory.get(p.id).machine===0&&kind==='front'?-35:0)+rng()*50})).sort((a,z)=>z.score-a.score).map(x=>x.p);
   }
   const coreDrill=(kind,index=0)=>{const list=variants[kind],d=list[((kind==='machine'?b:b*2)+index)%list.length];return {kind,drill:kind==='front'?'Front Toss':'Machine',...(d?{drill:d.name,drillId:d.id,tees:d.tees||0,equipment:d.equipment,howItWorks:d.howItWorks,coachingCues:d.coachingCues}:{})};};
-  const tunnelUnits=facility.tunnels*2;const machineUnits=2;const liveUnits=livePitcher?2:0;const frontSlots=Math.max(0,tunnelUnits-machineUnits-liveUnits);const fronts=[...Array(Math.min(frontSlots,coaches.filter(c=>!usedCoaches.has(c.id)).length))].map((_,i)=>({...coreDrill('front',i),resource:'Front Toss'}));
+  const tunnelUnits=facility.tunnels*2, machineUnits=2, liveUnits=livePitcher?2:0, frontSlots=Math.max(0,tunnelUnits-machineUnits-liveUnits);
+  const fronts=[...Array(Math.min(frontSlots,coaches.filter(c=>!usedCoaches.has(c.id)).length))].map((_,i)=>({...coreDrill('front',i),resource:'Front Toss'}));
   const core=[];
   if(livePitcher)core.push({kind:'live',drill:'Live',resource:'Shared tunnel',pitcher:livePitcher.id,catcher:liveCatcher?.id||null,equipment:liveCatcher?'Player catcher':'9Square'});
-  // Alternate allocation order to avoid starving either mandatory hitting method.
   if(b%2===0)core.push({...coreDrill('machine'),resource:'Machine lane'});
   core.push(...fronts);
   if(b%2!==0)core.push({...coreDrill('machine'),resource:'Machine lane'});
@@ -106,7 +99,6 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
    return false;
   }
   if(!chooseCore(0,[],pool)){
-   // Retry this block without warm-up pairs if their roles prevented valid group sizes.
    if(pairs.length)return fail('partition','block '+(b+1)+' with '+available.length+' available, '+pool.length+' hitting-pool players, '+pairs.length+' pitching warm-up pairs');
    return fail('partition','block '+(b+1)+' with '+available.length+' available and '+pool.length+' hitting-pool players');
   }
@@ -154,12 +146,20 @@ function fillDrills(pool,drills,memory,rng,preferThree=true,facility={tees:5,out
   if(!remaining.length)return stations;
   if(stations.length>=facility.outsideStations||--budget<0)return null;
   const usedDrills=new Set(stations.map(s=>s.drill));
-  const options=p=>drills.filter(d=>!usedDrills.has(d.name));
+  const availableDrills=drills.filter(d=>!usedDrills.has(d.name));
+  const minStations=Math.ceil(remaining.length/4),maxStations=Math.floor(remaining.length/3);
+  if(minStations>availableDrills.length||stations.length+minStations>facility.outsideStations)return null;
+  const options=p=>availableDrills;
   const sorted=remaining.slice().sort((a,b)=>options(a).length-options(b).length);
-  const first=sorted[0];const choices=options(first).map(d=>({d,compat:sorted.slice().sort((a,b)=>Number(memory.get(a.id).seen.has(d.name))-Number(memory.get(b.id).seen.has(d.name))),unseen:sorted.filter(p=>!memory.get(p.id).seen.has(d.name)).length,r:rng()})).sort((a,b)=>b.unseen-a.unseen||a.r-b.r);
+  const first=sorted[0];
+  const choices=options(first).map(d=>({d,compat:sorted.slice().sort((a,b)=>Number(memory.get(a.id).seen.has(d.name))-Number(memory.get(b.id).seen.has(d.name))),unseen:sorted.filter(p=>!memory.get(p.id).seen.has(d.name)).length,r:rng()})).sort((a,b)=>b.unseen-a.unseen||a.r-b.r);
+  const tight=minStations===availableDrills.length;
+  const sizes=tight?[4,3]:(preferThree?[3,4]:[4,3]);
   for(const {d,compat} of choices){
-   for(const n of (preferThree?[3,4]:[4,3])){
+   for(const n of sizes){
     if(compat.length<n||!partitionable(remaining.length-n))continue;
+    const restCount=remaining.length-n,drillsLeft=availableDrills.length-1;
+    if(restCount&&Math.ceil(restCount/4)>drillsLeft)continue;
     const group=compat.slice(0,n),ids=new Set(group.map(p=>p.id));
     const rest=remaining.filter(p=>!ids.has(p.id));
     const result=visit(rest,[...stations,{kind:'drill',drill:d.name,drillId:d.id,players:group.map(p=>p.id),tees:d.tees||0,equipment:d.equipment,howItWorks:d.howItWorks,coachingCues:d.coachingCues,resource:'Drill station '+(drills.findIndex(x=>x.id===d.id)+1)}]);
@@ -179,9 +179,7 @@ export function buildPractice(input){
  const maxAssignableWithSelectedDrills=prepared.extras.length*4+12;
  if(maxActive>maxAssignableWithSelectedDrills)throw Error('This practice has '+maxActive+' hitters available in the same rotation, but '+prepared.extras.length+' selected drill stations plus Machine/Front Toss can place at most '+maxAssignableWithSelectedDrills+' hitters under the 3–4 player rule. Add '+Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)+' more drill station'+(Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)===1?'':'s')+'.');
  let best=null,diag={};
- // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
-  const liveCapacity=4*live;
   const frontStationsPerBlock=Math.min(Math.max(0,prepared.facility.tunnels*2-2),coaches.length);
   const frontCapacity=frontStationsPerBlock*4*(total-live);
   if(frontCapacity<people.length)continue;
@@ -235,9 +233,7 @@ export function validatePractice(plan){
     if(s.catcher){if(!people.find(p=>p.id===s.catcher)?.canCatch)errors.push('Ineligible live catcher');mem.get(s.catcher).catch++;}
     else if(s.equipment!=='9Square')errors.push('Live requires player catcher or 9Square');
    }else if(s.kind==='machine')machine++;else if(s.kind==='front'){front++;if(!s.coach)errors.push('Front Toss requires coach');}else{other++;if(stationDrills.has(s.drill))errors.push('A drill station is used twice in one block');stationDrills.add(s.drill);}
-   for(const id of s.players){const m=mem.get(id);if(!m)continue;if(['machine','front','live'].includes(s.kind))m[s.kind]++;
-    else if(s.kind==='drill'){m.seen.add(s.drill);}
-   }
+   for(const id of s.players){const m=mem.get(id);if(!m)continue;if(['machine','front','live'].includes(s.kind))m[s.kind]++;else if(s.kind==='drill')m.seen.add(s.drill);}
   }
   const tunnelUnits=machine*2+live*2+front;
   if(machine>facility.machines||live>facility.tunnels||tunnelUnits>facility.tunnels*2)errors.push('Tunnel conflict');
