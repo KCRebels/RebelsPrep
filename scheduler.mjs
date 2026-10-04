@@ -177,7 +177,8 @@ export function buildPractice(input){
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
   if(!input.allowReplacements&&4*live<people.length)continue;
-  const frontCapacity=Math.min(prepared.facility.tunnels*2,coaches.length)*4*(total-live);
+  const frontStationsPerBlock=Math.min(Math.max(0,prepared.facility.tunnels*2-2),coaches.length);
+  const frontCapacity=frontStationsPerBlock*4*(total-live);
   if(frontCapacity<people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0))continue;
   for(let trial=0;trial<100;trial++){
    const pattern=Array(blocks).fill(false);
