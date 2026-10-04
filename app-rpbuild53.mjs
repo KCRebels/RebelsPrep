@@ -44,9 +44,20 @@ function home(){
  }).join('')+'</div><div class="actions step-actions"><button class="primary" id="build-selected-teams" '+(!selected||selected.missingRosters.length?'disabled':'')+'>Continue</button></div>'+(selected?.missingRosters.length?'<p class="status">Rosters needed: '+selected.missingRosters.map(esc).join(', ')+'.</p>':'');
 }
 function resumeTeam(id){
- const draft=savedTeamState(id);homeTeamIds=draft.teamIds||[id];
- if(!loadSelection(homeTeamIds))return;
- setView(state.plan?'plan':state.steps.drills?'review':state.steps.attendance?'drills':state.steps.setup?'attendance':'setup');
+ const draft=savedTeamState(id);
+ const ids=draft.teamIds?.length?draft.teamIds:[id];
+ homeTeamIds=[...ids];
+ const key=selectionKey(ids);
+ try{
+  state={...blank(key),...draft,teamId:key,teamIds:[...ids]};
+ }catch{
+  error='That saved practice could not be reopened.';
+  render();return;
+ }
+ recommendationWorker?.terminate();recommendation=null;drillSearch='';drillCategory='All Drills';drillPickerOpen=false;attendanceStage='players';error='';
+ const target=state.plan?'plan':state.steps?.drills?'review':state.steps?.attendance?'drills':state.steps?.setup?'attendance':'setup';
+ if(target==='attendance')attendanceStage='players';
+ view=target;save();render();window.scrollTo(0,0);
 }
 function loadSelection(ids){
  const id=selectionKey(ids);
