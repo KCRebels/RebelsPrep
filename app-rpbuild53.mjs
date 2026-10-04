@@ -184,6 +184,7 @@ function calculateDrillCount(){
   w.onmessage=e=>{
    if(recommendation?.key===key){
     recommendation=e.data.error?{key,error:e.data.error}:{key,...e.data.recommendation};
+    if(!recommendation.error&&Number.isFinite(Number(recommendation.count))){state.drillStationTarget=Number(recommendation.count);save();}
     updateDrillGuidance();
    }
    w.terminate();
@@ -196,7 +197,7 @@ function availableDrills(){return drills;}
 function extraDrills(){return availableDrills().filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work');}
 function drillInstructions(d){return [['Purpose',d.primaryPurpose],['Set Up',d.spaceSetup],['Equipment',d.equipment],['How To Do It',d.howItWorks],['Coaching Cues',d.coachingCues],['What Good Looks Like',d.success],['Best Used For',d.bestUsedFor],['Notes',d.notes]].filter(([,text])=>text).map(([label,text])=>'<section><h4>'+label+'</h4><p>'+esc(text)+'</p></section>').join('');}
 function equipmentWarning(){const selected=extraDrills().filter(d=>state.selectedDrills.includes(d.id)),n=selected.reduce((sum,d)=>sum+(d.tees||0),0);return n>5?'<p class="notice equipment-warning" role="status"><strong>Too many fixed tee stations.</strong> These drill stations require '+n+' tees, but The Barn has 5. Equipment stays at its drill station for the entire practice, so choose a combination using 5 or fewer tees.</p>':n?'<p class="muted equipment-warning" role="status">Fixed drill-station setup: '+n+' of 5 Barn tees assigned. Equipment stays at that station for the entire practice.</p>':'';}
-function stationLimit(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null;}
+function stationLimit(){if(Number.isFinite(Number(state.drillStationTarget))&&Number(state.drillStationTarget)>0)return Number(state.drillStationTarget);const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?Number(r.count):null;}
 function pickerLocked(){const limit=stationLimit();return limit!==null&&extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length>=limit;}
 function drillEquipmentBlocked(d){if(state.selectedDrills.includes(d.id)||d.kind!=='drill')return false;const used=extraDrills().filter(x=>state.selectedDrills.includes(x.id)).reduce((n,x)=>n+(x.tees||0),0);return used+(d.tees||0)>5;}
 function updatePickerAvailability(){const locked=pickerLocked();document.querySelectorAll('[data-select-drill]').forEach(el=>{const d=drills.find(x=>x.id===el.dataset.selectDrill);const disabled=(locked||drillEquipmentBlocked(d))&&!state.selectedDrills.includes(el.dataset.selectDrill);el.disabled=disabled;el.closest('.drill-row').classList.toggle('unavailable',disabled);});const all=$('#all-drills');if(all)all.disabled=locked;}
