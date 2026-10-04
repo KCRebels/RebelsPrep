@@ -1,7 +1,7 @@
 export const clockMinutes = s => {const [h,m]=String(s).split(':').map(Number);return h*60+m;};
 export const timeLabel = t => {t=((t%1440)+1440)%1440;const h=Math.floor(t/60),m=t%60;return (h%12||12)+':'+String(m).padStart(2,'0')+(h<12?' AM':' PM');};
 export function partitionable(n){return n===0||n>=3&&n!==5;}
-function random(seed){return ()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
+function random(seed){return ()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
 function prepare(input){
  const step=Number(input.blockMinutes),duration=Number(input.durationMinutes),start=clockMinutes(input.start);
  if(![10,12,15].includes(step)||!Number.isFinite(start)||!Number.isFinite(duration)||duration<step||duration>360)throw Error('Choose valid time and block settings. Maximum duration is 360 minutes.');
@@ -33,7 +33,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
   let pool=available.filter(p=>!needsOpening(p,b)),livePitcher=null,liveCatcher=null;
   if(pattern[b]&&pool.length>=4){
    const pitches=pool.filter(p=>p.canPitch&&memory.get(p.id).warm&&memory.get(p.id).pitched<3).sort((a,z)=>memory.get(a.id).pitched-memory.get(z.id).pitched||a.until-z.until||rng()-.5);livePitcher=pitches[0]||null;
-   if(livePitcher){liveCatcher=pool.filter(p=>p.id!==livePitcher.id&&p.canCatch&&memory.get(p.id).caught<3).sort((a,z)=>memory.get(a.id).caught-memory.get(z.id).caught||rng()-.5)[0]||null;if(available.length>45&&!liveCatcher){livePitcher=null;}else pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);if(pool.length<3){livePitcher=null;liveCatcher=null;pool=available.filter(p=>!needsOpening(p,b));}}
+   if(livePitcher){liveCatcher=pool.filter(p=>p.id!==livePitcher.id&&p.canCatch&&memory.get(p.id).caught<3).sort((a,z)=>memory.get(a.id).caught-memory.get(z.id).caught||rng()-.5)[0]||null;pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);if(pool.length<3){livePitcher=null;liveCatcher=null;pool=available.filter(p=>!needsOpening(p,b));}}
   }
   const pairs=[];
   if(!pattern[b]&&b<lastLive){
@@ -65,6 +65,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
  plan.missingLive=missingLive.map(p=>p.id);plan.missingPitchers=pitching.map(p=>p.id);plan.missingCatchers=catching.map(p=>p.id);
  plan.score=(people.length-missingLive.length)*1000+(people.filter(p=>p.canPitch).length-pitching.length)*100+(people.filter(p=>p.canCatch).length-catching.length)*20;
  if(missingLive.length&&!input.allowReplacements)plan.warnings.push(missingLive.length+' hitters still need Live. Choose extra Front Toss replacements or extend the practice.');if(plan.replacements.length)plan.warnings.push(plan.replacements.length+' hitters receive a second Front Toss session in place of Live.');if(pitching.length)plan.warnings.push(pitching.length+' pitchers have no Live pitching session: '+pitching.map(p=>p.name).join(', ')+'.');if(catching.length)plan.warnings.push(catching.length+' catchers have no Live catching session: '+catching.map(p=>p.name).join(', ')+'.');
+ const nineSquareBlocks=plan.blocks.filter(b=>b.stations.some(s=>s.kind==='live'&&!s.catcher)).map(b=>b.number);if(nineSquareBlocks.length)plan.warnings.push('9-Square is the catcher fallback for Live in block'+(nineSquareBlocks.length===1?' ':'s ')+nineSquareBlocks.join(', ')+'.');
  const usedIds=new Set(plan.blocks.flatMap(b=>b.stations.map(s=>s.drillId).filter(Boolean)));plan.unusedSelectedDrills=input.drills.filter(d=>!usedIds.has(d.id)).map(d=>d.name);if(duration%step)plan.warnings.push(duration%step+' minutes at the end are reserved for group wrap-up; station blocks stay '+step+' minutes.');plan.requiresAcceptance=(!input.allowReplacements&&missingLive.length>0)||pitching.length>0||catching.length>0;return plan;
 }
 function fillDrills(pool,drills,memory,rng,preferThree=true,facility={tees:5,outsideStations:15}){
