@@ -174,6 +174,9 @@ export function buildPractice(input){
  if(!coaches.length)throw Error('Include at least one coach for mandatory Front Toss and human pitching warm-ups.');
  const open=1,total=blocks-open;
  const maxLive=Math.min(Math.floor(total/2),people.filter(p=>p.canPitch).length*3,Math.max(0,total-Math.ceil(people.length/8)));
+ const maxActive=Math.max(...Array.from({length:blocks},(_,b)=>people.filter(p=>b>=p.from&&b<p.until&&b!==p.from).length),0);
+ const maxAssignableWithSelectedDrills=prepared.extras.length*4+12;
+ if(maxActive>maxAssignableWithSelectedDrills)throw Error('This practice has '+maxActive+' hitters available in the same rotation, but '+prepared.extras.length+' selected drill stations plus Machine/Front Toss can place at most '+maxAssignableWithSelectedDrills+' hitters under the 3–4 player rule. Add '+Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)+' more drill station'+(Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)===1?'':'s')+'.');
  let best=null;
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
