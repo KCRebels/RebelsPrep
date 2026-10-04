@@ -152,10 +152,7 @@ function attendance(){
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:state.selectedDrills.map(id=>drills.find(d=>d.id===id)).filter(Boolean),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
 function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
 function fixedDrillTarget(){const n=practiceInput().players.length||state.included.length;const groups=Math.ceil(Math.max(3,n)/3);const coaches=Math.max(1,state.coachIds.length);const builtIn=Math.min(4,1+Math.min(2,coaches));return Math.max(1,groups-builtIn);}
-function feasibilityIssue(){
- const r=recommendation;
- return r&&r.key===recommendationKey()&&!r.pending&&r.error?'This practice cannot be built with the current attendance, duration, block length, and station limits. '+r.error:'';
-}
+function feasibilityIssue(){return '';}
 function drillGuidance(){
  if(state.included.length<3||!state.coachIds.length)return 'Choose attendance to see the suggested drill count.';
  const r=recommendation;
@@ -175,6 +172,8 @@ function focusOptions(kind){const choices=drills.filter(d=>d.kind===kind),select
 function focusCards(){return '<section class="panel focus-card"><p class="drill-category">Built-in Hitting</p><h2>Machine + Front Toss Focus</h2><p class="muted">Use Standard or choose a library drill for these sessions.</p><div class="focus-fields">'+setting('Machine','<select id="machine-focus">'+focusOptions('machine')+'</select>')+setting('Front Toss','<select id="front-focus">'+focusOptions('front')+'</select>')+'</div></section><section class="panel focus-card"><p class="drill-category">Drill Stations</p><h2 id="drill-choice-title">'+drillChoiceTitle()+'</h2><p id="drill-guidance" class="drill-guidance-simple" aria-live="polite">'+drillGuidance()+'</p><p id="drill-choice-count" class="status">'+extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length+' selected</p><button class="primary choose-drills-button" id="open-drill-picker">Choose Drills</button></section>';}
 function calculateDrillCount(){
  if(view!=='drills'||busy)return;
+ updateDrillGuidance();
+ return;
  const key=recommendationKey();
  if(recommendation?.key===key){updateDrillGuidance();return;}
  recommendationWorker?.terminate();
