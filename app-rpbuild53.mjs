@@ -301,7 +301,7 @@ function bind(){
  click('new-practice',newPractice);click('start-over',startOverDraft);
  click('next-attendance-coaches',()=>{if(state.included.length<3){error='Select at least three players before choosing coaches.';render();window.scrollTo(0,0);return;}error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
  click('back-attendance-players',()=>{error='';attendanceStage='players';render();window.scrollTo(0,0);});
- const nextCoaches=$('#next-coaches-drills');if(nextCoaches){nextCoaches.addEventListener('click',()=>{error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;render();window.scrollTo(0,0);},{once:true});}
+ const nextCoaches=$('#next-coaches-drills');if(nextCoaches){nextCoaches.onclick=()=>{error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;try{render();window.scrollTo(0,0);}catch(e){view='attendance';attendanceStage='coaches';error='Drills screen error: '+String(e?.message||e);render();}};}
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
