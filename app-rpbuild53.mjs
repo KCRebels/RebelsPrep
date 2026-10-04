@@ -276,7 +276,7 @@ function render(){
  $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
  bind();if(view==='attendance'&&attendanceStage==='coaches')calculateStaffing();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
-window.__rpNextDrills=()=>{const minimum=roughCoachMinimum();if(state.coachIds.length<minimum){error='Select at least '+minimum+' coaches for this practice. You currently have '+state.coachIds.length+'.';render();window.scrollTo(0,0);return;}error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;render();window.scrollTo(0,0);};
+window.__rpNextDrills=()=>{error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;render();window.scrollTo(0,0);};
 function bind(){
  document.querySelectorAll('[data-practice-type]').forEach(el=>el.onclick=()=>{if(!dirty('setup')){render();return;}state.practiceType=el.dataset.practiceType;error='';save();render();});
  document.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));
@@ -300,7 +300,7 @@ function bind(){
  click('new-practice',newPractice);click('start-over',startOverDraft);
  click('next-attendance-coaches',()=>{if(state.included.length<3){error='Select at least three players before choosing coaches.';render();window.scrollTo(0,0);return;}error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
  click('back-attendance-players',()=>{error='';attendanceStage='players';render();window.scrollTo(0,0);});
- click('next-coaches-drills',()=>{const minimum=roughCoachMinimum();if(state.coachIds.length<minimum){error='Select at least '+minimum+' coaches for this practice. You currently have '+state.coachIds.length+'.';render();window.scrollTo(0,0);return;}error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;render();window.scrollTo(0,0);});
+ click('next-coaches-drills',()=>window.__rpNextDrills());
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
