@@ -147,7 +147,7 @@ function attendance(){
  '<div class="actions step-actions">'+startOverButton()+'<button id="save-draft">Save draft</button><button class="primary" id="next-attendance-coaches">Next: Coaches</button></div>';
  return heading('Attendance · Coaches','Step 2 of 2 · Select the coaches working this practice.')+
  '<section class="panel"><h2>Coaches <span class="count">'+state.coachIds.length+' / '+coaches.length+'</span></h2><p class="status" id="staffing-guidance">'+esc(staffingMessage())+'</p><div class="actions"><button id="all-coaches">Select All</button><button id="clear-coaches">Clear All</button></div><p class="muted">Each Front Toss station needs its own coach. Machine and Live do not require a coach.</p><div class="people">'+coaches.map(c=>person(c,true)).join('')+'</div></section>'+
- '<div class="actions step-actions">'+startOverButton()+'<button id="back-attendance-players">Back: Players</button><button id="save-draft">Save draft</button><button class="primary" id="next-coaches-drills" type="button" onclick="window.__rpNextDrills&&window.__rpNextDrills()">Next: Drills</button></div>';
+ '<div class="actions step-actions">'+startOverButton()+'<button id="back-attendance-players">Back: Players</button><button id="save-draft">Save draft</button><button class="primary" id="next-coaches-drills" type="button">Next: Drills</button></div>';
 }
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:state.selectedDrills.map(id=>drills.find(d=>d.id===id)).filter(Boolean),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
 function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
@@ -276,7 +276,6 @@ function render(){
  $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
  bind();if(view==='attendance'&&attendanceStage==='coaches')calculateStaffing();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
 }
-window.__rpNextDrills=()=>{error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;render();window.scrollTo(0,0);};
 function bind(){
  document.querySelectorAll('[data-practice-type]').forEach(el=>el.onclick=()=>{if(!dirty('setup')){render();return;}state.practiceType=el.dataset.practiceType;error='';save();render();});
  document.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>setView(el.dataset.view));
@@ -300,7 +299,7 @@ function bind(){
  click('new-practice',newPractice);click('start-over',startOverDraft);
  click('next-attendance-coaches',()=>{if(state.included.length<3){error='Select at least three players before choosing coaches.';render();window.scrollTo(0,0);return;}error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
  click('back-attendance-players',()=>{error='';attendanceStage='players';render();window.scrollTo(0,0);});
- click('next-coaches-drills',()=>window.__rpNextDrills());
+ click('next-coaches-drills',()=>{error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;render();window.scrollTo(0,0);});
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
