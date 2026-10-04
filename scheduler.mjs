@@ -44,7 +44,8 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
    livePitcher=pitches[0]||null;
    if(livePitcher){
     liveCatcher=pool.filter(p=>p.id!==livePitcher.id&&p.canCatch&&memory.get(p.id).caught<3).sort((a,z)=>memory.get(a.id).caught-memory.get(z.id).caught||rng()-.5)[0]||null;
-    pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);
+    if(available.length>45&&!liveCatcher){livePitcher=null;pool=available.filter(p=>!needsOpening(p,b));}
+    else pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);
     if(pool.length<3){livePitcher=null;liveCatcher=null;pool=available.filter(p=>!needsOpening(p,b));}
    }
   }
