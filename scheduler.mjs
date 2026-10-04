@@ -172,7 +172,7 @@ export function buildPractice(input){
  const prepared=prepare(input),{people,blocks,coaches}=prepared;
  if(!coaches.length)throw Error('Include at least one coach for mandatory Front Toss and human pitching warm-ups.');
  const open=1,total=blocks-open;
- const maxLive=Math.min(total,people.filter(p=>p.canPitch).length*3);
+ const maxLive=Math.min(Math.floor(total/2),people.filter(p=>p.canPitch).length*3);
  let best=null;
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
