@@ -147,7 +147,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
 function fillDrills(pool,drills,memory,rng,preferThree=true,facility={tees:5,outsideStations:15}){
  if(!pool.length)return [];
  if(!partitionable(pool.length)||!drills.length)return null;
- let budget=25000;
+ let budget=5000;
  function visit(remaining,stations){
   if(!remaining.length)return stations;
   if(stations.length>=facility.outsideStations||--budget<0)return null;
@@ -180,7 +180,7 @@ export function buildPractice(input){
   const frontStationsPerBlock=Math.min(Math.max(0,prepared.facility.tunnels*2-2),coaches.length);
   const frontCapacity=frontStationsPerBlock*4*(total-live);
   if(frontCapacity<people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0))continue;
-  for(let trial=0;trial<100;trial++){
+  for(let trial=0;trial<24;trial++){
    const pattern=Array(blocks).fill(false);
    const positions=Array.from({length:Math.max(0,total)},(_,i)=>i+open);
    const rng=random(901+live*100+trial);
