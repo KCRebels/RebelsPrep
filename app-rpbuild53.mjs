@@ -13,7 +13,7 @@ const KEY='RebelsPrep:coach-pilot:1';
 const $=s=>document.querySelector(s);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const blank=(teamId=teams[0].id)=>({teamId,teamIds:[teamId],started:false,practiceType:'',steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
+const blank=(teamId=teams[0].id)=>({teamId,teamIds:[teamId],started:false,practiceType:'',steps:{},date:today(),start:'17:30',durationMinutes:180,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],drillStationTarget:null,adjustments:{},guests:[],allowReplacements:false,plan:null,history:[],clock:null});
 let state,view='home',busy=false,error='',worker=null,timer=null,sound=false,lastAnnouncement='',drillSearch='',drillCategory='All Drills',recommendation=null,recommendationWorker=null,replacementOffer=null,drillPickerOpen=false,attendanceStage='players',staffing=null,staffingWorker=null;
 let historyTeamId=null,homeTeamIds=[],directoryVersion=0;
 let sharedUser=null,sharedDirectory=null,sharedData=null,sharedStop=null,sharedBusy=false,sharedMessage='',checkins=[],checkinStop=null;
@@ -303,7 +303,7 @@ function bind(){
  click('new-practice',newPractice);click('start-over',startOverDraft);
  click('next-attendance-coaches',()=>{if(state.included.length<3){error='Select at least three players before choosing coaches.';render();window.scrollTo(0,0);return;}error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
  click('back-attendance-players',()=>{error='';attendanceStage='players';render();window.scrollTo(0,0);});
- const nextCoaches=$('#next-coaches-drills');if(nextCoaches){nextCoaches.onclick=()=>{error='';state.steps.attendance=true;state.started=true;save();view='drills';drillPickerOpen=true;try{render();window.scrollTo(0,0);}catch(e){view='attendance';attendanceStage='coaches';error='Drills screen error: '+String(e?.message||e);render();}};}
+ const nextCoaches=$('#next-coaches-drills');if(nextCoaches){nextCoaches.onclick=()=>{error='';state.steps.attendance=true;state.started=true;state.drillStationTarget=null;save();view='drills';drillPickerOpen=true;try{render();window.scrollTo(0,0);}catch(e){view='attendance';attendanceStage='coaches';error='Drills screen error: '+String(e?.message||e);render();}};}
  click('include-all',()=>{if(dirty('attendance')){state.included=allPlayers().map(p=>p.id);save();render();}});
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
