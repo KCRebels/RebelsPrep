@@ -151,7 +151,7 @@ function attendance(){
 }
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:state.selectedDrills.map(id=>drills.find(d=>d.id===id)).filter(Boolean),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
 function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
-function fixedDrillTarget(){const n=practiceInput().players.length||state.included.length;const groups=Math.ceil(Math.max(3,n)/3);const coaches=Math.max(1,state.coachIds.length);const builtIn=Math.min(4,1+Math.min(2,coaches));return Math.max(1,groups-builtIn);}
+function fixedDrillTarget(){const n=practiceInput().players.length||state.included.length;const groups=Math.ceil(Math.max(3,n)/3);const coaches=Math.max(1,state.coachIds.length);const machine=1;const front=Math.min(4,coaches);return Math.max(1,groups-machine-front);}
 function feasibilityIssue(){return '';}
 function drillGuidance(){
  if(state.included.length<3||!state.coachIds.length)return 'Choose attendance to see the suggested drill count.';
