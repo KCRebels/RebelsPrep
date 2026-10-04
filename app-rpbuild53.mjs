@@ -217,7 +217,7 @@ function refreshDrills(){
 function drillPage(){
  const categories=['All Drills',...new Set(drills.map(d=>d.category))];
  if(!categories.includes(drillCategory))drillCategory='All Drills';
- if(!drillPickerOpen)return '<h1>Choose Drills</h1>'+focusCards()+'<div id="equipment-warning">'+equipmentWarning()+'</div>'+stepActions('review','Next: Review');
+ drillPickerOpen=true;
  return '<div class="picker-screen"><button class="picker-back" id="close-drill-picker">‹ Back To Practice</button><section class="panel picker-intro"><p class="drill-category">Practice Drills</p><h1 id="picker-title">'+pickerTitle()+'</h1><p>Select drills in the order you want their stations listed.</p></section><section class="selection-summary" id="selection-summary" aria-live="polite">'+selectionSummary()+'</section><div id="equipment-warning">'+equipmentWarning()+'</div><section class="drill-library" id="drill-picker"><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><div class="actions picker-actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><div id="drill-results">'+drillResults()+'</div></section>'+stepActions('review','Next: Review')+'</div>';
 }
 function stationsFor(block,filter){
