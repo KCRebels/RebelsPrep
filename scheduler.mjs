@@ -23,13 +23,14 @@ function prepare(input){
  if(fixedDrillTees>facility.tees)throw Error('The selected drill stations require '+fixedDrillTees+' tees to stay set up for the practice, but The Barn has 5. Choose a combination using 5 or fewer tees.');
  return {people,step,start,blocks,extras,variants,coaches:input.coaches,duration,facility,fixedDrillTees};
 }
-function attempt(input,prepared,pattern,seed,preferThree=true){
+function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
+ const fail=(reason,detail='')=>{if(diag){diag[reason]=(diag[reason]||0)+1;if(detail&&!diag[reason+'Sample'])diag[reason+'Sample']=detail;}return null;};
  const {people,step,start,blocks,extras,variants,coaches,duration,facility,fixedDrillTees}=prepared,rng=random(seed);
  const memory=new Map(people.map(p=>[p.id,{machine:0,front:0,live:0,pitched:0,caught:0,warm:p.noPitchWarmup,seen:new Set()}]));
  const plan={blockMinutes:step,durationMinutes:duration,start:input.start,facility:input.facility,players:people,coaches,blocks:[],replacements:[],warnings:[],score:0,selectedDrills:input.drills.map(d=>({...d}))};
  const needsOpening=(p,b)=>b===p.from;
  const eligible=p=>p.until>p.from;
- if(people.some(p=>!eligible(p)))return null;
+ if(people.some(p=>!eligible(p)))return fail('availability');
  const lastLive=pattern.reduce((a,v,i)=>v?i:a,-1);
  for(let b=0;b<blocks;b++){
   let available=people.filter(p=>b>=p.from&&b<p.until),stations=[],usedCoaches=new Set();
@@ -106,14 +107,14 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
   }
   if(!chooseCore(0,[],pool)){
    // Retry this block without warm-up pairs if their roles prevented valid group sizes.
-   if(pairs.length)return null;
-   return null;
+   if(pairs.length)return fail('partition','block '+(b+1)+' with '+available.length+' available, '+pool.length+' hitting-pool players, '+pairs.length+' pitching warm-up pairs');
+   return fail('partition','block '+(b+1)+' with '+available.length+' available and '+pool.length+' hitting-pool players');
   }
   for(const pair of pairs){add(pair);memory.get(pair.players[0]).warm=true;}
   let frontCount=0;
   for(const s of settled){
    if(s.kind==='front'){
-    const coach=coaches.find(c=>!usedCoaches.has(c.id));if(!coach)return null;
+    const coach=coaches.find(c=>!usedCoaches.has(c.id));if(!coach)return fail('frontCoach','block '+(b+1));
     s.coach=coach.id;s.resource='Front Toss '+(++frontCount);
    }
    add(s);
@@ -122,14 +123,14 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
    if(s.kind==='live'&&s.catcher)memory.get(s.catcher).caught++;
   }
   const assignments=new Set(stations.flatMap(s=>[...s.players,s.pitcher,s.catcher].filter(Boolean)));
-  if(assignments.size!==available.length)return null;
+  if(assignments.size!==available.length)return fail('assignment','block '+(b+1)+': '+assignments.size+' assigned of '+available.length);
   plan.blocks.push({number:b+1,start:start+b*step,end:start+(b+1)*step,stations,coaching:coaches.filter(c=>!usedCoaches.has(c.id)).map(c=>c.id)});
  }
  const missingMachine=people.filter(p=>!memory.get(p.id).machine),missingFront=people.filter(p=>!memory.get(p.id).front);
- if(missingMachine.length||missingFront.length)return null;
+ if(missingMachine.length||missingFront.length)return fail('mandatory','missing Machine '+missingMachine.length+', Front Toss '+missingFront.length);
  const missingLive=people.filter(p=>!memory.get(p.id).live);
  if(input.allowReplacements){
-  if(missingLive.some(p=>memory.get(p.id).front<2))return null;
+  if(missingLive.some(p=>memory.get(p.id).front<2))return fail('replacement','missing Live '+missingLive.length+'; at least one lacks second Front Toss');
   plan.replacements=missingLive.map(p=>p.id);
  }
  const pitching=people.filter(p=>p.canPitch&&!memory.get(p.id).pitched),catching=people.filter(p=>p.canCatch&&!memory.get(p.id).caught);
@@ -177,7 +178,7 @@ export function buildPractice(input){
  const maxActive=Math.max(...Array.from({length:blocks},(_,b)=>people.filter(p=>b>=p.from&&b<p.until&&b!==p.from).length),0);
  const maxAssignableWithSelectedDrills=prepared.extras.length*4+12;
  if(maxActive>maxAssignableWithSelectedDrills)throw Error('This practice has '+maxActive+' hitters available in the same rotation, but '+prepared.extras.length+' selected drill stations plus Machine/Front Toss can place at most '+maxAssignableWithSelectedDrills+' hitters under the 3–4 player rule. Add '+Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)+' more drill station'+(Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)===1?'':'s')+'.');
- let best=null;
+ let best=null,diag={};
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
   const liveCapacity=4*live;
@@ -196,14 +197,14 @@ export function buildPractice(input){
    positions.slice(0,live).forEach(i=>pattern[i]=true);
    const threeCapacity=Math.min(prepared.facility.tunnels*2,coaches.length)*3*(total-live);
    const preferThree=threeCapacity>=people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0);
-   const candidate=attempt(input,prepared,pattern,12577+trial*37+live*1000,preferThree);
+   const candidate=attempt(input,prepared,pattern,12577+trial*37+live*1000,preferThree,diag);
    if(candidate&&(!best||candidate.score>best.score))best=candidate;
    if(candidate&&!candidate.missingLive.length&&!candidate.missingPitchers.length&&!candidate.missingCatchers.length)return candidate;
   }
   if(best)return best;
  }
  if(best)return best;
- throw Error('No valid plan found with these selections. Add more different drills, include coaches, adjust attendance or arrival/departure, allow Front Toss replacements, or explicitly extend the practice. No station-size or mandatory-work rule was relaxed.');
+ const ranked=Object.entries(diag).filter(([k,v])=>typeof v==='number').sort((a,b)=>b[1]-a[1]);const top=ranked[0]?.[0];const detail=top?(diag[top+'Sample']||top)+' ('+diag[top]+' attempts)':'no candidate reached a diagnosable block';throw Error('No valid plan found. Scheduler blocker: '+detail+'.');
 }
 export function validatePractice(plan){
  const facility={tees:5,nets:14,machines:1,nineSquare:2,tunnels:2,outsideStations:15},errors=[],people=plan.players,ids=new Set(people.map(p=>p.id)),coachIds=new Set(plan.coaches.map(c=>c.id)),mem=new Map(people.map(p=>[p.id,{warm:p.noPitchWarmup,machine:0,front:0,live:0,pitch:0,catch:0,seen:new Set()}]));
