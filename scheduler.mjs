@@ -181,7 +181,7 @@ export function buildPractice(input){
   if(frontCapacity<people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0))continue;
   for(let trial=0;trial<100;trial++){
    const pattern=Array(blocks).fill(false);
-   const positions=Array.from({length:Math.max(0,total-1)},(_,i)=>i+open+1);
+   const positions=Array.from({length:Math.max(0,total)},(_,i)=>i+open);
    const rng=random(901+live*100+trial);
    if(trial%3===0)positions.sort((a,b)=>rng()-.5);
    else if(trial%3===1)positions.sort((a,b)=>b-a);
