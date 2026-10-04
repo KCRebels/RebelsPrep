@@ -25,8 +25,16 @@ self.onmessage=event=>{
    const total=Math.max(0,...stationBlocks.map(b=>b.total));
    self.postMessage({recommendation:{count,frontCount,liveCount,total,warnings:plan.warnings}});
   }else if(event.data.mode==='build'){
-   try{self.postMessage({plan:checked({...event.data.input,allowReplacements:false})});}
-   catch(original){
+   try{
+    const plan=checked({...event.data.input,allowReplacements:false});
+    if(plan.missingLive?.length){
+     try{
+      const replacement=checked({...event.data.input,allowReplacements:true});
+      if(replacement.replacements.length&&replacement.missingLive.length<plan.missingLive.length)self.postMessage({replacementOffer:replacement});
+      else self.postMessage({plan});
+     }catch{self.postMessage({plan});}
+    }else self.postMessage({plan});
+   }catch(original){
     try{const plan=checked({...event.data.input,allowReplacements:true});if(!plan.replacements.length)throw original;self.postMessage({replacementOffer:plan});}
     catch(replacement){self.postMessage({error:'Standard plan: '+original.message+' Replacement plan: '+replacement.message});}
    }
