@@ -173,7 +173,7 @@ export function buildPractice(input){
  const prepared=prepare(input),{people,blocks,coaches}=prepared;
  if(!coaches.length)throw Error('Include at least one coach for mandatory Front Toss and human pitching warm-ups.');
  const open=1,total=blocks-open;
- const maxLive=Math.min(Math.floor(total/2),people.filter(p=>p.canPitch).length*3);
+ const maxLive=Math.min(Math.floor(total/2),people.filter(p=>p.canPitch).length*3,Math.max(0,total-Math.ceil(people.length/8)));
  let best=null;
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
@@ -181,6 +181,8 @@ export function buildPractice(input){
   const frontStationsPerBlock=Math.min(Math.max(0,prepared.facility.tunnels*2-2),coaches.length);
   const frontCapacity=frontStationsPerBlock*4*(total-live);
   if(frontCapacity<people.length)continue;
+  const machineCapacity=4*total;
+  if(machineCapacity<people.length)continue;
   for(let trial=0;trial<24;trial++){
    const pattern=Array(blocks).fill(false);
    const positions=Array.from({length:Math.max(0,total)},(_,i)=>i+open);
