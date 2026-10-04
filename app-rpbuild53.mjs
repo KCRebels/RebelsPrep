@@ -166,7 +166,7 @@ function drillChoiceTitle(){const r=recommendation;return r&&r.key===recommendat
 function updateDrillGuidance(){
  const el=$('#drill-guidance');if(el)el.textContent=drillGuidance();
  const title=$('#drill-choice-title');if(title)title.textContent=drillChoiceTitle();
- const summary=$('#selection-summary');if(summary)summary.innerHTML=selectionSummary();const pickerHeading=$('#picker-title');if(pickerHeading)pickerHeading.textContent=pickerTitle();const warning=$('#equipment-warning');if(warning)warning.innerHTML=equipmentWarning();
+ const summary=$('#selection-summary');if(summary)summary.innerHTML=selectionSummary();const pickerHeading=$('#picker-title');if(pickerHeading)pickerHeading.textContent=pickerTitle();const pickerInstructionEl=$('#picker-instruction');if(pickerInstructionEl)pickerInstructionEl.textContent=pickerInstruction();const warning=$('#equipment-warning');if(warning)warning.innerHTML=equipmentWarning();
  updatePickerAvailability();
  const count=$('#drill-choice-count');if(count)count.textContent=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).length+' selected';
 }
@@ -201,6 +201,7 @@ function pickerLocked(){const limit=stationLimit();return limit!==null&&extraDri
 function drillEquipmentBlocked(d){if(state.selectedDrills.includes(d.id)||d.kind!=='drill')return false;const used=extraDrills().filter(x=>state.selectedDrills.includes(x.id)).reduce((n,x)=>n+(x.tees||0),0);return used+(d.tees||0)>5;}
 function updatePickerAvailability(){const locked=pickerLocked();document.querySelectorAll('[data-select-drill]').forEach(el=>{const d=drills.find(x=>x.id===el.dataset.selectDrill);const disabled=(locked||drillEquipmentBlocked(d))&&!state.selectedDrills.includes(el.dataset.selectDrill);el.disabled=disabled;el.closest('.drill-row').classList.toggle('unavailable',disabled);});const all=$('#all-drills');if(all)all.disabled=locked;}
 function pickerTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Station '+(r.count===1?'Drill':'Drills'):'Choose Station Drills';}
+function pickerInstruction(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose exactly '+r.count+' station '+(r.count===1?'drill':'drills')+'. The remaining choices will gray out when you reach '+r.count+'.':'Calculating how many station drills this practice needs…';}
 function selectionSummary(){const selected=practiceInput().drills,r=recommendation,target=r&&r.key===recommendationKey()&&!r.pending&&!r.error?r.count:null,stationChoices=selected.filter(d=>d.kind==='drill').length;let station=0;return '<strong>'+stationChoices+(target!==null?' of '+target:'')+' station drills selected</strong>'+(selected.length?'<ol>'+selected.map(d=>'<li>'+(d.kind==='drill'?++station+'. ':d.kind==='machine'?'Machine focus: ':'Front Toss focus: ')+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
 function drillResults(){
  const query=drillSearch.trim().toLowerCase();
@@ -225,7 +226,7 @@ function drillPage(){
  const categories=['All Drills',...new Set(drills.map(d=>d.category))];
  if(!categories.includes(drillCategory))drillCategory='All Drills';
  drillPickerOpen=true;
- return '<div class="picker-screen"><button class="picker-back" id="close-drill-picker">‹ Back To Practice</button><section class="panel picker-intro"><p class="drill-category">Practice Drills</p><h1 id="picker-title">'+pickerTitle()+'</h1><p>Select drills in the order you want their stations listed.</p></section><section class="selection-summary" id="selection-summary" aria-live="polite">'+selectionSummary()+'</section><div id="equipment-warning">'+equipmentWarning()+'</div><section class="drill-library" id="drill-picker"><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><div class="actions picker-actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><div id="drill-results">'+drillResults()+'</div></section>'+stepActions('review','Next: Review')+'</div>';
+ return '<div class="picker-screen"><button class="picker-back" id="close-drill-picker">‹ Back To Practice</button><section class="panel picker-intro"><p class="drill-category">Practice Drills</p><h1 id="picker-title">'+pickerTitle()+'</h1><p id="picker-instruction">'+pickerInstruction()+'</p><p>Select drills in the order you want their stations listed.</p></section><section class="selection-summary" id="selection-summary" aria-live="polite">'+selectionSummary()+'</section><div id="equipment-warning">'+equipmentWarning()+'</div><section class="drill-library" id="drill-picker"><input id="drill-search" type="search" aria-label="Search drills" placeholder="Search drills" value="'+esc(drillSearch)+'"><div class="drill-categories" aria-label="Drill categories">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===drillCategory)+'">'+esc(c)+'</button>').join('')+'</div><div class="actions picker-actions"><button id="all-drills">Select All</button><button id="clear-drills">Clear All</button></div><div id="drill-results">'+drillResults()+'</div></section>'+stepActions('review','Next: Review')+'</div>';
 }
 function stationsFor(block,filter){
  return block.stations.filter(s=>!filter||[...s.players,s.pitcher,s.catcher,s.coach].includes(filter)).map(s=>'<div class="station"><strong>'+esc(s.drill)+' <span class="muted">· '+esc(s.resource)+'</span></strong>'+s.players.map(id=>esc(name(id))).join(' · ')+
@@ -297,7 +298,7 @@ function bind(){
  for(const [id,kind] of [['machine-focus','machine'],['front-focus','front']]){const el=$('#'+id);if(el)el.onchange=()=>{const value=el.value;if(!dirty()){render();return;}state.selectedDrills=state.selectedDrills.filter(x=>!drills.some(d=>d.id===x&&d.kind===kind));if(value)state.selectedDrills.push(value);save();render();};}
  const click=(id,fn)=>{if($('#'+id))$('#'+id).onclick=fn;};
  click('open-drill-picker',()=>{drillPickerOpen=true;render();window.scrollTo(0,0);});
- click('close-drill-picker',()=>{drillPickerOpen=false;render();window.scrollTo(0,0);});
+ click('close-drill-picker',()=>{error='';view='attendance';attendanceStage='coaches';render();window.scrollTo(0,0);});
  click('new-practice',newPractice);click('start-over',startOverDraft);
  click('next-attendance-coaches',()=>{if(state.included.length<3){error='Select at least three players before choosing coaches.';render();window.scrollTo(0,0);return;}error='';attendanceStage='coaches';render();window.scrollTo(0,0);});
  click('back-attendance-players',()=>{error='';attendanceStage='players';render();window.scrollTo(0,0);});
