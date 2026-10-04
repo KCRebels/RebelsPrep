@@ -94,7 +94,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
    const sorted=order(c.kind);pool=saved;
    const liveDebt=people.filter(p=>!memory.get(p.id).live).length;
    const liveSlots=pattern.slice(b).filter(Boolean).length;
-   const sizes=c.kind==='live'?(!preferThree||liveDebt>3*liveSlots?[4,3]:[3,4]):(preferThree?[3,4,0]:[4,3,0]);
+   const sizes=c.kind==='live'?(!preferThree||liveDebt>3*liveSlots?[4,3]:[3,4]):(c.kind==='machine'?[4,3,0]:(preferThree?[3,4,0]:[4,3,0]));
    for(const n of sizes){
     if(n>remaining.length||c.kind==='live'&&n===0)continue;
     const group=sorted.slice(0,n),ids=new Set(group.map(p=>p.id));
@@ -147,7 +147,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true){
 function fillDrills(pool,drills,memory,rng,preferThree=true,facility={tees:5,outsideStations:15}){
  if(!pool.length)return [];
  if(!partitionable(pool.length)||!drills.length)return null;
- let budget=1800;
+ let budget=25000;
  function visit(remaining,stations){
   if(!remaining.length)return stations;
   if(stations.length>=facility.outsideStations||--budget<0)return null;
