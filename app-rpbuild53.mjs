@@ -271,7 +271,7 @@ function historyPage(){
 }
 function render(){
  const preview=document.querySelector('.preview');preview.hidden=true;
- const picker=view==='drills'&&drillPickerOpen;document.querySelector('main>header').hidden=picker;document.querySelector('.preview').hidden=true;document.querySelector('main>footer').hidden=picker;
+ const picker=false;document.querySelector('main>header').hidden=false;document.querySelector('.preview').hidden=true;document.querySelector('main>footer').hidden=false;
  $('#team-name').textContent='Practice With Purpose';$('#team-name').hidden=false;
  $('#app').innerHTML=nav()+(error?'<p class="notice error" role="alert">'+esc(error)+'</p>':'')+({home,setup,attendance,drills:drillPage,review,plan:planPage,history:historyPage}[view]());
  bind();if(view==='attendance'&&attendanceStage==='coaches')calculateStaffing();if(view==='drills')calculateDrillCount();if(state.clock&&view==='plan')tick();
@@ -282,7 +282,7 @@ function bind(){
  document.querySelectorAll('[data-next]').forEach(el=>el.onclick=()=>{if(view==='attendance'&&attendanceStage==='coaches'){const minimum=roughCoachMinimum();if(state.coachIds.length<minimum){error='Select at least '+minimum+' coaches for this practice. You currently have '+state.coachIds.length+'.';render();return;}}nextStep(el.dataset.next);});
  document.querySelectorAll('[data-team-check]').forEach(el=>el.onchange=()=>{homeTeamIds=el.checked?[...new Set([...homeTeamIds,el.dataset.teamCheck])]:homeTeamIds.filter(id=>id!==el.dataset.teamCheck);render();});
  if($('#build-selected-teams'))$('#build-selected-teams').onclick=chooseSelectedTeams;
- document.querySelectorAll('[data-resume-team]').forEach(el=>el.onclick=()=>resumeTeam(el.dataset.resumeTeam));
+ document.querySelectorAll('[data-resume-team]').forEach(el=>el.onclick=e=>{e.preventDefault();e.stopPropagation();const id=el.dataset.resumeTeam;el.disabled=true;resumeTeam(id);});
  document.querySelectorAll('[data-history-team]').forEach(el=>el.onclick=()=>{historyTeamId=el.dataset.historyTeam;setView('history');});
  for(const id of ['date','start','facility','durationMinutes','blockMinutes','allowReplacements']){
   const el=$('#'+id);if(el&&['date','start','durationMinutes'].includes(id))el.oninput=()=>{if(!dirty('setup')){render();return;}state[id]=id==='durationMinutes'?Number(el.value):el.value;save();const end=$('#practice-end');if(end)end.textContent=Number.isFinite(clockMinutes(state.start)+Number(state.durationMinutes))?timeLabel(clockMinutes(state.start)+Number(state.durationMinutes)):'Choose a valid time';};if(el)el.onchange=()=>{if(!dirty(id==='allowReplacements'?'drills':'setup')){render();return;}state[id]=el.type==='checkbox'?el.checked:['durationMinutes','blockMinutes'].includes(id)?Number(el.value):el.value;save();render();};
