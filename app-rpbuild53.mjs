@@ -47,17 +47,13 @@ function resumeTeam(id){
  const draft=savedTeamState(id);
  const ids=draft.teamIds?.length?draft.teamIds:[id];
  homeTeamIds=[...ids];
- const key=selectionKey(ids);
- try{
-  state={...blank(key),...draft,teamId:key,teamIds:[...ids]};
- }catch{
-  error='That saved practice could not be reopened.';
-  render();return;
- }
- recommendationWorker?.terminate();recommendation=null;drillSearch='';drillCategory='All Drills';drillPickerOpen=false;attendanceStage='players';error='';
- const target=state.plan?'plan':state.steps?.drills?'review':state.steps?.attendance?'drills':state.steps?.setup?'attendance':'setup';
- if(target==='attendance')attendanceStage='players';
- view=target;save();render();window.scrollTo(0,0);
+ state={...blank(selectionKey(ids)),...draft,teamId:selectionKey(ids),teamIds:[...ids]};
+ recommendationWorker?.terminate();recommendation=null;drillSearch='';drillCategory='All Drills';drillPickerOpen=false;error='';
+ // Resume the draft at a stable editable screen instead of trying to infer a later sub-screen.
+ // This preserves all saved selections while avoiding stale step/subview state.
+ attendanceStage='players';
+ view='setup';
+ save();render();window.scrollTo(0,0);
 }
 function loadSelection(ids){
  const id=selectionKey(ids);
