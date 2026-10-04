@@ -206,7 +206,7 @@ function selectionSummary(){const selected=practiceInput().drills,r=recommendati
 function drillResults(){
  const query=drillSearch.trim().toLowerCase();
  const matches=drills.filter(d=>(drillCategory==='All Drills'||d.category===drillCategory)&&(!query||[d.name,d.category,d.primaryPurpose,d.hittingMethod,d.equipment].join(' ').toLowerCase().includes(query)));
- return '<div class="drill-rows">'+matches.map(d=>{const selected=state.selectedDrills.includes(d.id),expanded=expandedDrills.has(d.id),disabled=!selected&&drillEquipmentBlocked(d);return '<article class="drill-row'+(selected?' selected':'')+(disabled?' unavailable':'')+'"><div class="drill-row-head"><button class="drill-row-select" data-select-drill="'+d.id+'" '+(disabled?'disabled ':'')+'aria-pressed="'+selected+'" aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'"><span class="drill-row-mark" aria-hidden="true">'+(selected?'✓':'+')+'</span><span class="drill-row-label"><strong>'+esc(d.name)+'</strong><small>'+esc(d.category)+' · '+esc(d.hittingMethod)+(d.equipment?' · '+esc(d.equipment):'')+'</small></span></button><button class="drill-row-details" data-drill-details="'+d.id+'" aria-expanded="'+expanded+'" aria-controls="detail-'+d.id+'">Details</button></div><div class="drill-row-instructions" id="detail-'+d.id+'" '+(expanded?'':'hidden')+'>'+drillInstructions(d)+'</div></article>';}).join('')+'</div>'+(matches.length?'':'<p class="empty">No drills match. Try another search or category.</p>');
+ return '<div class="drill-rows">'+matches.map(d=>{const selected=state.selectedDrills.includes(d.id),expanded=expandedDrills.has(d.id),disabled=!selected&&(pickerLocked()||drillEquipmentBlocked(d));return '<article class="drill-row'+(selected?' selected':'')+(disabled?' unavailable':'')+'"><div class="drill-row-head"><button class="drill-row-select" data-select-drill="'+d.id+'" '+(disabled?'disabled ':'')+'aria-pressed="'+selected+'" aria-label="'+(selected?'Deselect ':'Select ')+esc(d.name)+'"><span class="drill-row-mark" aria-hidden="true">'+(selected?'✓':'+')+'</span><span class="drill-row-label"><strong>'+esc(d.name)+'</strong><small>'+esc(d.category)+' · '+esc(d.hittingMethod)+(d.equipment?' · '+esc(d.equipment):'')+'</small></span></button><button class="drill-row-details" data-drill-details="'+d.id+'" aria-expanded="'+expanded+'" aria-controls="detail-'+d.id+'">Details</button></div><div class="drill-row-instructions" id="detail-'+d.id+'" '+(expanded?'':'hidden')+'>'+drillInstructions(d)+'</div></article>';}).join('')+'</div>'+(matches.length?'':'<p class="empty">No drills match. Try another search or category.</p>');
 }
 function bindDrillCards(){
  document.querySelectorAll('[data-select-drill]').forEach(el=>el.onclick=()=>{
@@ -214,7 +214,7 @@ function bindDrillCards(){
   const candidate=drills.find(d=>d.id===id);if(!state.selectedDrills.includes(id)&&(pickerLocked()||drillEquipmentBlocked(candidate)))return;
   if(!dirty()){render();return;}
   state.selectedDrills=state.selectedDrills.includes(id)?state.selectedDrills.filter(x=>x!==id):[...state.selectedDrills,id];
-  save();refreshDrills();calculateDrillCount();
+  save();refreshDrills();
  });
  document.querySelectorAll('[data-drill-details]').forEach(el=>el.onclick=()=>{const id=el.dataset.drillDetails;if(expandedDrills.has(id))expandedDrills.delete(id);else expandedDrills.add(id);el.setAttribute('aria-expanded',String(expandedDrills.has(id)));$('#detail-'+id).hidden=!expandedDrills.has(id);});
 }
@@ -307,7 +307,7 @@ function bind(){
  click('clear-players',()=>{if(dirty('attendance')){state.included=[];save();render();}});
  click('all-coaches',()=>{if(dirty('attendance')){state.coachIds=coaches.map(c=>c.id);save();render();}});
  click('clear-coaches',()=>{if(dirty('attendance')){state.coachIds=[];save();render();}});
- click('all-drills',()=>{const limit=stationLimit();if(limit===null||pickerLocked())return;if(dirty()){const chosen=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).map(d=>d.id);const remaining=extraDrills().filter(d=>!chosen.includes(d.id)).slice(0,Math.max(0,limit-chosen.length)).map(d=>d.id);state.selectedDrills=[...state.selectedDrills,...remaining];save();render();}});
+ click('all-drills',()=>{const limit=stationLimit();if(limit===null||pickerLocked())return;if(dirty()){const chosen=extraDrills().filter(d=>state.selectedDrills.includes(d.id)).map(d=>d.id);const remaining=extraDrills().filter(d=>!chosen.includes(d.id)&&!drillEquipmentBlocked(d)).slice(0,Math.max(0,limit-chosen.length)).map(d=>d.id);state.selectedDrills=[...state.selectedDrills,...remaining];save();render();}});
  click('clear-drills',()=>{if(dirty()){state.selectedDrills=[];save();render();}});
  click('save-draft',()=>{if(!flushSetup()){render();return;}save();error='Draft saved on this device.';render();});
  click('use-replacements',useReplacements);click('cancel-replacements',()=>{replacementOffer=null;render();});click('build',build);click('rebuild',build);click('add-other-rebels',otherRebels);click('add-guest',guest);
