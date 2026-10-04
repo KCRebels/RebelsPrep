@@ -1,4 +1,4 @@
-import {buildPractice,validatePractice} from './scheduler.mjs?v=rpbuild20';
+import {buildPractice,validatePractice} from './scheduler.mjs?v=rpbuild21';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
 self.onmessage=event=>{
  try{
