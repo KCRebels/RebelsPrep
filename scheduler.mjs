@@ -176,10 +176,10 @@ export function buildPractice(input){
  let best=null;
  // Independent randomized attempts; no HotB duration normalization or imported scheduler.
  for(let live=maxLive;live>=0;live--){
-  if(!input.allowReplacements&&4*live<people.length)continue;
+  const liveCapacity=4*live;
   const frontStationsPerBlock=Math.min(Math.max(0,prepared.facility.tunnels*2-2),coaches.length);
   const frontCapacity=frontStationsPerBlock*4*(total-live);
-  if(frontCapacity<people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0))continue;
+  if(frontCapacity<people.length)continue;
   for(let trial=0;trial<24;trial++){
    const pattern=Array(blocks).fill(false);
    const positions=Array.from({length:Math.max(0,total)},(_,i)=>i+open);
