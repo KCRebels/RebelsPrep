@@ -379,7 +379,7 @@ function tick(){
 window.addEventListener('pagehide',save);
 if(state.clock&&!state.clock.done)timer=setInterval(tick,500);
 const portalId=new URLSearchParams(location.hash.slice(1)).get('portal');
-if(portalId)openPortal(portalId);else{render();initShared();}
+if(portalId)openPortal(portalId);else{openHashRoute();initShared();}
 function portalLinkGroups(links){
  const people=Object.values(links);
  const byLastName=(a,b)=>a.name.trim().split(/\s+/).at(-1).localeCompare(b.name.trim().split(/\s+/).at(-1))||a.name.localeCompare(b.name);
