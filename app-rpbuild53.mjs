@@ -151,7 +151,7 @@ function attendance(){
 }
 function practiceInput(){return {players:allPlayers().filter(p=>state.included.includes(p.id)).map(p=>({...p,...state.adjustments[p.id]})),coaches:coaches.filter(c=>state.coachIds.includes(c.id)),drills:state.selectedDrills.map(id=>drills.find(d=>d.id===id)).filter(Boolean),facility:state.facility,start:state.start,durationMinutes:state.durationMinutes,blockMinutes:state.blockMinutes,allowReplacements:state.allowReplacements,previousReplacements:state.history.at(-1)?.replacementIds||[]};}
 function recommendationKey(){const input=practiceInput();return JSON.stringify({...input,drills:input.drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work')});}
-function fixedDrillTarget(){const n=practiceInput().players.length||state.included.length;return Math.max(1,Math.ceil(Math.max(3,n)/3)-3);}
+function fixedDrillTarget(){const n=practiceInput().players.length||state.included.length;const groups=Math.ceil(Math.max(3,n)/3);const builtIn=2;return Math.max(1,groups-builtIn);}
 function feasibilityIssue(){
  const r=recommendation;
  return r&&r.key===recommendationKey()&&!r.pending&&r.error?'This practice cannot be built with the current attendance, duration, block length, and station limits. '+r.error:'';
@@ -204,7 +204,7 @@ function drillEquipmentBlocked(d){if(state.selectedDrills.includes(d.id)||d.kind
 function updatePickerAvailability(){const locked=pickerLocked();document.querySelectorAll('[data-select-drill]').forEach(el=>{const d=drills.find(x=>x.id===el.dataset.selectDrill);const disabled=(locked||drillEquipmentBlocked(d))&&!state.selectedDrills.includes(el.dataset.selectDrill);el.disabled=disabled;el.closest('.drill-row').classList.toggle('unavailable',disabled);});const all=$('#all-drills');if(all)all.disabled=locked;}
 function pickerTitle(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose '+r.count+' Station '+(r.count===1?'Drill':'Drills'):'Choose Station Drills';}
 function pickerInstruction(){const r=recommendation;return r&&r.key===recommendationKey()&&!r.pending&&!r.error?'Choose exactly '+r.count+' station '+(r.count===1?'drill':'drills')+'. The remaining choices will gray out when you reach '+r.count+'.':'Calculating how many station drills this practice needs…';}
-function selectionSummary(){const selected=practiceInput().drills,target=fixedDrillTarget(),stationChoices=selected.filter(d=>d.kind==='drill').length;let station=0;return '<strong>'+stationChoices+(target!==null?' of '+target:'')+' station drills selected</strong>'+(selected.length?'<ol>'+selected.map(d=>'<li>'+(d.kind==='drill'?++station+'. ':d.kind==='machine'?'Machine focus: ':'Front Toss focus: ')+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
+function selectionSummary(){const selected=practiceInput().drills,target=fixedDrillTarget(),stationDrills=selected.filter(d=>d.kind==='drill'),stationChoices=stationDrills.length;return '<strong>'+stationChoices+' of '+target+' station drills selected</strong>'+(stationDrills.length?'<ol>'+stationDrills.map((d,i)=>'<li>'+(i+1)+'. '+esc(d.name)+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
 function drillResults(){
  const query=drillSearch.trim().toLowerCase();
  const matches=drills.filter(d=>(drillCategory==='All Drills'||d.category===drillCategory)&&(!query||[d.name,d.category,d.primaryPurpose,d.hittingMethod,d.equipment].join(' ').toLowerCase().includes(query)));
