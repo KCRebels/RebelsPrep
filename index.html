@@ -36,27 +36,24 @@ else if(q.has('checkin')) import('./checkin-rp49.mjs?v=rpqr50');
 else {
  const app=document.getElementById('app');
  const checks=[
-  ['team-selection','./team-selection.mjs?v=recovery69'],
-  ['shared','./shared-rp52.mjs?v=recovery69'],
-  ['portal-model','./portal-model.mjs?v=recovery69'],
-  ['portal','./portal.mjs?v=recovery69'],
-  ['roster','./roster.mjs?v=recovery69'],
-  ['drills','./drills.mjs?v=recovery69'],
-  ['scheduler','./scheduler.mjs?v=recovery69'],
-  ['large-practice-scheduler','./scheduler-live69.mjs?v=live69'],
-  ['teams','./teams.mjs?v=recovery69'],
-  ['team-rosters','./team-rosters.mjs?v=recovery69'],
-  ['account-roster','./account-roster.mjs?v=recovery69'],
-  ['workflow','./workflow.mjs?v=recovery69']
+  ['team-selection','./team-selection.mjs?v=recovery70'],
+  ['shared','./shared-rp52.mjs?v=recovery70'],
+  ['portal-model','./portal-model.mjs?v=recovery70'],
+  ['portal','./portal.mjs?v=recovery70'],
+  ['roster','./roster.mjs?v=recovery70'],
+  ['drills','./drills.mjs?v=recovery70'],
+  ['scheduler','./scheduler.mjs?v=recovery70'],
+  ['teams','./teams.mjs?v=recovery70'],
+  ['team-rosters','./team-rosters.mjs?v=recovery70'],
+  ['account-roster','./account-roster.mjs?v=recovery70'],
+  ['workflow','./workflow.mjs?v=recovery70']
  ];
  (async()=>{
   for(const [name,url] of checks){
    try{await import(url);}
    catch(err){throw new Error('STARTUP MODULE: '+name+'\n'+String(err?.name||'Error')+': '+String(err?.message||err)+'\n'+String(err?.stack||''));}
   }
-  const NativeWorker=globalThis.Worker;
-  globalThis.Worker=new Proxy(NativeWorker,{construct(Target,args){const next=[...args];if(typeof next[0]==='string'&&next[0].startsWith('./worker.mjs'))next[0]='./worker-live69.mjs?v=live69';return Reflect.construct(Target,next);}});
-  await import('./app-rpbuild53.mjs?v=20261004-recovery69');
+  await import('./app-rpbuild53.mjs?v=20261004-recovery70');
  })().catch(err=>{
   if(app) app.innerHTML='<h1>RebelsPrep could not start</h1><p style="font-size:18px">The practice planner hit a startup error.</p><pre style="white-space:pre-wrap;font-size:14px">'+String(err?.message||err)+'</pre><button onclick="location.reload()" style="font-size:18px;padding:12px 18px">Retry</button>';
  });
