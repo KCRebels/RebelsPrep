@@ -16,10 +16,16 @@ function restorePitcherCoverage(plan,originalInput){
  const used=new Set(plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live'&&s.pitcher).map(s=>s.pitcher))),missing=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false&&!used.has(p.id));
  plan.missingPitchers=missing.map(p=>p.id);plan.warnings=(plan.warnings||[]).filter(w=>!/^\d+ pitchers? have no Live pitching session:/.test(w));if(missing.length)plan.warnings.push(missing.length+' pitchers have no Live pitching session: '+missing.map(p=>p.name).join(', ')+'.');plan.requiresAcceptance=Boolean(plan.missingLive?.length||missing.length||plan.missingCatchers?.length);return plan;
 }
+function playerOrders(input){
+ if(input.players.length<35)return [input.players];
+ const p=input.players,orders=[p,p.slice().reverse()];
+ for(const shift of [5,11,17,23]){const n=shift%p.length;orders.push(p.slice(n).concat(p.slice(0,n)));}
+ return orders;
+}
 function buildChecked(input){
  if(input.players.length<35)return checked(input);
  let best=null,lastError=null;
- for(const playerCatcher of [false,true]){try{const plan=restorePitcherCoverage(checked(transformed(input,playerCatcher)),input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));if(!best||(plan.missingLive?.length||0)<(best.missingLive?.length||0))best=plan;if(best&&(best.missingLive?.length||0)<=Math.max(0,input.players.length-32))break;}catch(error){lastError=error;}}
+ for(const players of playerOrders(input))for(const playerCatcher of [false,true]){try{const candidateInput={...input,players};const plan=restorePitcherCoverage(checked(transformed(candidateInput,playerCatcher)),input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));if(!best||(plan.missingLive?.length||0)<(best.missingLive?.length||0)||(plan.missingLive?.length||0)===(best.missingLive?.length||0)&&(plan.missingPitchers?.length||0)<(best.missingPitchers?.length||0))best=plan;if(best&&!(best.missingPitchers?.length||0)&&(best.missingLive?.length||0)<=Math.max(0,input.players.length-32))return best;}catch(error){lastError=error;}}
  if(best)return best;throw lastError||Error('No valid large-practice plan found.');
 }
 function withBuildDiagnostics(plan,input){
