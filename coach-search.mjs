@@ -1,4 +1,4 @@
-import {coaches} from './roster.mjs?v=rp106';
+import {coaches} from './roster.mjs?v=rp118';
 
 const KEY='RebelsPrep:coach-pilot:1';
 function selectedTeamIds(){
