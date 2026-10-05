@@ -36,17 +36,17 @@ else if(q.has('checkin')) import('./checkin-rp49.mjs?v=rpqr50');
 else {
  const app=document.getElementById('app');
  const checks=[
-  ['team-selection','./team-selection.mjs?v=recovery73'],
-  ['shared','./shared-rp52.mjs?v=recovery73'],
-  ['portal-model','./portal-model.mjs?v=recovery73'],
-  ['portal','./portal.mjs?v=recovery73'],
-  ['roster','./roster.mjs?v=recovery73'],
-  ['drills','./drills.mjs?v=recovery73'],
-  ['scheduler','./scheduler.mjs?v=livecapacity73'],
-  ['teams','./teams.mjs?v=recovery73'],
-  ['team-rosters','./team-rosters.mjs?v=recovery73'],
-  ['account-roster','./account-roster.mjs?v=recovery73'],
-  ['workflow','./workflow.mjs?v=recovery73']
+  ['team-selection','./team-selection.mjs?v=recovery74'],
+  ['shared','./shared-rp52.mjs?v=recovery74'],
+  ['portal-model','./portal-model.mjs?v=recovery74'],
+  ['portal','./portal.mjs?v=recovery74'],
+  ['roster','./roster.mjs?v=recovery74'],
+  ['drills','./drills.mjs?v=recovery74'],
+  ['scheduler','./scheduler.mjs?v=livecapacity74'],
+  ['teams','./teams.mjs?v=recovery74'],
+  ['team-rosters','./team-rosters.mjs?v=recovery74'],
+  ['account-roster','./account-roster.mjs?v=recovery74'],
+  ['workflow','./workflow.mjs?v=recovery74']
  ];
  (async()=>{
   for(const [name,url] of checks){
@@ -56,10 +56,10 @@ else {
   const NativeWorker=globalThis.Worker;
   globalThis.Worker=new Proxy(NativeWorker,{construct(Target,args,newTarget){
    const next=[...args];
-   if(typeof next[0]==='string'&&next[0].startsWith('./worker.mjs'))next[0]='./worker.mjs?v=livecapacity73';
+   if(typeof next[0]==='string'&&next[0].startsWith('./worker.mjs'))next[0]='./worker.mjs?v=livecapacity74';
    return Reflect.construct(Target,next,newTarget);
   }});
-  await import('./app-rpbuild53.mjs?v=20261005-livecapacity73');
+  await import('./app-rpbuild53.mjs?v=20261005-livecapacity74');
  })().catch(err=>{
   if(app) app.innerHTML='<h1>RebelsPrep could not start</h1><p style="font-size:18px">The practice planner hit a startup error.</p><pre style="white-space:pre-wrap;font-size:14px">'+String(err?.message||err)+'</pre><button onclick="location.reload()" style="font-size:18px;padding:12px 18px">Retry</button>';
  });
