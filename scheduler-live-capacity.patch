@@ -1,0 +1,9 @@
+--- a/scheduler.mjs
++++ b/scheduler.mjs
+@@
+-    if(available.length>45&&!liveCatcher){livePitcher=null;pool=available.filter(p=>!needsOpening(p,b));}
+-    else pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);
++    pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);
+@@
+- const maxLive=Math.min(Math.floor(total/2),people.filter(p=>p.canPitch).length*3,Math.max(0,total-Math.ceil(people.length/8)));
++ const maxLive=Math.min(people.filter(p=>p.canPitch).length*3,Math.max(0,total-Math.ceil(people.length/8)));

@@ -45,8 +45,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
    livePitcher=pitches[0]||null;
    if(livePitcher){
     liveCatcher=pool.filter(p=>p.id!==livePitcher.id&&p.canCatch&&memory.get(p.id).caught<3).sort((a,z)=>memory.get(a.id).caught-memory.get(z.id).caught||rng()-.5)[0]||null;
-    if(available.length>45&&!liveCatcher){livePitcher=null;pool=available.filter(p=>!needsOpening(p,b));}
-    else pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);
+    pool=pool.filter(p=>p.id!==livePitcher.id&&p.id!==liveCatcher?.id);
     if(pool.length<3){livePitcher=null;liveCatcher=null;pool=available.filter(p=>!needsOpening(p,b));}
    }
   }
@@ -174,7 +173,7 @@ export function buildPractice(input){
  const prepared=prepare(input),{people,blocks,coaches}=prepared;
  if(!coaches.length)throw Error('Include at least one coach for mandatory Front Toss and human pitching warm-ups.');
  const open=1,total=blocks-open;
- const maxLive=Math.min(Math.floor(total/2),people.filter(p=>p.canPitch).length*3,Math.max(0,total-Math.ceil(people.length/8)));
+ const maxLive=Math.min(people.filter(p=>p.canPitch).length*3,Math.max(0,total-Math.ceil(people.length/8)));
  const maxActive=Math.max(...Array.from({length:blocks},(_,b)=>people.filter(p=>b>=p.from&&b<p.until&&b!==p.from).length),0);
  const maxAssignableWithSelectedDrills=prepared.extras.length*4+12;
  if(maxActive>maxAssignableWithSelectedDrills)throw Error('This practice has '+maxActive+' hitters available in the same rotation, but '+prepared.extras.length+' selected drill stations plus Machine/Front Toss can place at most '+maxAssignableWithSelectedDrills+' hitters under the 3–4 player rule. Add '+Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)+' more drill station'+(Math.ceil((maxActive-maxAssignableWithSelectedDrills)/4)===1?'':'s')+'.');

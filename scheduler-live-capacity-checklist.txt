@@ -1,0 +1,29 @@
+Pre-deploy checklist for the targeted patch
+
+UNCHANGED / REQUIRED
+- Stable scheduler.mjs remains the source of truth.
+- Warm Up remains mandatory on each player's first available block.
+- Machine remains mandatory for every hitter.
+- Front Toss remains mandatory for every hitter.
+- Live remains 3–4 hitters.
+- Machine remains one full tunnel.
+- Live remains one full tunnel.
+- A no-player-catcher Live session uses existing 9Square validation.
+- Pitcher must complete pitching warm-up before Live.
+- Pitcher/catcher Live role maximum remains 3.
+- Fixed drill setup remains limited to 5 tees.
+- No 5-hitter station is introduced.
+
+46-HITTER EXPECTATION
+- 180 minutes / 12 minutes = 15 blocks.
+- Opening consumes each on-time hitter's first block.
+- 14 rotation blocks remain.
+- Mandatory Front Toss capacity is 8 hitters in each non-Live rotation.
+- 46 hitters require at least 6 non-Live rotations.
+- Therefore the scheduler may attempt up to 8 Live rotations.
+- 8 x 4 = 32 hitter Live opportunities.
+- Best physical outcome under these rules is 14 hitters missing Live, before any pitcher/warm-up/arrival constraints reduce that capacity.
+- Missing Live hitters should be eligible for the existing second-Front-Toss replacement path.
+
+DEPLOYMENT RULE
+Do not alter index.html or add a startup import. Once scheduler.mjs is patched and validated, deploy only scheduler.mjs plus a cache-bust of the existing worker import if the browser otherwise retains the old worker.

@@ -1,0 +1,10 @@
+Review conclusion
+
+The 22-missing-Live result is not the physical floor for the 46-hitter configuration. Two scheduler restrictions are unnecessarily reducing Live capacity:
+
+A. maxLive includes floor(total/2), capping a 14-rotation practice at 7 Live rotations even when mandatory Front Toss capacity permits 8.
+B. At attendance >45, the scheduler cancels an otherwise valid Live rotation whenever it cannot assign a player catcher, even though the generated Live station and validator already support 9Square when catcher is null.
+
+The targeted two-line behavioral patch removes only those restrictions. It does not loosen station sizes, tee count, tunnel count, Machine, Front Toss, pitcher warm-up, or Live role limits.
+
+Expected improvement for the same 46-hitter test: scheduler should be able to approach the physical floor of 14 missing Live instead of 22, although exact result can be higher if pitcher warm-up, pitcher availability, late arrivals, selected drills, or partitioning prevent all eight Live rotations from being used.
