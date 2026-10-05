@@ -36,33 +36,24 @@ else if(q.has('checkin')) import('./checkin-rp49.mjs?v=rpqr50');
 else {
  const app=document.getElementById('app');
  const checks=[
-  ['team-selection','./team-selection.mjs?v=recovery76'],
-  ['shared','./shared-rp52.mjs?v=recovery76'],
-  ['portal-model','./portal-model.mjs?v=recovery76'],
-  ['portal','./portal.mjs?v=recovery76'],
-  ['roster','./roster.mjs?v=recovery76'],
-  ['drills','./drills.mjs?v=recovery76'],
-  ['scheduler','./scheduler.mjs?v=livecapacity76'],
-  ['teams','./teams.mjs?v=recovery76'],
-  ['team-rosters','./team-rosters.mjs?v=recovery76'],
-  ['account-roster','./account-roster.mjs?v=recovery76'],
-  ['workflow','./workflow.mjs?v=recovery76']
+  ['team-selection','./team-selection.mjs?v=recovery77'],
+  ['shared','./shared-rp52.mjs?v=recovery77'],
+  ['portal-model','./portal-model.mjs?v=recovery77'],
+  ['portal','./portal.mjs?v=recovery77'],
+  ['roster','./roster.mjs?v=recovery77'],
+  ['drills','./drills.mjs?v=recovery77'],
+  ['scheduler','./scheduler.mjs?v=livecapacity77'],
+  ['teams','./teams.mjs?v=recovery77'],
+  ['team-rosters','./team-rosters.mjs?v=recovery77'],
+  ['account-roster','./account-roster.mjs?v=recovery77'],
+  ['workflow','./workflow.mjs?v=recovery77']
  ];
  (async()=>{
-  for(const [name,url] of checks){
-   try{await import(url);}
-   catch(err){throw new Error('STARTUP MODULE: '+name+'\n'+String(err?.name||'Error')+': '+String(err?.message||err)+'\n'+String(err?.stack||''));}
-  }
+  for(const [name,url] of checks){try{await import(url);}catch(err){throw new Error('STARTUP MODULE: '+name+'\n'+String(err?.name||'Error')+': '+String(err?.message||err)+'\n'+String(err?.stack||''));}}
   const NativeWorker=globalThis.Worker;
-  globalThis.Worker=new Proxy(NativeWorker,{construct(Target,args,newTarget){
-   const next=[...args];
-   if(typeof next[0]==='string'&&next[0].startsWith('./worker.mjs'))next[0]='./worker.mjs?v=livecapacity76';
-   return Reflect.construct(Target,next,newTarget);
-  }});
-  await import('./app-rpbuild53.mjs?v=20261005-livecapacity76');
- })().catch(err=>{
-  if(app) app.innerHTML='<h1>RebelsPrep could not start</h1><p style="font-size:18px">The practice planner hit a startup error.</p><pre style="white-space:pre-wrap;font-size:14px">'+String(err?.message||err)+'</pre><button onclick="location.reload()" style="font-size:18px;padding:12px 18px">Retry</button>';
- });
+  globalThis.Worker=new Proxy(NativeWorker,{construct(Target,args,newTarget){const next=[...args];if(typeof next[0]==='string'&&next[0].startsWith('./worker.mjs'))next[0]='./worker.mjs?v=livecapacity77';return Reflect.construct(Target,next,newTarget);}});
+  await import('./app-rpbuild53.mjs?v=20261005-livecapacity77');
+ })().catch(err=>{if(app) app.innerHTML='<h1>RebelsPrep could not start</h1><p style="font-size:18px">The practice planner hit a startup error.</p><pre style="white-space:pre-wrap;font-size:14px">'+String(err?.message||err)+'</pre><button onclick="location.reload()" style="font-size:18px;padding:12px 18px">Retry</button>';});
 }
 </script>
 </body>
