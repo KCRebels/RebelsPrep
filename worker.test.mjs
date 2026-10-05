@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {players,coaches} from './roster.mjs';
 import {drills} from './drills.mjs';
 import {validatePractice} from './scheduler.mjs';
+const fixed=drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&d.tees);let teeBudget=5;const teeDrills=[];for(const d of fixed){if((d.tees||0)<=teeBudget){teeDrills.push(d);teeBudget-=d.tees||0;}}
+const barnDrills=drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work'||!d.tees).concat(teeDrills);
 const messages=[];
 globalThis.self={postMessage:m=>messages.push(m)};
 await import('./worker.mjs');
-const input=n=>({players:players.slice(0,n),coaches,drills,facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true});
+const input=n=>({players:players.slice(0,n),coaches,drills:barnDrills,facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true});
 test('build checks Live first even when old draft allowed replacements',()=>{messages.length=0;self.onmessage({data:{mode:'build',input:input(12)}});assert.ok(messages[0].plan);assert.equal(messages[0].plan.replacements.length,0);assert.equal(messages[0].replacementOffer,undefined);assert.deepEqual(validatePractice(messages[0].plan),[]);});
 test('Front Toss replacements are offered only after a failed Live build',()=>{messages.length=0;self.onmessage({data:{mode:'build',input:input(45)}});assert.equal(messages[0].plan,undefined);assert.ok(messages[0].replacementOffer.replacements.length>0);assert.deepEqual(validatePractice(messages[0].replacementOffer),[]);});
 test('23 hitters count simultaneous stations rather than unique drills across practice',()=>{messages.length=0;self.onmessage({data:{mode:'recommend',input:input(23)}});const r=messages[0].recommendation;assert.equal(r.total,7);assert.equal(r.frontCount,4);assert.equal(r.liveCount,5);assert.equal(r.count,5);});
