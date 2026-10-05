@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {players,coaches} from './roster.mjs';
 import {drills} from './drills.mjs';
 import {buildPractice,validatePractice} from './scheduler.mjs';
-const barnDrills=drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work'||!d.tees).concat(drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&d.tees).slice(0,5));
+const fixed=drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&d.tees);let teeBudget=5;const teeDrills=[];for(const d of fixed){if((d.tees||0)<=teeBudget){teeDrills.push(d);teeBudget-=d.tees||0;}}
+const barnDrills=drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work'||!d.tees).concat(teeDrills);
 const make=(n,extra={})=>buildPractice({players:players.slice(0,n),coaches,drills:barnDrills,facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true,...extra});
 test('written corrections override screenshot positions',()=>{
  for(const name of ['Stella Utter','Rylee Rushton','Alaina Assenmacher','Ainsley Curry','Emma Robertson'])assert.ok(players.find(p=>p.name===name).pitcher,name);
@@ -56,7 +57,6 @@ test('multiple chosen machine variants appear and total tee capacity stays at fi
  const p=make(12);const stations=p.blocks.flatMap(b=>b.stations);for(const d of barnDrills.filter(d=>d.kind==='machine'))assert.ok(stations.some(s=>s.drillId===d.id),d.name);
  for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);
 });
-
 test('45 hitters can use selected tee drills within the five-tee limit',()=>{const p=make(45);assert.deepEqual(validatePractice(p),[]);assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);const invalid=structuredClone(p);const b=invalid.blocks.find(b=>b.stations.some(s=>s.tees));b.stations.find(s=>s.tees).tees=6;assert.ok(validatePractice(invalid).includes('Barn capacity exceeded'));});
 test('drill station numbers follow the coach selection order',()=>{const choices=drills.filter(d=>d.kind==='drill'&&!d.tees).reverse();const p=make(12,{drills:choices});for(const s of p.blocks.flatMap(b=>b.stations).filter(s=>s.kind==='drill'))assert.equal(s.resource,'Drill station '+(choices.findIndex(d=>d.id===s.drillId)+1));});
 test('23 hitters reuse five chosen stations across the full practice',()=>{
