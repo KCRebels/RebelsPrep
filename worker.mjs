@@ -1,43 +1,25 @@
 import {buildPractice,validatePractice} from './scheduler.mjs?v=livecapacity80';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
-function pitcherSets(input){
- if(input.players.length<35)return [null];
- const pitchers=input.players.filter(p=>p.pitcher&&p.canPitch!==false).sort((a,b)=>Number(!!b.noPitchWarmup)-Number(!!a.noPitchWarmup)||String(a.arrival||input.start).localeCompare(String(b.arrival||input.start))||String(b.departure||'99:99').localeCompare(String(a.departure||'99:99')));
- if(!pitchers.length)return [new Set()];
- const sets=[],add=ids=>{const key=ids.slice().sort().join('|');if(!sets.some(s=>[...s].sort().join('|')===key))sets.push(new Set(ids));};
- // Large practices benefit from warming a broad pitcher pool. Try the full pool first,
- // then progressively smaller pools. This gives Live rotation more unique pitchers
- // without the old 32-plan brute-force search.
- add(pitchers.map(p=>p.id));
- for(const size of [Math.min(8,pitchers.length),Math.min(6,pitchers.length),Math.min(4,pitchers.length)]){
-  add(pitchers.slice(0,size).map(p=>p.id));
-  if(pitchers.length>size)add(Array.from({length:size},(_,i)=>pitchers[(i+1)%pitchers.length].id));
- }
- return sets;
-}
-function transformed(input,active,preferPlayerWarmupCatcher){if(!active)return input;return {...input,preferPlayerWarmupCatcher,allowWarmupDuringLive:true,players:input.players.map(p=>p.pitcher&&p.canPitch!==false&&!active.has(p.id)?{...p,pitcher:false,canPitch:false}:p)};}
+function transformed(input,preferPlayerWarmupCatcher=true){return {...input,preferPlayerWarmupCatcher,allowWarmupDuringLive:true};}
 function rotateLivePitchers(plan,originalInput){
  if(!plan||originalInput.players.length<35)return plan;
- const source=new Map(originalInput.players.map(p=>[p.id,p])),eligible=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false),warmAt=new Map(eligible.map(p=>[p.id,p.noPitchWarmup?-1:Infinity]));
+ const eligible=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false),warmAt=new Map(eligible.map(p=>[p.id,p.noPitchWarmup?-1:Infinity])),counts=new Map(eligible.map(p=>[p.id,0]));
  for(let b=0;b<plan.blocks.length;b++)for(const s of plan.blocks[b].stations)if(s.kind==='warm'&&s.players[0])warmAt.set(s.players[0],b);
- const counts=new Map(eligible.map(p=>[p.id,0]));
  for(let b=0;b<plan.blocks.length;b++)for(const s of plan.blocks[b].stations)if(s.kind==='live'){
-  const current=source.get(s.pitcher);
-  const candidates=eligible.filter(p=>warmAt.get(p.id)<b&&!s.players.includes(p.id)&&s.catcher!==p.id&&counts.get(p.id)<3).sort((a,z)=>counts.get(a.id)-counts.get(z.id)||Number(a.id!==current?.id)-Number(z.id!==current?.id)||String(a.name).localeCompare(String(z.name)));
+  const candidates=eligible.filter(p=>warmAt.get(p.id)<b&&!s.players.includes(p.id)&&s.catcher!==p.id&&counts.get(p.id)<3).sort((a,z)=>counts.get(a.id)-counts.get(z.id)||String(a.name).localeCompare(String(z.name)));
   const pick=candidates[0];if(pick){s.pitcher=pick.id;counts.set(pick.id,counts.get(pick.id)+1);}
  }
  return plan;
 }
 function restorePitcherCoverage(plan,originalInput){
  if(!plan||originalInput.players.length<35)return plan;rotateLivePitchers(plan,originalInput);
- const original=new Map(originalInput.players.map(p=>[p.id,p]));plan.players=plan.players.map(p=>{const source=original.get(p.id);return source?{...p,pitcher:source.pitcher,canPitch:source.pitcher&&source.canPitch!==false}:p;});
  const used=new Set(plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live'&&s.pitcher).map(s=>s.pitcher))),missing=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false&&!used.has(p.id));
  plan.missingPitchers=missing.map(p=>p.id);plan.warnings=(plan.warnings||[]).filter(w=>!/^\d+ pitchers? have no Live pitching session:/.test(w));if(missing.length)plan.warnings.push(missing.length+' pitchers have no Live pitching session: '+missing.map(p=>p.name).join(', ')+'.');plan.requiresAcceptance=Boolean(plan.missingLive?.length||missing.length||plan.missingCatchers?.length);return plan;
 }
-function planValue(plan){return (plan.players.length-(plan.missingLive?.length||0))*10000-(plan.missingPitchers?.length||0)*200-(plan.missingCatchers?.length||0)*5;}
 function buildChecked(input){
- if(input.players.length<35)return checked(input);let best=null,lastError=null;
- for(const active of pitcherSets(input))for(const playerCatcher of [false,true]){try{const plan=restorePitcherCoverage(checked(transformed(input,active,playerCatcher)),input),errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));if(!best||planValue(plan)>planValue(best))best=plan;if(!(plan.missingLive?.length)&&!(plan.missingPitchers?.length))return plan;}catch(error){lastError=error;}}
+ if(input.players.length<35)return checked(input);
+ let best=null,lastError=null;
+ for(const playerCatcher of [true,false]){try{const plan=restorePitcherCoverage(checked(transformed(input,playerCatcher)),input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));if(!best||(plan.missingLive?.length||0)<(best.missingLive?.length||0)||(plan.missingLive?.length||0)===(best.missingLive?.length||0)&&(plan.missingPitchers?.length||0)<(best.missingPitchers?.length||0))best=plan;}catch(error){lastError=error;}}
  if(best)return best;throw lastError||Error('No valid large-practice plan found.');
 }
 function withBuildDiagnostics(plan,input){
