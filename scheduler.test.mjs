@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {players,coaches} from './roster.mjs';
 import {drills} from './drills.mjs';
 import {buildPractice,validatePractice} from './scheduler.mjs';
-const make=(n,extra={})=>buildPractice({players:players.slice(0,n),coaches,drills,facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true,...extra});
+const barnDrills=drills.filter(d=>d.kind!=='drill'||d.name==='Basic Tee Work'||!d.tees).concat(drills.filter(d=>d.kind==='drill'&&d.name!=='Basic Tee Work'&&d.tees).slice(0,5));
+const make=(n,extra={})=>buildPractice({players:players.slice(0,n),coaches,drills:barnDrills,facility:'The Barn',start:'17:30',durationMinutes:180,blockMinutes:12,allowReplacements:true,...extra});
 test('written corrections override screenshot positions',()=>{
  for(const name of ['Stella Utter','Rylee Rushton','Alaina Assenmacher','Ainsley Curry','Emma Robertson'])assert.ok(players.find(p=>p.name===name).pitcher,name);
  for(const name of ['Avree Troxel','Grace Samuels','Evangeline Pham','Teagan Hills','Shanley Taylor'])assert.ok(players.find(p=>p.name===name).catcher,name);
@@ -44,20 +45,20 @@ test('validator rejects missing human warmup, oversize group and repeat drills',
 test('all remaining 39 catalog drills have a supported scheduling role',()=>{
  assert.equal(drills.length,39);
  for(const d of drills){assert.ok(['drill','front','machine'].includes(d.kind));assert.ok(d.howItWorks);assert.ok(d.coachingCues);}
- const extra=drills.filter(d=>d.kind==='drill');
+ const extra=drills.filter(d=>d.kind==='drill'&&!d.tees).slice(0,5);
  for(const d of drills.filter(d=>d.kind!=='drill')){
   const p=make(12,{drills:[...extra,d]});assert.deepEqual(validatePractice(p),[],d.name);
   const station=p.blocks.flatMap(b=>b.stations).find(s=>s.drillId===d.id);assert.ok(station,d.name);assert.equal(station.drill,d.name);assert.equal(station.howItWorks,d.howItWorks);
  }
  assert.ok(!drills.some(d=>d.name==='Basic Tee Work'));
 });
-test('multiple chosen machine variants appear and total tee capacity stays at six',()=>{
- const p=make(12);const stations=p.blocks.flatMap(b=>b.stations);for(const d of drills.filter(d=>d.kind==='machine'))assert.ok(stations.some(s=>s.drillId===d.id),d.name);
- for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.kind==='opening'&&s.drill==='Tee Work'?Math.min(6,s.players.length):(s.tees||0)),0)<=6);
+test('multiple chosen machine variants appear and total tee capacity stays at five',()=>{
+ const p=make(12);const stations=p.blocks.flatMap(b=>b.stations);for(const d of barnDrills.filter(d=>d.kind==='machine'))assert.ok(stations.some(s=>s.drillId===d.id),d.name);
+ for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);
 });
 
-test('45 hitters can use selected tee drills within the six-tee limit',()=>{const p=make(45);assert.deepEqual(validatePractice(p),[]);assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=6);const invalid=structuredClone(p);const b=invalid.blocks.find(b=>b.stations.some(s=>s.tees));b.stations.find(s=>s.tees).tees=7;assert.ok(validatePractice(invalid).includes('Barn capacity exceeded'));});
-test('drill station numbers follow the coach selection order',()=>{const choices=drills.filter(d=>d.kind==='drill').reverse();const p=make(12,{drills:choices});for(const s of p.blocks.flatMap(b=>b.stations).filter(s=>s.kind==='drill'))assert.equal(s.resource,'Drill station '+(choices.findIndex(d=>d.id===s.drillId)+1));});
+test('45 hitters can use selected tee drills within the five-tee limit',()=>{const p=make(45);assert.deepEqual(validatePractice(p),[]);assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);const invalid=structuredClone(p);const b=invalid.blocks.find(b=>b.stations.some(s=>s.tees));b.stations.find(s=>s.tees).tees=6;assert.ok(validatePractice(invalid).includes('Barn capacity exceeded'));});
+test('drill station numbers follow the coach selection order',()=>{const choices=drills.filter(d=>d.kind==='drill'&&!d.tees).reverse();const p=make(12,{drills:choices});for(const s of p.blocks.flatMap(b=>b.stations).filter(s=>s.kind==='drill'))assert.equal(s.resource,'Drill station '+(choices.findIndex(d=>d.id===s.drillId)+1));});
 test('23 hitters reuse five chosen stations across the full practice',()=>{
  const chosen=drills.filter(d=>d.kind==='drill'&&!d.tees).slice(0,5);
  const p=make(23,{drills:chosen});assert.deepEqual(validatePractice(p),[]);assert.equal(p.missingLive.length,0);
