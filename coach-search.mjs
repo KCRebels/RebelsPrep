@@ -1,7 +1,6 @@
-import {coaches} from './roster.mjs?v=rp105';
+import {coaches} from './roster.mjs?v=rp106';
 
 const KEY='RebelsPrep:coach-pilot:1';
-
 function selectedTeamIds(){
  try{
   const active=localStorage.getItem(KEY+':active-team')||'kc-rebels-nationals';
@@ -26,20 +25,19 @@ function enhance(){
  const draw=()=>{
   const q=search.value.trim().toLowerCase();let visible=0;
   for(const row of [...people.children]){
-   const c=coachForRow(row);const selected=Boolean(row.querySelector('input[type="checkbox"]')?.checked);
-   const home=Boolean(c?.teamIds?.some(id=>teamIds.includes(id)));
+   const c=coachForRow(row);const home=Boolean(c?.teamIds?.some(id=>teamIds.includes(id)));
    const match=Boolean(q&&c?.name.toLowerCase().includes(q));
-   row.style.display=(q?(match||selected):(home||selected))?'':'none';
-   if(row.style.display!=='none')visible++;
+   // Team coaches only by default. A search temporarily reveals organization matches.
+   // Do not let legacy saved "Select All" coach choices force every coach to stay visible.
+   const show=q?match:home;
+   row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');
+   if(show)visible++;
   }
   const help=panel.querySelector('#coach-search-help');
-  if(help)help.textContent=q?(visible?visible+' matching/selected coach'+(visible===1?'':'es')+'.':'No Rebels coaches match that search.'):'Showing coaches assigned to this team. Search above to add a coach from another Rebels team.';
+  if(help)help.textContent=q?(visible?visible+' matching coach'+(visible===1?'':'es')+'.':'No Rebels coaches match that search.'):'Showing coaches assigned to this team. Search above to add a coach from another Rebels team.';
  };
- if(search.dataset.bound!=='true'){
-  search.dataset.bound='true';search.addEventListener('input',draw);people.addEventListener('change',()=>setTimeout(draw,0));
- }
+ if(search.dataset.bound!=='true'){search.dataset.bound='true';search.addEventListener('input',draw);}
  draw();
 }
-
 new MutationObserver(()=>requestAnimationFrame(enhance)).observe(document.getElementById('app')||document.documentElement,{childList:true,subtree:true});
 queueMicrotask(enhance);
