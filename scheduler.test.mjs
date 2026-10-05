@@ -20,9 +20,8 @@ test('all small-group hitters receive mandatory work and Live',()=>{
 test('32 hitters can use tee stations without opening Tee Work',()=>{
  const p=make(32);assert.equal(p.missingLive.length,0);assert.ok(!p.blocks.flatMap(b=>b.stations).some(s=>s.drill==='Tee Work'));assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));assert.deepEqual(validatePractice(p),[]);
 });
-test('45-person plan requires explicit Live replacement choice',()=>{
- assert.throws(()=>make(45,{allowReplacements:false}),/No valid plan found/);
- const p=make(45);assert.ok(p.replacements.length>0);assert.ok(p.missingPitchers.length>0);assert.ok(p.requiresAcceptance);assert.deepEqual(validatePractice(p),[]);
+test('45-person standard plan returns a reviewable Live shortage',()=>{
+ const p=make(45,{allowReplacements:false});assert.ok(p.missingLive.length>0);assert.ok(p.missingPitchers.length>0);assert.ok(p.requiresAcceptance);assert.ok(p.warnings.some(w=>w.includes('hitters still need Live')));assert.deepEqual(validatePractice(p),[]);
  for(const block of p.blocks){const names=block.stations.filter(s=>s.kind==='drill').map(s=>s.drill);assert.equal(new Set(names).size,names.length,'Equipment station duplicated');}
 });
 test('late/early attendees get their opening work before stations',()=>{
@@ -57,7 +56,7 @@ test('multiple chosen machine variants appear and total tee capacity stays at fi
  const p=make(12);const stations=p.blocks.flatMap(b=>b.stations);for(const d of barnDrills.filter(d=>d.kind==='machine'))assert.ok(stations.some(s=>s.drillId===d.id),d.name);
  for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);
 });
-test('45 hitters can use selected tee drills within the five-tee limit',()=>{const p=make(45);assert.deepEqual(validatePractice(p),[]);assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);const invalid=structuredClone(p);const b=invalid.blocks.find(b=>b.stations.some(s=>s.tees));b.stations.find(s=>s.tees).tees=6;assert.ok(validatePractice(invalid).includes('Barn capacity exceeded'));});
+test('45 hitters can use selected tee drills within the five-tee limit',()=>{const p=make(45,{allowReplacements:false});assert.deepEqual(validatePractice(p),[]);assert.ok(p.blocks.flatMap(b=>b.stations).some(s=>s.tees>0));for(const b of p.blocks)assert.ok(b.stations.reduce((n,s)=>n+(s.tees||0),0)<=5);const invalid=structuredClone(p);const b=invalid.blocks.find(b=>b.stations.some(s=>s.tees));b.stations.find(s=>s.tees).tees=6;assert.ok(validatePractice(invalid).includes('Barn capacity exceeded'));});
 test('drill station numbers follow the coach selection order',()=>{const choices=drills.filter(d=>d.kind==='drill'&&!d.tees).reverse();const p=make(12,{drills:choices});for(const s of p.blocks.flatMap(b=>b.stations).filter(s=>s.kind==='drill'))assert.equal(s.resource,'Drill station '+(choices.findIndex(d=>d.id===s.drillId)+1));});
 test('23 hitters reuse five chosen stations across the full practice',()=>{
  const chosen=drills.filter(d=>d.kind==='drill'&&!d.tees).slice(0,5);
