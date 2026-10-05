@@ -1,5 +1,15 @@
 import {buildPractice,validatePractice} from './scheduler.mjs?v=livecapacity71';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
+function withBuildDiagnostics(plan,input){
+ if(!plan||input.players.length<35)return plan;
+ const live=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live'));
+ const front=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='front'));
+ const machine=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='machine'));
+ const liveHitters=live.reduce((n,s)=>n+s.players.length,0);
+ const liveSizes=live.map(s=>s.players.length).join('/');
+ plan.warnings=[...(plan.warnings||[]),'Scheduler check: '+live.length+' Live blocks · '+liveHitters+' Live hitter slots · Live groups '+(liveSizes||'none')+' · '+front.length+' Front Toss stations · '+machine.length+' Machine stations.'];
+ return plan;
+}
 self.onmessage=event=>{
  try{
   if(event.data.mode==='staffing'){
@@ -25,9 +35,9 @@ self.onmessage=event=>{
    const total=Math.max(0,...stationBlocks.map(b=>b.total));
    self.postMessage({recommendation:{count,frontCount,liveCount,total,warnings:plan.warnings}});
   }else if(event.data.mode==='build'){
-   try{self.postMessage({plan:checked({...event.data.input,allowReplacements:false})});}
+   try{self.postMessage({plan:withBuildDiagnostics(checked({...event.data.input,allowReplacements:false}),event.data.input)});}
    catch(original){
-    try{const plan=checked({...event.data.input,allowReplacements:true});if(!plan.replacements.length)throw original;self.postMessage({replacementOffer:plan});}
+    try{const plan=withBuildDiagnostics(checked({...event.data.input,allowReplacements:true}),event.data.input);if(!plan.replacements.length)throw original;self.postMessage({replacementOffer:plan});}
     catch(replacement){self.postMessage({error:'Standard plan: '+original.message+' Replacement plan: '+replacement.message});}
    }
   }else self.postMessage({plan:checked(event.data)});
