@@ -18,7 +18,7 @@ export const players = names.map(([name,role,roleSource],i)=>({
 }));
 
 // Coach IDs 1-9 are intentionally preserved so existing saved RebelsPrep drafts remain valid.
-// teamIds controls which coaches are offered after a practice team is selected.
+// teamIds controls each coach's home-team assignment. The coach picker can also search the full organization directory.
 const coachRows = [
  ['rp-c-1','John Shafer','john@rebelssoftball.org',['kc-rebels-14-national','kc-rebels-16-national','kc-rebels-18-national','kc-rebels-nationals']],
  ['rp-c-2','Bill Latteman','Bill.Latteman@gmail.com',['kc-rebels-18-national','kc-rebels-nationals']],
@@ -74,7 +74,8 @@ const coachRows = [
  ['rp-c-52','Todd Stremsterfer','toddstrem15@gmail.com',['kc-rebels-12-stremsterfer']],
  ['rp-c-53','Chip Ufford','chufford93@gmail.com',['kc-rebels-14-ufford']],
  ['rp-c-54','Bob Waddell','bobwad01@gmail.com',['kc-rebels-16-regional']],
- ['rp-c-55','Brian Woods','race66bw@gmail.com',['kc-rebels-14-mason-shafer']]
+ ['rp-c-55','Brian Woods','race66bw@gmail.com',['kc-rebels-14-mason-shafer']],
+ ['rp-c-56','Hannah Jenkins','',['kc-rebels-18-regional']]
 ];
 export const coaches = coachRows.map(([id,name,email,teamIds])=>({id,name,email,teamIds})).sort((a,b)=>a.name.split(' ').at(-1).localeCompare(b.name.split(' ').at(-1))||a.name.localeCompare(b.name));
 export const rosterReview = {
