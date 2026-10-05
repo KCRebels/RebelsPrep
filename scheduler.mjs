@@ -47,7 +47,7 @@ function attempt(input,prepared,pattern,seed,preferThree=true,diag=null){
    }
   }
   const pairs=[];
-  if(!pattern[b]&&b<lastLive){
+  if((!pattern[b]||input.allowWarmupDuringLive)&&b<lastLive){
    const pending=pool.filter(p=>p.canPitch&&!memory.get(p.id).warm).sort((a,z)=>a.until-z.until||rng()-.5);
    for(const p of pending){
     if(pairs.length>=4||!pool.some(q=>q.id===p.id))continue;
