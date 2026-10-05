@@ -10,8 +10,22 @@ function transformed(input,preferPlayerWarmupCatcher=true){
  const active=activePitchers(input);if(!active)return {...input,preferPlayerWarmupCatcher,allowWarmupDuringLive:true};
  return {...input,preferPlayerWarmupCatcher,allowWarmupDuringLive:true,players:input.players.map(p=>p.pitcher&&!active.has(p.id)?{...p,pitcher:false,canPitch:false}:p)};
 }
-function restorePitcherCoverage(plan,originalInput){
+function rotateLivePitchers(plan,originalInput){
  if(!plan||originalInput.players.length<35)return plan;
+ const original=new Map(originalInput.players.map(p=>[p.id,p])),warmAt=new Map();
+ for(const p of originalInput.players)if(p.pitcher&&p.canPitch!==false&&p.noPitchWarmup)warmAt.set(p.id,-1);
+ for(let bi=0;bi<plan.blocks.length;bi++)for(const s of plan.blocks[bi].stations)if(s.kind==='warm'&&s.players?.[0])warmAt.set(s.players[0],bi);
+ const counts=new Map();
+ for(let bi=0;bi<plan.blocks.length;bi++){
+  const block=plan.blocks[bi],live=block.stations.find(s=>s.kind==='live');if(!live)continue;
+  const occupied=new Set(block.stations.flatMap(s=>[...(s.players||[]),s.catcher].filter(Boolean)));
+  const choices=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false&&warmAt.has(p.id)&&warmAt.get(p.id)<bi&&!occupied.has(p.id)&&(counts.get(p.id)||0)<3).sort((a,z)=>(counts.get(a.id)||0)-(counts.get(z.id)||0)||(warmAt.get(a.id)||0)-(warmAt.get(z.id)||0)||String(a.name).localeCompare(String(z.name)));
+  const pitcher=choices[0];if(!pitcher)continue;live.pitcher=pitcher.id;counts.set(pitcher.id,(counts.get(pitcher.id)||0)+1);
+ }
+ return plan;
+}
+function restorePitcherCoverage(plan,originalInput){
+ if(!plan||originalInput.players.length<35)return plan;rotateLivePitchers(plan,originalInput);
  const original=new Map(originalInput.players.map(p=>[p.id,p]));plan.players=plan.players.map(p=>{const o=original.get(p.id);return o?{...p,pitcher:!!o.pitcher,canPitch:o.pitcher&&o.canPitch!==false}:p;});
  const used=new Set(plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live'&&s.pitcher).map(s=>s.pitcher))),missing=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false&&!used.has(p.id));
  plan.missingPitchers=missing.map(p=>p.id);plan.warnings=(plan.warnings||[]).filter(w=>!/^\d+ pitchers? have no Live pitching session:/.test(w));if(missing.length)plan.warnings.push(missing.length+' pitchers have no Live pitching session: '+missing.map(p=>p.name).join(', ')+'.');plan.requiresAcceptance=Boolean(plan.missingLive?.length||missing.length||plan.missingCatchers?.length);return plan;
