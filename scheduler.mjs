@@ -134,7 +134,7 @@ export function buildPractice(input){
    const pattern=Array(blocks).fill(false);const positions=Array.from({length:Math.max(0,total-1)},(_,i)=>i+open+1);const rng=random(901+live*100+trial);
    if(trial%3===0)positions.sort((a,b)=>rng()-.5);else if(trial%3===1)positions.sort((a,b)=>b-a);else positions.sort((a,b)=>(a%2)-(b%2)||a-b);
    positions.slice(0,live).forEach(i=>pattern[i]=true);
-   const threeCapacity=Math.min(prepared.facility.tunnels*2,coaches.length)*3*(total-live);const preferThree=threeCapacity>=people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0);
+   const frontStationsPerNonLive=Math.min(Math.max(0,prepared.facility.tunnels*2-2),coaches.length);const threeCapacity=frontStationsPerNonLive*3*(total-live);const preferThree=threeCapacity>=people.length+(input.allowReplacements?Math.max(0,people.length-4*live):0);
    const candidate=attempt(input,prepared,pattern,12577+trial*37+live*1000,preferThree,diag);if(candidate&&(!best||candidate.score>best.score))best=candidate;if(candidate&&!candidate.missingLive.length&&!candidate.missingPitchers.length&&!candidate.missingCatchers.length)return candidate;
   }
   if(best)return best;
