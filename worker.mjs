@@ -3,7 +3,7 @@ function checked(input){const plan=buildPractice(input);const errors=validatePra
 function activePitchers(input){
  const pitchers=input.players.filter(p=>p.pitcher&&p.canPitch!==false).sort((a,z)=>Number(z.noPitchWarmup)-Number(a.noPitchWarmup)||(a.arrival||input.start).localeCompare(z.arrival||input.start)||String(a.name).localeCompare(String(z.name)));
  if(input.players.length<35)return null;
- const total=Math.floor(Number(input.durationMinutes)/Number(input.blockMinutes))-1,target=Math.max(1,total-Math.ceil(input.players.length/8)),needed=Math.min(pitchers.length,Math.max(7,Math.ceil(target/3)));
+ const total=Math.floor(Number(input.durationMinutes)/Number(input.blockMinutes))-1,target=Math.max(1,total-Math.ceil(input.players.length/8)),needed=Math.min(pitchers.length,Math.max(8,Math.ceil(target/3)));
  return new Set(pitchers.slice(0,needed).map(p=>p.id));
 }
 function transformed(input,preferPlayerWarmupCatcher=true){
