@@ -1,0 +1,12 @@
+Regression cases for safe scheduler patch
+
+1. Normal attendance (<46): output rules unchanged; removing the >45-only branch cannot affect these practices.
+2. 46 hitters with player catcher available: Live behavior unchanged except scheduler may use an eighth Live rotation when Front Toss capacity allows it.
+3. 46 hitters without a player catcher in a Live rotation: retain the eligible warmed pitcher and use equipment='9Square', which the existing validator already accepts.
+4. Front Toss capacity: maxLive remains bounded by total - ceil(people/8), so adding Live rotations cannot consume rotations needed for one mandatory Front Toss per hitter.
+5. Machine capacity: unchanged at 4 * total rotation blocks and still mandatory in attempt().
+6. Tee capacity: unchanged 5-tee fixed-drill check and validator.
+7. Pitch safety: Live pitcher selection still requires memory.warm and validator still rejects an unwarmed Live pitcher.
+8. Station size: Live/Machine/Front Toss remain 3–4 hitters; no 5-player fallback in this patch.
+9. Replacement flow: if Live cannot reach every hitter, existing allowReplacements path still requires second Front Toss for each missing-Live hitter.
+10. Startup: no new module or index startup import is part of this patch, avoiding the scheduler-live69 parse failure path.
