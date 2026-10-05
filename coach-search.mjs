@@ -20,12 +20,12 @@ function activeDraft(){
 function saveCoachIds(ids){
  const info=activeDraft();if(!info)return false;
  info.draft.coachIds=[...new Set(ids)];info.draft.started=true;info.draft.plan=null;info.draft.clock=null;
- if(info.draft.steps){delete info.draft.steps.attendance;delete info.draft.steps.drills;}
  localStorage.setItem(info.storageKey,JSON.stringify(info.draft));localStorage.setItem(KEY+':active-team',info.active);return true;
 }
 function coachForRow(row){const text=(row.textContent||'').trim();return coaches.find(c=>text.includes(c.name));}
 function coachPanel(){return document.querySelector('#staffing-guidance')?.closest('section.panel')||null;}
 function teamCoaches(teamIds){return coaches.filter(c=>c.teamIds?.some(id=>teamIds.includes(id)));}
+function setCheckboxes(people,ids){const chosen=new Set(ids);for(const el of people.querySelectorAll('input[data-coach]'))el.checked=chosen.has(el.dataset.include);}
 function enhance(){
  const panel=coachPanel();if(!panel)return;
  const people=panel.querySelector('.people');if(!people)return;
@@ -54,12 +54,14 @@ function enhance(){
  if(all&&all.dataset.teamBound!=='true'){
   all.dataset.teamBound='true';all.addEventListener('click',e=>{
    e.preventDefault();e.stopImmediatePropagation();
-   const current=activeDraft()?.draft?.coachIds||[];if(saveCoachIds([...current,...home.map(c=>c.id)]))location.reload();
+   const current=activeDraft()?.draft?.coachIds||[],outside=current.filter(id=>!homeIds.has(id)),next=[...outside,...home.map(c=>c.id)];
+   if(saveCoachIds(next)){setCheckboxes(people,next);updateCount();}
   },true);
  }
  if(clear&&clear.dataset.teamBound!=='true'){
   clear.dataset.teamBound='true';clear.addEventListener('click',e=>{
-   e.preventDefault();e.stopImmediatePropagation();if(saveCoachIds([]))location.reload();
+   e.preventDefault();e.stopImmediatePropagation();
+   if(saveCoachIds([])){setCheckboxes(people,[]);updateCount();}
   },true);
  }
  draw();
