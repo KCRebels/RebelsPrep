@@ -9,9 +9,11 @@ function pitcherSets(input){
  if(pitchers.length<=needed)return [new Set(pitchers.map(p=>p.id))];
  const sets=[];
  const add=ids=>{const key=ids.slice().sort().join('|');if(!sets.some(s=>[...s].sort().join('|')===key))sets.push(new Set(ids));};
- add(pitchers.slice(0,needed).map(p=>p.id));
- for(let offset=1;offset<pitchers.length&&sets.length<12;offset++)add(Array.from({length:needed},(_,i)=>pitchers[(offset+i)%pitchers.length].id));
- for(let anchor=0;anchor<Math.min(needed,pitchers.length)&&sets.length<16;anchor++){const ids=[pitchers[anchor].id];for(let j=needed;j<pitchers.length&&ids.length<needed;j++)ids.push(pitchers[j].id);if(ids.length===needed)add(ids);}
+ const sizes=[needed,Math.min(pitchers.length,needed+1)];
+ for(const size of sizes){
+  add(pitchers.slice(0,size).map(p=>p.id));
+  for(let offset=1;offset<pitchers.length&&sets.length<16;offset++)add(Array.from({length:size},(_,i)=>pitchers[(offset+i)%pitchers.length].id));
+ }
  return sets;
 }
 function transformed(input,active,preferPlayerWarmupCatcher){
