@@ -9,6 +9,20 @@ function selectedTeamIds(){
   return active.includes('+')?active.split('+'):[active];
  }catch{return ['kc-rebels-nationals'];}
 }
+function activeDraft(){
+ try{
+  const active=localStorage.getItem(KEY+':active-team')||'kc-rebels-nationals';
+  const storageKey=KEY+':team:'+active;
+  const raw=localStorage.getItem(storageKey)||localStorage.getItem(KEY);
+  return {active,storageKey,draft:raw?JSON.parse(raw):{teamId:active,teamIds:selectedTeamIds(),coachIds:[]}};
+ }catch{return null;}
+}
+function saveCoachIds(ids){
+ const info=activeDraft();if(!info)return false;
+ info.draft.coachIds=[...new Set(ids)];info.draft.started=true;info.draft.plan=null;info.draft.clock=null;
+ if(info.draft.steps){delete info.draft.steps.attendance;delete info.draft.steps.drills;}
+ localStorage.setItem(info.storageKey,JSON.stringify(info.draft));localStorage.setItem(KEY+':active-team',info.active);return true;
+}
 function coachForRow(row){const text=(row.textContent||'').trim();return coaches.find(c=>text.includes(c.name));}
 function coachPanel(){return document.querySelector('#staffing-guidance')?.closest('section.panel')||null;}
 function teamCoaches(teamIds){return coaches.filter(c=>c.teamIds?.some(id=>teamIds.includes(id)));}
@@ -23,17 +37,14 @@ function enhance(){
   people.before(wrap);
  }
  const search=panel.querySelector('#coach-search');if(!search)return;
- const count=panel.querySelector('h2 .count');
- const all=panel.querySelector('#all-coaches');
- const clear=panel.querySelector('#clear-coaches');
+ const count=panel.querySelector('h2 .count'),all=panel.querySelector('#all-coaches'),clear=panel.querySelector('#clear-coaches');
  const selectedHomeCount=()=>[...people.querySelectorAll('input[data-coach]:checked')].filter(el=>homeIds.has(el.dataset.include)).length;
  const updateCount=()=>{if(count)count.textContent=selectedHomeCount()+' / '+home.length;};
  const draw=()=>{
   const q=search.value.trim().toLowerCase();let visible=0;
   for(const row of [...people.children]){
    const c=coachForRow(row),isHome=Boolean(c&&homeIds.has(c.id)),match=Boolean(q&&c?.name.toLowerCase().includes(q));
-   const show=q?match:isHome;
-   row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');if(show)visible++;
+   const show=q?match:isHome;row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');if(show)visible++;
   }
   const help=panel.querySelector('#coach-search-help');
   if(help)help.textContent=q?(visible?visible+' matching coach'+(visible===1?'':'es')+'.':'No Rebels coaches match that search.'):'Showing '+home.length+' coach'+(home.length===1?'':'es')+' assigned to this team. Search above to add a coach from another Rebels team.';
@@ -41,17 +52,14 @@ function enhance(){
  };
  if(search.dataset.bound!=='true'){search.dataset.bound='true';search.addEventListener('input',draw);}
  if(all&&all.dataset.teamBound!=='true'){
-  all.dataset.teamBound='true';
-  all.addEventListener('click',e=>{
+  all.dataset.teamBound='true';all.addEventListener('click',e=>{
    e.preventDefault();e.stopImmediatePropagation();
-   for(const row of [...people.children]){const c=coachForRow(row),box=row.querySelector('input[data-coach]');if(box&&c&&homeIds.has(c.id)&&!box.checked){box.checked=true;box.dispatchEvent(new Event('change',{bubbles:true}));}}
+   const current=activeDraft()?.draft?.coachIds||[];if(saveCoachIds([...current,...home.map(c=>c.id)]))location.reload();
   },true);
  }
  if(clear&&clear.dataset.teamBound!=='true'){
-  clear.dataset.teamBound='true';
-  clear.addEventListener('click',e=>{
-   e.preventDefault();e.stopImmediatePropagation();
-   for(const row of [...people.children]){const c=coachForRow(row),box=row.querySelector('input[data-coach]');if(box&&c&&homeIds.has(c.id)&&box.checked){box.checked=false;box.dispatchEvent(new Event('change',{bubbles:true}));}}
+  clear.dataset.teamBound='true';clear.addEventListener('click',e=>{
+   e.preventDefault();e.stopImmediatePropagation();if(saveCoachIds([]))location.reload();
   },true);
  }
  draw();
