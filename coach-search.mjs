@@ -11,32 +11,49 @@ function selectedTeamIds(){
 }
 function coachForRow(row){const text=(row.textContent||'').trim();return coaches.find(c=>text.includes(c.name));}
 function coachPanel(){return document.querySelector('#staffing-guidance')?.closest('section.panel')||null;}
+function teamCoaches(teamIds){return coaches.filter(c=>c.teamIds?.some(id=>teamIds.includes(id)));}
 function enhance(){
  const panel=coachPanel();if(!panel)return;
  const people=panel.querySelector('.people');if(!people)return;
- const teamIds=selectedTeamIds();
+ const teamIds=selectedTeamIds(),home=teamCoaches(teamIds),homeIds=new Set(home.map(c=>c.id));
  let wrap=panel.querySelector('.coach-search-wrap');
  if(!wrap){
   wrap=document.createElement('div');wrap.className='coach-search-wrap';wrap.style.margin='14px 0';
-  wrap.innerHTML='<label style="display:block;font-weight:700">Find another Rebels coach<input id="coach-search" type="search" placeholder="Type a coach name…" autocomplete="off" style="box-sizing:border-box;width:100%;height:48px;margin-top:7px;font-size:16px;padding:0 12px"></label><p class="muted" id="coach-search-help" style="margin:6px 0 0">Showing coaches assigned to this team. Search above to add a coach from another Rebels team.</p>';
+  wrap.innerHTML='<label style="display:block;font-weight:700">Find another Rebels coach<input id="coach-search" type="search" placeholder="Type a coach name…" autocomplete="off" style="box-sizing:border-box;width:100%;height:48px;margin-top:7px;font-size:16px;padding:0 12px"></label><p class="muted" id="coach-search-help" style="margin:6px 0 0"></p>';
   people.before(wrap);
  }
  const search=panel.querySelector('#coach-search');if(!search)return;
+ const count=panel.querySelector('h2 .count');
+ const all=panel.querySelector('#all-coaches');
+ const clear=panel.querySelector('#clear-coaches');
+ const selectedHomeCount=()=>[...people.querySelectorAll('input[data-coach]:checked')].filter(el=>homeIds.has(el.dataset.include)).length;
+ const updateCount=()=>{if(count)count.textContent=selectedHomeCount()+' / '+home.length;};
  const draw=()=>{
   const q=search.value.trim().toLowerCase();let visible=0;
   for(const row of [...people.children]){
-   const c=coachForRow(row);const home=Boolean(c?.teamIds?.some(id=>teamIds.includes(id)));
-   const match=Boolean(q&&c?.name.toLowerCase().includes(q));
-   // Team coaches only by default. A search temporarily reveals organization matches.
-   // Do not let legacy saved "Select All" coach choices force every coach to stay visible.
-   const show=q?match:home;
-   row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');
-   if(show)visible++;
+   const c=coachForRow(row),isHome=Boolean(c&&homeIds.has(c.id)),match=Boolean(q&&c?.name.toLowerCase().includes(q));
+   const show=q?match:isHome;
+   row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');if(show)visible++;
   }
   const help=panel.querySelector('#coach-search-help');
-  if(help)help.textContent=q?(visible?visible+' matching coach'+(visible===1?'':'es')+'.':'No Rebels coaches match that search.'):'Showing coaches assigned to this team. Search above to add a coach from another Rebels team.';
+  if(help)help.textContent=q?(visible?visible+' matching coach'+(visible===1?'':'es')+'.':'No Rebels coaches match that search.'):'Showing '+home.length+' coach'+(home.length===1?'':'es')+' assigned to this team. Search above to add a coach from another Rebels team.';
+  updateCount();
  };
  if(search.dataset.bound!=='true'){search.dataset.bound='true';search.addEventListener('input',draw);}
+ if(all&&all.dataset.teamBound!=='true'){
+  all.dataset.teamBound='true';
+  all.addEventListener('click',e=>{
+   e.preventDefault();e.stopImmediatePropagation();
+   for(const row of [...people.children]){const c=coachForRow(row),box=row.querySelector('input[data-coach]');if(box&&c&&homeIds.has(c.id)&&!box.checked){box.checked=true;box.dispatchEvent(new Event('change',{bubbles:true}));}}
+  },true);
+ }
+ if(clear&&clear.dataset.teamBound!=='true'){
+  clear.dataset.teamBound='true';
+  clear.addEventListener('click',e=>{
+   e.preventDefault();e.stopImmediatePropagation();
+   for(const row of [...people.children]){const c=coachForRow(row),box=row.querySelector('input[data-coach]');if(box&&c&&homeIds.has(c.id)&&box.checked){box.checked=false;box.dispatchEvent(new Event('change',{bubbles:true}));}}
+  },true);
+ }
  draw();
 }
 new MutationObserver(()=>requestAnimationFrame(enhance)).observe(document.getElementById('app')||document.documentElement,{childList:true,subtree:true});
