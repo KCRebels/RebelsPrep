@@ -1,0 +1,9 @@
+Large-practice scheduler safety branch.
+
+Targeted scheduler changes only:
+1. Allow 9Square to serve as the Live catcher fallback at 46+ attendance instead of cancelling the Live block when no player catcher is available.
+2. Remove the artificial half-of-rotation Live-block ceiling. The existing Front Toss capacity calculation remains the governing limit, preserving mandatory Front Toss, Machine, 3–4 hitter stations, two-tunnel capacity, five-tee limit, pitcher warm-up requirement, and Live role limits.
+
+For 46 hitters in a 180-minute / 12-minute-block practice: 15 total blocks, 14 post-opening rotations. At least ceil(46/8)=6 non-Live rotations are required to provide mandatory Front Toss, leaving at most 8 Live rotations. At 4 Live hitters per rotation, the physical maximum is 32 Live hitters, so at least 14 hitters must receive the approved second-Front-Toss replacement unless practice time or another physical rule changes.
+
+Do not deploy a replacement scheduler module. Patch the stable scheduler.mjs only after syntax validation.
