@@ -1,4 +1,4 @@
-import {coaches} from './roster.mjs?v=rpbuild33';
+import {coaches} from './roster.mjs?v=rp103';
 
 const KEY='RebelsPrep:coach-pilot:1';
 const master=coaches.map(c=>({...c,teamIds:[...(c.teamIds||[])]}));
@@ -22,9 +22,12 @@ export function syncCoachesToSelectedTeams(){
  const nextSignature=teamIds.slice().sort().join('|');
  if(nextSignature===signature)return;
  signature=nextSignature;
- const allowed=master.filter(c=>c.teamIds.some(id=>teamIds.includes(id)));
- coaches.splice(0,coaches.length,...allowed);
+ // Keep the full organization coach directory available to the attendance screen.
+ // Home-team coaches are identified by teamIds and shown first; any other Rebels coach can be found by search and selected as a helper.
+ coaches.splice(0,coaches.length,...master.map(c=>({...c,homeTeam: c.teamIds.some(id=>teamIds.includes(id))})));
 }
+
+export function organizationCoaches(){return master.map(c=>({...c}));}
 
 syncCoachesToSelectedTeams();
 setInterval(syncCoachesToSelectedTeams,100);
