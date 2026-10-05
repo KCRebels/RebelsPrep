@@ -3,15 +3,16 @@ function checked(input){const plan=buildPractice(input);const errors=validatePra
 function highAttendanceInput(input){
  if(input.players.length<35)return input;
  const pitchers=input.players.filter(p=>p.pitcher&&p.canPitch!==false).sort((a,b)=>Number(!!b.noPitchWarmup)-Number(!!a.noPitchWarmup)||String(a.arrival||input.start).localeCompare(String(b.arrival||input.start))||String(b.departure||'99:99').localeCompare(String(a.departure||'99:99')));
- const liveBlocks=Math.max(1,Math.floor(Number(input.durationMinutes)/Number(input.blockMinutes))-1-Math.ceil(input.players.length/8));
+ const total=Math.floor(Number(input.durationMinutes)/Number(input.blockMinutes))-1;
+ const liveBlocks=Math.max(1,total-Math.ceil(input.players.length/8));
  const needed=Math.max(1,Math.min(pitchers.length,Math.ceil(liveBlocks/3)));
  const active=new Set(pitchers.slice(0,needed).map(p=>p.id));
- return {...input,players:input.players.map(p=>p.pitcher&&p.canPitch!==false&&!active.has(p.id)?{...p,canPitch:false}:p)};
+ return {...input,players:input.players.map(p=>p.pitcher&&p.canPitch!==false&&!active.has(p.id)?{...p,pitcher:false,canPitch:false}:p)};
 }
 function restorePitcherCoverage(plan,originalInput){
  if(!plan||originalInput.players.length<35)return plan;
  const original=new Map(originalInput.players.map(p=>[p.id,p]));
- plan.players=plan.players.map(p=>{const source=original.get(p.id);return source?{...p,canPitch:source.pitcher&&source.canPitch!==false}:p;});
+ plan.players=plan.players.map(p=>{const source=original.get(p.id);return source?{...p,pitcher:source.pitcher,canPitch:source.pitcher&&source.canPitch!==false}:p;});
  const used=new Set(plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live'&&s.pitcher).map(s=>s.pitcher)));
  const missing=originalInput.players.filter(p=>p.pitcher&&p.canPitch!==false&&!used.has(p.id));
  plan.missingPitchers=missing.map(p=>p.id);
