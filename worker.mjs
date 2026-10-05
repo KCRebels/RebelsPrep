@@ -1,4 +1,4 @@
-import {buildPractice,validatePractice} from './scheduler.mjs?v=livecapacity77';
+import {buildPractice,validatePractice} from './scheduler.mjs?v=livecapacity79';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
 function pitcherSets(input){
  if(input.players.length<35)return [null];
@@ -11,16 +11,12 @@ function pitcherSets(input){
  const add=ids=>{const key=ids.slice().sort().join('|');if(!sets.some(s=>[...s].sort().join('|')===key))sets.push(new Set(ids));};
  add(pitchers.slice(0,needed).map(p=>p.id));
  for(let offset=1;offset<pitchers.length&&sets.length<12;offset++)add(Array.from({length:needed},(_,i)=>pitchers[(offset+i)%pitchers.length].id));
- for(let anchor=0;anchor<Math.min(needed,pitchers.length)&&sets.length<16;anchor++){
-  const ids=[pitchers[anchor].id];
-  for(let j=needed;j<pitchers.length&&ids.length<needed;j++)ids.push(pitchers[j].id);
-  if(ids.length===needed)add(ids);
- }
+ for(let anchor=0;anchor<Math.min(needed,pitchers.length)&&sets.length<16;anchor++){const ids=[pitchers[anchor].id];for(let j=needed;j<pitchers.length&&ids.length<needed;j++)ids.push(pitchers[j].id);if(ids.length===needed)add(ids);}
  return sets;
 }
 function transformed(input,active,preferPlayerWarmupCatcher){
  if(!active)return input;
- return {...input,preferPlayerWarmupCatcher,players:input.players.map(p=>p.pitcher&&p.canPitch!==false&&!active.has(p.id)?{...p,pitcher:false,canPitch:false}:p)};
+ return {...input,preferPlayerWarmupCatcher,allowWarmupDuringLive:true,players:input.players.map(p=>p.pitcher&&p.canPitch!==false&&!active.has(p.id)?{...p,pitcher:false,canPitch:false}:p)};
 }
 function restorePitcherCoverage(plan,originalInput){
  if(!plan||originalInput.players.length<35)return plan;
@@ -38,26 +34,15 @@ function planValue(plan){return (plan.players.length-(plan.missingLive?.length||
 function buildChecked(input){
  if(input.players.length<35)return checked(input);
  let best=null,lastError=null;
- for(const active of pitcherSets(input)){
-  for(const playerCatcher of [false,true]){
-   try{
-    const plan=restorePitcherCoverage(checked(transformed(input,active,playerCatcher)),input);
-    if(!best||planValue(plan)>planValue(best))best=plan;
-    if(!(plan.missingLive?.length))return plan;
-   }catch(error){lastError=error;}
-  }
- }
+ for(const active of pitcherSets(input))for(const playerCatcher of [false,true]){try{const plan=restorePitcherCoverage(checked(transformed(input,active,playerCatcher)),input);if(!best||planValue(plan)>planValue(best))best=plan;if(!(plan.missingLive?.length))return plan;}catch(error){lastError=error;}}
  if(best)return best;
  throw lastError||Error('No valid large-practice plan found.');
 }
 function withBuildDiagnostics(plan,input){
  if(!plan||input.players.length<35)return plan;
- const live=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live'));
- const front=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='front'));
- const machine=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='machine'));
- const liveHitters=live.reduce((n,s)=>n+s.players.length,0);
- const liveSizes=live.map(s=>s.players.length).join('/');
- plan.warnings=[...(plan.warnings||[]),'Scheduler check: '+live.length+' Live blocks · '+liveHitters+' Live hitter slots · Live groups '+(liveSizes||'none')+' · '+front.length+' Front Toss stations · '+machine.length+' Machine stations.'];
+ const live=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='live')),front=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='front')),machine=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='machine')),warm=plan.blocks.flatMap(b=>b.stations.filter(s=>s.kind==='warm'));
+ const liveHitters=live.reduce((n,s)=>n+s.players.length,0),liveSizes=live.map(s=>s.players.length).join('/'),warmAlongsideLive=plan.blocks.filter(b=>b.stations.some(s=>s.kind==='live')&&b.stations.some(s=>s.kind==='warm')).length;
+ plan.warnings=[...(plan.warnings||[]),'Scheduler check: '+live.length+' Live blocks · '+liveHitters+' Live hitter slots · Live groups '+(liveSizes||'none')+' · '+front.length+' Front Toss stations · '+machine.length+' Machine stations · '+warm.length+' pitching warm-ups · '+warmAlongsideLive+' alongside Live.'];
  return plan;
 }
 self.onmessage=event=>{
