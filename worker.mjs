@@ -1,4 +1,4 @@
-import {buildPractice,validatePractice} from './scheduler.mjs?v=livecapacity79';
+import {buildPractice,validatePractice} from './scheduler.mjs?v=livecapacity80';
 function checked(input){const plan=buildPractice(input);const errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
 function pitcherSets(input){
  if(input.players.length<35)return [null];
