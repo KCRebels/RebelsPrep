@@ -3,7 +3,7 @@ function checked(input){const plan=buildPractice(input);const errors=validatePra
 function activePitchers(input){
  const pitchers=input.players.filter(p=>p.pitcher&&p.canPitch!==false).sort((a,z)=>Number(z.noPitchWarmup)-Number(a.noPitchWarmup)||(a.arrival||input.start).localeCompare(z.arrival||input.start)||String(a.name).localeCompare(String(z.name)));
  if(input.players.length<35)return null;
- const total=Math.floor(Number(input.durationMinutes)/Number(input.blockMinutes))-1,target=Math.max(1,total-Math.ceil(input.players.length/8)),needed=Math.min(pitchers.length,Math.max(1,Math.ceil(target/3)));
+ const total=Math.floor(Number(input.durationMinutes)/Number(input.blockMinutes))-1,target=Math.max(1,total-Math.ceil(input.players.length/8)),needed=Math.min(pitchers.length,Math.max(4,Math.ceil(target/3)));
  return new Set(pitchers.slice(0,needed).map(p=>p.id));
 }
 function transformed(input,preferPlayerWarmupCatcher=true){
@@ -12,7 +12,7 @@ function transformed(input,preferPlayerWarmupCatcher=true){
 }
 function rotateLivePitchers(plan,originalInput){
  if(!plan||originalInput.players.length<35)return plan;
- const original=new Map(originalInput.players.map(p=>[p.id,p])),warmAt=new Map();
+ const warmAt=new Map();
  for(const p of originalInput.players)if(p.pitcher&&p.canPitch!==false&&p.noPitchWarmup)warmAt.set(p.id,-1);
  for(let bi=0;bi<plan.blocks.length;bi++)for(const s of plan.blocks[bi].stations)if(s.kind==='warm'&&s.players?.[0])warmAt.set(s.players[0],bi);
  const counts=new Map();
