@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs team-selection.test.mjs account-roster.test.mjs practice-capacity.test.mjs",
+    "test": "node --test scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs team-selection.test.mjs account-roster.test.mjs practice-capacity.test.mjs shared-concurrency-rp132.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-rebelsprep 'node --test firestore.test.mjs shared-activation.test.mjs'"
   },
   "devDependencies": {
