@@ -22,7 +22,7 @@ export const players = names.map(([name,role,roleSource],i)=>({
 const coachRows = [
  ['rp-c-1','John Shafer','john@rebelssoftball.org',['kc-rebels-14-national','kc-rebels-16-national','kc-rebels-18-national','kc-rebels-nationals']],
  ['rp-c-2','Bill Latteman','Bill.Latteman@gmail.com',['kc-rebels-18-national','kc-rebels-nationals']],
- ['rp-c-3','Halley Rindom','halley.rindom@gmail.com',['kc-rebels-18-national']],
+ ['rp-c-3','Halley Rindom','halley.rindom@gmail.com',['kc-rebels-18-national','kc-rebels-nationals']],
  ['rp-c-4','Chris Olsen','olsen@rebelssoftball.org',['kc-rebels-14-national','kc-rebels-16-national','kc-rebels-18-national','kc-rebels-nationals']],
  ['rp-c-5','Jimmy Miles','jmiles0707@gmail.com',['kc-rebels-16-national','kc-rebels-nationals']],
  ['rp-c-6','Rylie Giddens','rylieg2002@gmail.com',['kc-rebels-16-national','kc-rebels-18-national','kc-rebels-nationals']],
@@ -41,7 +41,7 @@ const coachRows = [
  ['rp-c-19','Kurt Dearing','krdearing20@gmail.com',['kc-rebels-16-frans']],
  ['rp-c-20','Dan Eakin','Eakindan@gmail.com',['kc-rebels-12-eakin']],
  ['rp-c-21','Ben Fawl','ben.fawl@bnsf.com',[]],
- ['rp-c-22','Joe Flowers','joeflowers27@hotmail.com',['kc-rebels-14-national']],
+ ['rp-c-22','Joe Flowers','joeflowers27@hotmail.com',['kc-rebels-14-national','kc-rebels-nationals']],
  ['rp-c-23','Shelby Frans','shelbyfrans6@gmail.com',['kc-rebels-16-frans']],
  ['rp-c-24','Scott Geier','geiersm@gmail.com',['kc-rebels-12-stremsterfer']],
  ['rp-c-25','Garrett Graves','Coachgarrettgraves@gmail.com',['kc-rebels-10-graves']],
