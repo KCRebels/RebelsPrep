@@ -4,29 +4,13 @@ import {coaches} from './roster.mjs?v=rp129';
 import {combinedTeam} from './team-selection.mjs?v=rpbuild33';
 import {playerSeedDocuments,teamSeedDocuments} from './account-roster.mjs?v=rpaccount55';
 
-const KEY='RebelsPrep:coach-pilot:1',TARGET=9;
+const KEY='RebelsPrep:coach-pilot:1';
 const activeState=()=>{try{const id=localStorage.getItem(KEY+':active-team')||teams[0].id;return {id,state:JSON.parse(localStorage.getItem(KEY+':team:'+id)||localStorage.getItem(KEY)||'{}')};}catch{return null;}};
-const stationSelected=state=>Array.isArray(state?.selectedDrills)?state.selectedDrills:[];
-const setText=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text;};
 
-function enforceNineDrills(){
- const saved=activeState();if(!saved)return;
- const selected=stationSelected(saved.state).length;
- const picker=document.querySelector('.picker-screen');
- if(picker){
-  setText(document.querySelector('#picker-instruction strong'),'REQUIRED: Choose exactly 9 station drills.');
-  setText(document.querySelector('#selection-summary strong'),selected+' of 9 station drills selected');
-  document.querySelectorAll('[data-select-drill]').forEach(button=>{const chosen=button.getAttribute('aria-pressed')==='true';if(selected<TARGET&&!chosen){button.disabled=false;button.closest('.drill-row')?.classList.remove('unavailable');}});
-  const all=document.querySelector('#all-drills');if(all&&selected<TARGET)all.disabled=false;
- }
- const choiceTitle=document.querySelector('#drill-choice-title');
- if(choiceTitle&&/Set Up \d+ Drill Stations?/.test(choiceTitle.textContent||''))setText(choiceTitle,'Set Up 9 Drill Stations');
-}
-
-// Build 136 intercepted every drill tap and reloaded the PWA. That caused the
-// visible flicker and also let the older in-memory app state immediately undo
-// the saved selection. Build 137 leaves drill taps entirely to the proven app
-// click handler; this overlay only corrects the displayed nine-drill target.
+// Build 138 deliberately does not touch drill selection. The planner already
+// owns the drill target, disabled state, selection state and redraw. The Build
+// 136/137 overlay was fighting that state on every mutation/timer tick, which
+// caused the iPhone picker to flicker and become unstable after a few taps.
 
 async function activateFromSaved(button){
  const saved=activeState();if(!saved?.state?.plan)return;
@@ -47,7 +31,7 @@ function restoreActivate(){
 }
 
 let scheduled=false;
-function repair(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enforceNineDrills();restoreActivate();});}
+function repair(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;restoreActivate();});}
 new MutationObserver(repair).observe(document.documentElement,{childList:true,subtree:true});
-setInterval(()=>{enforceNineDrills();restoreActivate();},500);
+setInterval(restoreActivate,1000);
 repair();
