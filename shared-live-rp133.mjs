@@ -1,10 +1,10 @@
 import * as legacy from './shared-rp49.mjs?v=rp133';
-import {portalAssignments,newClock,changeClock,clockState,portalURL} from './portal-model.mjs?v=rp129';
+import {portalAssignments,newClock,changeClock,portalURL} from './portal-model.mjs?v=rp129';
 import {facilityId,facilityPolicy,overlaps,practiceWindow,makePracticeId} from './practice-capacity.mjs?v=rp133';
 
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');
 const validTeamId=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!x.includes('/');
-const bookingId=(date,id)=>date+'--'+id;
+const bookingId=(kind,date,id)=>'practice-'+kind+'--'+date+'--'+id;
 const activeOverlap=(sessions,candidate)=>Array.isArray(sessions)&&sessions.some(s=>s&&s.active!==false&&s.practiceId!==candidate.practiceId&&s.date===candidate.date&&overlaps(candidate,s));
 const compactSession=s=>({practiceId:s.practiceId,date:s.date,start:s.start,end:s.end,durationMinutes:s.durationMinutes,facility:s.facility,clockToken:s.clockToken,checkinToken:s.checkinToken,teamId:s.teamId,teamIds:s.teamIds,active:true});
 
@@ -40,8 +40,8 @@ export async function activate(plan,teamId,date,allPeople,base,teamIds=[teamId])
  return F.runTransaction(db,async tx=>{
   const locationRef=facility==='barn'||facility==='shed'?F.doc(db,'rpCheckinLocations',facility):null;
   const locationSnap=locationRef?await tx.get(locationRef):null;
-  const teamBookings=[];for(const key of keys){const ref=F.doc(db,'rpPracticeTeams',bookingId(date,key)),snap=await tx.get(ref);teamBookings.push({key,ref,snap});}
-  const personBookings=[];for(const person of people){const ref=F.doc(db,'rpPracticePeople',bookingId(date,person.id)),snap=await tx.get(ref);personBookings.push({person,ref,snap});}
+  const teamBookings=[];for(const key of keys){const ref=F.doc(db,'rpSystem',bookingId('team',date,key)),snap=await tx.get(ref);teamBookings.push({key,ref,snap});}
+  const personBookings=[];for(const person of people){const ref=F.doc(db,'rpSystem',bookingId('person',date,person.id)),snap=await tx.get(ref);personBookings.push({person,ref,snap});}
   const directories=new Map();const lookupKeys=[...new Set([...keys,...allPeople.flatMap(p=>p.memberTeamIds||[])])];for(const key of lookupKeys){const ref=F.doc(db,'rpTeams',key),snap=await tx.get(ref);directories.set(key,{ref,snap,data:snap.exists()?snap.data():{portals:{}}});}
   const identity=p=>p.role+':'+p.name.trim().toLowerCase().replace(/[’]/g,"'").replace(/\s+/g,' '),current=new Map(allPeople.flatMap(p=>[p.name,...p.aliases||[]].map(name=>[identity({...p,name}),p]))),currentIds=new Map(allPeople.map(p=>[p.id,p]));
   const portals={};for(const key of lookupKeys)for(const [id,p] of Object.entries(directories.get(key)?.data?.portals||{})){const person=currentIds.get(id)||current.get(identity(p));if(!person)continue;portals[person.id]??={token:p.token,name:person.name,role:person.role,alternateTokens:p.alternateTokens||[]};}
