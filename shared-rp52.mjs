@@ -1,6 +1,10 @@
-// Compatibility entry point for the current RebelsPrep app.
-import {services,allowed} from './shared-rp49.mjs?v=rp131';
-export * from './shared-rp49.mjs?v=rp131';
+// Current RebelsPrep shared-practice entry point.
+// Keep the proven legacy helpers while the live activation/control path uses
+// practice-scoped concurrency and facility-capacity protection.
+import {services,allowed} from './shared-rp49.mjs?v=rp133';
+export * from './shared-rp49.mjs?v=rp133';
+export {activate,control} from './shared-live-rp133.mjs?v=rp133';
+
 export async function completeLogin(email,url){const {A,auth}=await services();await A.setPersistence(auth,A.browserLocalPersistence);const cred=await A.signInWithEmailLink(auth,email,url);await cred.user.getIdToken(true);localStorage.removeItem('RebelsPrep:login-email');return cred.user;}
 export async function signInCoach(email,password){const {A,auth}=await services();await A.setPersistence(auth,A.browserLocalPersistence);const cred=await A.signInWithEmailAndPassword(auth,email,password);return cred.user;}
 export async function sendCoachPasswordEmail(email){const {A,auth}=await services();if(!allowed({email,emailVerified:true}))throw Error('That coach email is not enabled yet.');await A.sendPasswordResetEmail(auth,email);}
