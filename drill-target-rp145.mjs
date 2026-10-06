@@ -6,6 +6,8 @@ function draft(){try{const id=localStorage.getItem(KEY+':active-team');if(!id)re
 function selected(state){return (state.selectedDrills||[]).filter(id=>stationIds.has(id));}
 function onDrills(){return !!document.querySelector('[data-select-drill],#selection-summary,#picker-instruction');}
 function save(info){info.state.drillStationTarget=TARGET;info.state.plan=null;info.state.clock=null;if(info.state.steps)delete info.state.steps.drills;localStorage.setItem(info.key,JSON.stringify(info.state));}
+function chosenFromDOM(){return [...document.querySelectorAll('[data-select-drill][aria-pressed="true"]')].map(b=>b.dataset.selectDrill).filter(id=>stationIds.has(id));}
+function syncAppState(){const info=draft();if(!info)return;const ids=chosenFromDOM();if(!ids.length)return;const other=(info.state.selectedDrills||[]).filter(x=>!stationIds.has(x));info.state.selectedDrills=[...other,...ids];save(info);}
 function paint(){
  if(!onDrills())return;
  const info=draft();if(!info)return;const chosen=new Set(selected(info.state)),count=chosen.size;
@@ -16,4 +18,5 @@ function paint(){
  const next=document.querySelector('[data-next="review"]');if(next)next.disabled=count!==TARGET;
 }
 document.addEventListener('click',e=>{const button=e.target.closest?.('[data-select-drill]');if(!button||!onDrills())return;e.preventDefault();e.stopImmediatePropagation();const info=draft();if(!info)return;const id=button.dataset.selectDrill;if(!stationIds.has(id))return;const chosen=new Set(selected(info.state));if(chosen.has(id))chosen.delete(id);else if(chosen.size<TARGET)chosen.add(id);else return;const other=(info.state.selectedDrills||[]).filter(x=>!stationIds.has(x));info.state.selectedDrills=[...other,...chosen];save(info);paint();},true);
+document.addEventListener('click',e=>{const next=e.target.closest?.('[data-next="review"]');if(!next||!onDrills())return;const info=draft();if(!info||selected(info.state).length!==TARGET){e.preventDefault();e.stopImmediatePropagation();paint();return;}syncAppState();},true);
 let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;paint();});}).observe(document.getElementById('app')||document.documentElement,{childList:true,subtree:true});queueMicrotask(paint);
