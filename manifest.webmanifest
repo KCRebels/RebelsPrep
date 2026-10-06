@@ -2,37 +2,14 @@
   "name": "RebelsPrep",
   "short_name": "RebelsPrep",
   "id": "/RebelsPrep/?app=rp97",
-  "start_url": "/RebelsPrep/?app=rp189",
+  "start_url": "/RebelsPrep/?app=rp190",
   "scope": "/RebelsPrep/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
-    {
-      "src": "rebelsprep-white-frame-v5-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "rebelsprep-white-frame-v5-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
+    {"src":"rebelsprep-white-frame-v5-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"rebelsprep-white-frame-v5-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
   ],
-  "shortcuts": [
-    {
-      "name": "Barn Check-In",
-      "short_name": "Barn Check-In",
-      "url": "/RebelsPrep/?checkin=1&facility=barn",
-      "icons": [
-        {
-          "src": "rebelsprep-white-frame-v5-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    }
-  ]
+  "shortcuts": [{"name":"Barn Check-In","short_name":"Barn Check-In","url":"/RebelsPrep/?checkin=1&facility=barn","icons":[{"src":"rebelsprep-white-frame-v5-192.png","sizes":"192x192","type":"image/png"}]}]
 }
