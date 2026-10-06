@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {buildSession,validateConcurrentActivation,canonicalPractice} from './shared-concurrency-rp132.mjs';
 
 const plan=(facility='The Fields',start='17:30')=>({practiceType:'Hitting',facility,start,durationMinutes:120,players:[{id:'p1'}],coaches:[{id:'c1'}]});
-const args=(id,facility='The Fields',start='17:30')=>({practiceId:id,date:'2026-10-07',plan:plan(facility,start),teamId:'team-'+id,teamIds:['team-'+id],clockToken:'a'.repeat(64),checkinToken:'b'.repeat(64)});
+const hexToken=(id,char='a')=>(Buffer.from(String(id)).toString('hex')+char.repeat(64)).slice(0,64);
+const args=(id,facility='The Fields',start='17:30')=>({practiceId:id,date:'2026-10-07',plan:plan(facility,start),teamId:'team-'+id,teamIds:['team-'+id],clockToken:hexToken('clock-'+id,'a'),checkinToken:hexToken('checkin-'+id,'b')});
 
 test('Fields permits ten simultaneous isolated practices',()=>{
  const sessions=[];
@@ -14,13 +15,14 @@ test('Fields permits ten simultaneous isolated practices',()=>{
   sessions.push(s);
  }
  assert.equal(new Set(sessions.map(s=>s.practiceId)).size,10);
+ assert.equal(new Set(sessions.map(s=>s.clockToken)).size,10);
 });
 
 test('Barn and Shed block overlapping practices but allow adjacent times',()=>{
  for(const facility of ['The Barn','The Shed']){
-  const a=args('one',facility);a.plan.players=[{id:'player-one'}];a.plan.coaches=[{id:'coach-one'}];
-  const b=args('two',facility,'18:00');b.plan.players=[{id:'player-two'}];b.plan.coaches=[{id:'coach-two'}];
-  const c=args('three',facility,'19:30');c.plan.players=[{id:'player-three'}];c.plan.coaches=[{id:'coach-three'}];
+  const a=args('one-'+facility,facility);a.plan.players=[{id:'player-one'}];a.plan.coaches=[{id:'coach-one'}];
+  const b=args('two-'+facility,facility,'18:00');b.plan.players=[{id:'player-two'}];b.plan.coaches=[{id:'coach-two'}];
+  const c=args('three-'+facility,facility,'19:30');c.plan.players=[{id:'player-three'}];c.plan.coaches=[{id:'coach-three'}];
   const first=buildSession(a),overlap=buildSession(b),adjacent=buildSession(c);
   assert.throws(()=>validateConcurrentActivation(overlap,{sessions:[first]},[first]),/already has a practice/);
   assert.doesNotThrow(()=>validateConcurrentActivation(adjacent,{sessions:[first]},[first]));
