@@ -20,9 +20,6 @@ function paintPicker(){
  const all=document.querySelector('#all-drills');if(all)all.disabled=count>=TARGET;
 }
 
-// The legacy app still has a three-drill lock inside its click handler. For
-// this build, own picker taps in capture phase so the visible nine-drill target
-// and the saved draft use the same state. No reloads, timers, or redraw loops.
 document.addEventListener('click',event=>{
  const button=event.target.closest?.('[data-select-drill]');if(!button||!document.querySelector('.picker-screen'))return;
  event.preventDefault();event.stopImmediatePropagation();
@@ -31,9 +28,18 @@ document.addEventListener('click',event=>{
  const nonStation=(saved.state.selectedDrills||[]).filter(x=>!ids.has(x));saved.state.selectedDrills=[...nonStation,...current];saved.state.plan=null;saved.state.clock=null;if(saved.state.steps)delete saved.state.steps.drills;saveState(saved.id,saved.state);paintPicker();
 },true);
 
-// Before leaving the picker, reload once only to hydrate the app module from
-// the nine saved choices, then automatically continue. The user never loses
-// the selected drills and normal app validation/building resumes from there.
+// Build 140: the normal app transition can throw while first drawing the drill
+// picker. If that happens it immediately redraws the coach screen, making Next:
+// Drills appear dead. Capture the tap, preserve the selected coaches, and open
+// the drill route through the app's existing hash-route entry point instead.
+document.addEventListener('click',event=>{
+ const next=event.target.closest?.('#next-coaches-drills');if(!next)return;
+ event.preventDefault();event.stopImmediatePropagation();
+ const saved=activeState();if(!saved)return;
+ saved.state.steps={...(saved.state.steps||{}),attendance:true};saved.state.started=true;saved.state.drillStationTarget=TARGET;saveState(saved.id,saved.state);
+ location.hash='rp-drills';location.reload();
+},true);
+
 document.addEventListener('click',event=>{
  const next=event.target.closest?.('[data-next="review"]');if(!next||!document.querySelector('.picker-screen'))return;
  const saved=activeState();if(!saved)return;const count=selectedStationIds(saved.state).length;if(count!==TARGET){event.preventDefault();event.stopImmediatePropagation();paintPicker();return;}
