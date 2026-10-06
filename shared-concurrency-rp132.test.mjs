@@ -18,10 +18,11 @@ test('Fields permits ten simultaneous isolated practices',()=>{
 
 test('Barn and Shed block overlapping practices but allow adjacent times',()=>{
  for(const facility of ['The Barn','The Shed']){
-  const first=buildSession(args('one',facility));
-  const overlap=buildSession(args('two',facility,'18:00'));
+  const a=args('one',facility);a.plan.players=[{id:'player-one'}];a.plan.coaches=[{id:'coach-one'}];
+  const b=args('two',facility,'18:00');b.plan.players=[{id:'player-two'}];b.plan.coaches=[{id:'coach-two'}];
+  const c=args('three',facility,'19:30');c.plan.players=[{id:'player-three'}];c.plan.coaches=[{id:'coach-three'}];
+  const first=buildSession(a),overlap=buildSession(b),adjacent=buildSession(c);
   assert.throws(()=>validateConcurrentActivation(overlap,{sessions:[first]},[first]),/already has a practice/);
-  const adjacent=buildSession(args('three',facility,'19:30'));
   assert.doesNotThrow(()=>validateConcurrentActivation(adjacent,{sessions:[first]},[first]));
  }
 });
