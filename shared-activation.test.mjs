@@ -8,7 +8,7 @@ try{
  const db=env.authenticatedContext('multi-coach',{email:'Recruiting@rebelssoftball.org',email_verified:true}).firestore();
  let seq=100;const token=()=> (++seq).toString(16).padStart(64,'0');
  const services=async()=>({F,db,auth:{currentUser:{emailVerified:true,email:'recruiting@rebelssoftball.org'}}});
- const src=await readFile(new URL('./shared.mjs',import.meta.url),'utf8');
+ const src=await readFile(new URL('./shared-rp49.mjs',import.meta.url),'utf8');
  const body=src.slice(src.indexOf('export async function activate('),src.indexOf('export async function watchClock')).replaceAll('export async function','async function');
  const api=new Function('services','allowed','token','newClock','changeClock','clockState','portalAssignments','portalURL','checkinURL',body+'return {activate,control};')(services,()=>true,token,newClock,changeClock,clockState,portalAssignments,portalURL,(base,t)=>new URL('?checkin=1&session='+t,base).href);
  const {activate,control}=api;
@@ -43,31 +43,19 @@ try{
  await control(result.clockToken,'resume');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.running,true);
  await control(result.clockToken,'next');assert.equal((await F.getDoc(F.doc(db,'rpClocks',result.clockToken))).data().clock.phase,'wrap');
  await assert.rejects(()=>control(result.clockToken,'bogus'),/clock action is invalid/);
-
  const first=await F.getDoc(F.doc(db,'rpPortals',permanent)),second=await F.getDoc(F.doc(db,'rpPortals',alternate));
- assert.equal(first.data().clockToken,result.clockToken);
- assert.equal(second.data().clockToken,result.clockToken);
- for(const id of ['multi-a','multi-b']){
-  const data=(await F.getDoc(F.doc(db,'rpTeams',id))).data();
-  assert.equal(data.practiceKey,'combined--multi-a--multi-b');
-  assert.deepEqual(data.teamIds,['combined--multi-a--multi-b','multi-a','multi-b']);
- }
+ assert.equal(first.data().clockToken,result.clockToken);assert.equal(second.data().clockToken,result.clockToken);
+ for(const id of ['multi-a','multi-b']){const data=(await F.getDoc(F.doc(db,'rpTeams',id))).data();assert.equal(data.practiceKey,'combined--multi-a--multi-b');assert.deepEqual(data.teamIds,['combined--multi-a--multi-b','multi-a','multi-b']);}
  await assert.rejects(()=>activate(plan,'multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-b']),/Finish the active/);
  await control(result.clockToken,'done');
  assert.equal((await F.getDoc(F.doc(db,'rpCheckinSessions',result.checkinToken))).data().active,false);
  assert.equal((await F.getDoc(F.doc(db,'rpCheckinLocations','barn'))).data().sessions.some(x=>x.checkinToken===result.checkinToken),false);
  const next=await activate(plan,'multi-b','2026-10-01',people,'https://kcrebels.github.io/RebelsPrep/',['multi-b']);
- assert.equal(next.portals.p1.token,permanent);
- assert.equal((await F.getDoc(F.doc(db,'rpPortals',permanent))).data().clockToken,next.clockToken);
- assert.equal((await F.getDoc(F.doc(db,'rpPortals',alternate))).data().clockToken,next.clockToken);
+ assert.equal(next.portals.p1.token,permanent);assert.equal((await F.getDoc(F.doc(db,'rpPortals',permanent))).data().clockToken,next.clockToken);assert.equal((await F.getDoc(F.doc(db,'rpPortals',alternate))).data().clockToken,next.clockToken);
  await F.updateDoc(F.doc(db,'rpClocks',next.clockToken),{clock:{...newClock(plan),done:true}});
- const ella={id:'ella',name:'Ella Olson',role:'player',aliases:['Ella Olsen'],memberTeamIds:['nationals','individual']};
- const ellaToken='f'.repeat(64);
+ const ella={id:'ella',name:'Ella Olson',role:'player',aliases:['Ella Olsen'],memberTeamIds:['nationals','individual']};const ellaToken='f'.repeat(64);
  await F.setDoc(F.doc(db,'rpTeams','nationals'),{portals:{legacy:{name:'Ella Olsen',role:'player',token:ellaToken}}});
- const ellaPlan={...plan,players:[ella],coaches:[]};
- const individual=await activate(ellaPlan,'individual','2026-10-01',[ella],'https://kcrebels.github.io/RebelsPrep/',['individual']);
- assert.equal(individual.portals.ella.token,ellaToken);
- assert.equal((await F.getDoc(F.doc(db,'rpPortals',ellaToken))).data().name,'Ella Olson');
- assert.equal((await F.getDoc(F.doc(db,'rpTeams','nationals'))).data().portals.legacy.token,ellaToken);
+ const ellaPlan={...plan,players:[ella],coaches:[]};const individual=await activate(ellaPlan,'individual','2026-10-01',[ella],'https://kcrebels.github.io/RebelsPrep/',['individual']);
+ assert.equal(individual.portals.ella.token,ellaToken);assert.equal((await F.getDoc(F.doc(db,'rpPortals',ellaToken))).data().name,'Ella Olson');assert.equal((await F.getDoc(F.doc(db,'rpTeams','nationals'))).data().portals.legacy.token,ellaToken);
  console.log('Combined activation: permanent and alternate links preserved, team directories share one clock, conflicts rejected, solo restart verified.');
 }finally{await env.cleanup();}
