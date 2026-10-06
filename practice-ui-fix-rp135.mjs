@@ -15,7 +15,7 @@ function paintPicker(){
  const saved=activeState();if(!saved||!document.querySelector('.picker-screen'))return;
  const selected=new Set(selectedStationIds(saved.state)),count=selected.size;
  const instruction=document.querySelector('#picker-instruction strong');if(instruction)instruction.textContent='REQUIRED: Choose exactly 9 station drills.';
- const summary=document.querySelector('#selection-summary');if(summary){const names=[...selected].map(id=>drills.find(d=>d.id===id)?.name).filter(Boolean);summary.innerHTML='<strong>'+count+' of 9 station drills selected</strong>'+(names.length?'<ol>'+names.map((name,i)=>'<li>'+(i+1)+'. '+name.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
+ const summary=document.querySelector('#selection-summary');if(summary){const names=[...selected].map(id=>drills.find(d=>d.id===id)?.name).filter(Boolean);summary.innerHTML='<strong>'+count+' of 9 station drills selected</strong>'+(names.length?'<ol>'+names.map((name,i)=>'<li>'+(i+1)+'. '+name.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))+'</li>').join('')+'</ol>':'<p>No drills selected yet</p>');}
  document.querySelectorAll('[data-select-drill]').forEach(button=>{const id=button.dataset.selectDrill,chosen=selected.has(id),row=button.closest('.drill-row');button.disabled=!chosen&&count>=TARGET;button.setAttribute('aria-pressed',String(chosen));button.setAttribute('aria-label',(chosen?'Deselect ':'Select ')+(drills.find(d=>d.id===id)?.name||''));const mark=button.querySelector('.drill-row-mark');if(mark)mark.textContent=chosen?'✓':'+';row?.classList.toggle('selected',chosen);row?.classList.toggle('unavailable',!chosen&&count>=TARGET);});
  const all=document.querySelector('#all-drills');if(all)all.disabled=count>=TARGET;
 }
@@ -28,17 +28,10 @@ document.addEventListener('click',event=>{
  const nonStation=(saved.state.selectedDrills||[]).filter(x=>!ids.has(x));saved.state.selectedDrills=[...nonStation,...current];saved.state.plan=null;saved.state.clock=null;if(saved.state.steps)delete saved.state.steps.drills;saveState(saved.id,saved.state);paintPicker();
 },true);
 
-// Build 140: the normal app transition can throw while first drawing the drill
-// picker. If that happens it immediately redraws the coach screen, making Next:
-// Drills appear dead. Capture the tap, preserve the selected coaches, and open
-// the drill route through the app's existing hash-route entry point instead.
-document.addEventListener('click',event=>{
- const next=event.target.closest?.('#next-coaches-drills');if(!next)return;
- event.preventDefault();event.stopImmediatePropagation();
- const saved=activeState();if(!saved)return;
- saved.state.steps={...(saved.state.steps||{}),attendance:true};saved.state.started=true;saved.state.drillStationTarget=TARGET;saveState(saved.id,saved.state);
- location.hash='rp-drills';location.reload();
-},true);
+// Build 142: do not intercept Next: Drills. The app already owns this transition
+// and updates its in-memory state. The old reload interceptor saved localStorage,
+// reloaded the entire app, and the app then resumed its default screen, which is
+// why the coach page appeared to be stuck.
 
 document.addEventListener('click',event=>{
  const next=event.target.closest?.('[data-next="review"]');if(!next||!document.querySelector('.picker-screen'))return;
