@@ -44,7 +44,11 @@ export function facilityConflict(candidate,locationData){
  const policy=facilityPolicy(candidate?.facility);
  if(!policy)return {blocked:true,code:'unknown-facility',message:'Choose a valid practice facility.'};
  if(policy.mode==='shared')return {blocked:false,code:'shared-facility',policy,conflicts:[]};
- const sessions=activeSessionsForDate(locationData,candidate?.date).filter(s=>s.clockToken!==candidate?.clockToken&&overlaps(candidate,s));
+ const candidateFacility=policy.id;
+ const sessions=activeSessionsForDate(locationData,candidate?.date).filter(s=>{
+  const sessionFacility=facilityId(s.facility||locationData?.facility||candidateFacility);
+  return sessionFacility===candidateFacility&&s.clockToken!==candidate?.clockToken&&overlaps(candidate,s);
+ });
  if(!sessions.length)return {blocked:false,code:'available',policy,conflicts:[]};
  return {blocked:true,code:'facility-overlap',policy,conflicts:sessions,message:`${policy.name} already has a practice during that time. Choose a different time or facility.`};
 }
