@@ -46,14 +46,16 @@ function enhance(){
   box.innerHTML=extras.length?'<p class="muted" style="margin:0 0 6px"><strong>Added from other teams:</strong> '+extras.map(c=>c.name).join(', ')+'</p>':'';
  };
  const draw=()=>{
-  const q=search.value.trim().toLowerCase();let visible=0;const ids=new Set(selectedIds());
+  const q=search.value.trim().toLowerCase();let matches=0;const ids=new Set(selectedIds());
   for(const row of [...people.children]){
    const c=coachForRow(row),isHome=Boolean(c&&homeIds.has(c.id)),isSelected=Boolean(c&&ids.has(c.id)),match=Boolean(q&&c?.name.toLowerCase().includes(q));
-   const show=q?match:(isHome||isSelected);row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');if(show)visible++;
+   if(match&&!isHome)matches++;
+   const show=isHome||isSelected||match;
+   row.hidden=!show;row.style.setProperty('display',show?'flex':'none','important');
   }
   setCheckboxes(people,[...ids]);
   const help=panel.querySelector('#coach-search-help');
-  if(help)help.textContent=q?(visible?visible+' matching coach'+(visible===1?'':'es')+'. Tap a coach to add or remove them.':'No Rebels coaches match that search.'):'Showing your team coaches plus any outside coaches you added. Search above to add another Rebels coach.';
+  if(help)help.textContent=q?(matches?matches+' matching outside-team coach'+(matches===1?'':'es')+' shown below with your team coaches.':'No additional Rebels coaches match that search. Your team coaches remain shown below.'):'Showing your team coaches plus any outside coaches you added. Search above to add another Rebels coach.';
   updateCount();updateExtras();
  };
  if(search.dataset.bound!=='true'){search.dataset.bound='true';search.addEventListener('input',draw);}
@@ -62,19 +64,19 @@ function enhance(){
    const el=e.target.closest('input[data-coach]');if(!el)return;
    e.preventDefault();e.stopImmediatePropagation();
    const ids=new Set(selectedIds());if(el.checked)ids.add(el.dataset.include);else ids.delete(el.dataset.include);
-   if(saveCoachIds([...ids])){draw();search.focus();}
+   if(saveCoachIds([...ids]))draw();
   },true);
  }
  if(all&&all.dataset.teamBound!=='true'){
   all.dataset.teamBound='true';all.addEventListener('click',e=>{
    e.preventDefault();e.stopImmediatePropagation();
    const current=selectedIds(),outside=current.filter(id=>!homeIds.has(id)),next=[...outside,...home.map(c=>c.id)];
-   if(saveCoachIds(next))draw();
+   search.value='';if(saveCoachIds(next))draw();
   },true);
  }
  if(clear&&clear.dataset.teamBound!=='true'){
   clear.dataset.teamBound='true';clear.addEventListener('click',e=>{
-   e.preventDefault();e.stopImmediatePropagation();if(saveCoachIds([]))draw();
+   e.preventDefault();e.stopImmediatePropagation();search.value='';if(saveCoachIds([]))draw();
   },true);
  }
  draw();
