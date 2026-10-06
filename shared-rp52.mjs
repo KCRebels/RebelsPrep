@@ -1,9 +1,10 @@
 // Current RebelsPrep shared-practice entry point.
-// Keep the proven legacy helpers while the live activation/control path uses
-// practice-scoped concurrency and facility-capacity protection.
-import {services,allowed} from './shared-rp49.mjs?v=rp133';
-export * from './shared-rp49.mjs?v=rp133';
-export {activate,control} from './shared-live-rp133.mjs?v=rp133';
+// Keep the proven legacy helpers while live activation/control use practice-scoped
+// concurrency, facility-capacity protection, and isolated completion cleanup.
+import {services,allowed} from './shared-rp49.mjs?v=rp134';
+export * from './shared-rp49.mjs?v=rp134';
+export {activate} from './shared-live-rp133.mjs?v=rp134';
+export {control} from './shared-control-rp134.mjs?v=rp134';
 
 export async function completeLogin(email,url){const {A,auth}=await services();await A.setPersistence(auth,A.browserLocalPersistence);const cred=await A.signInWithEmailLink(auth,email,url);await cred.user.getIdToken(true);localStorage.removeItem('RebelsPrep:login-email');return cred.user;}
 export async function signInCoach(email,password){const {A,auth}=await services();await A.setPersistence(auth,A.browserLocalPersistence);const cred=await A.signInWithEmailAndPassword(auth,email,password);return cred.user;}
