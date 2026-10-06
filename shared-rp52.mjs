@@ -1,21 +1,4 @@
-import {firebaseConfig,builderEmails} from './shared-config.mjs?v=rpbuild19';
-import {portalAssignments,newClock,changeClock,clockState,portalURL} from './portal-model.mjs?v=rp129';
-let servicesPromise;
-export const configured=Boolean(firebaseConfig?.projectId&&firebaseConfig?.apiKey&&firebaseConfig?.authDomain);
-export async function services(){
- if(!configured)throw Error('Shared portals need the separate RebelsPrep Firebase project configured.');
- if(!servicesPromise)servicesPromise=(async()=>{const root='https://www.gstatic.com/firebasejs/12.19.0/';const [app,A,F]=await Promise.all(['app','auth','firestore'].map(s=>import(root+'firebase-'+s+'.js')));const project=app.getApps().find(x=>x.name==='RebelsPrep')||app.initializeApp(firebaseConfig,'RebelsPrep');const auth=A.getAuth(project);await A.setPersistence(auth,A.browserLocalPersistence);return {A,F,auth,db:F.getFirestore(project)};})();
- return servicesPromise;
-}
-export function allowed(user){return Boolean(user?.emailVerified&&builderEmails.includes(user.email?.toLowerCase()));}
-export async function sendLogin(email,base){if(!builderEmails.includes(email.toLowerCase()))throw Error('That coach email is not enabled yet.');const {A,auth}=await services();const url=new URL(base);url.hash='';url.search='';await A.sendSignInLinkToEmail(auth,email,{url:url.href,handleCodeInApp:true});localStorage.setItem('RebelsPrep:login-email',email);}
-export async function completeLogin(email,url){const {A,auth}=await services();const cred=await A.signInWithEmailLink(auth,email,url);await A.setPersistence(auth,A.browserLocalPersistence);await cred.user.getIdToken(true);localStorage.removeItem('RebelsPrep:login-email');return cred.user;}
-export async function refreshCoachAuth(){const {auth}=await services();if(!auth.currentUser)throw Error('Coach sign-in is required.');await auth.currentUser.reload();await auth.currentUser.getIdToken(true);return auth.currentUser;}
-export async function ensureCoachAccount(teamIds=[]){const {F,db,auth}=await services();const user=auth.currentUser;if(!allowed(user))throw Error('Sign in with an enabled coach email.');const ref=F.doc(db,'rpAccounts',user.uid),snap=await F.getDocFromServer(ref);if(snap.exists())return snap.data();const data={role:'org_admin',active:true,coachId:'coach-'+user.uid,displayName:user.displayName||user.email||'Coach',email:user.email||'',teamIds:[...new Set(teamIds)].filter(Boolean),createdAt:F.serverTimestamp(),lastSeenAt:F.serverTimestamp()};await F.setDoc(ref,data);return data;}
-export async function seedAccountDirectory(playerSeeds,teamSeeds){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');if(!Array.isArray(playerSeeds)||!Array.isArray(teamSeeds))throw Error('Account directory seed is invalid.');const marker=F.doc(db,'rpSystem','account-directory-v1'),markerSnap=await F.getDoc(marker);if(markerSnap.exists()&&markerSnap.data().complete===true&&markerSnap.data().players===playerSeeds.length&&markerSnap.data().teams===teamSeeds.length)return markerSnap.data();const writes=[...teamSeeds.map(x=>['rpDirectoryTeams',x]),...playerSeeds.map(x=>['rpPlayers',x])];for(let i=0;i<writes.length;i+=400){const batch=F.writeBatch(db);for(const [collectionName,item] of writes.slice(i,i+400))batch.set(F.doc(db,collectionName,item.id),item.data,{merge:true});await batch.commit();}const result={complete:true,players:playerSeeds.length,teams:teamSeeds.length,seededAt:F.serverTimestamp()};await F.setDoc(marker,result);return result;}
-export async function isLoginLink(url){const {A,auth}=await services();return A.isSignInWithEmailLink(auth,url);}
-export async function signOut(){const {A,auth}=await services();await A.signOut(auth);}
-export async function observeAuth(fn){const {A,auth}=await services();return A.onAuthStateChanged(auth,fn);}
-const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');
-export function checkinURL(base,token){const u=new URL(base);u.hash='';u.search='?checkin=1&session='+encodeURIComponent(token);return u.href;}
-export async function registry(teamId){const {F,db,auth}=await services();if(!allowed(auth.currentUser))throw Error('Sign in with an enabled coach email.');const d=await F.getDocFromServer(F.doc(db,'rpTeams',teamId));return d.exists()?d.data():{portals:{}};}
+// Compatibility entry point for the current RebelsPrep app.
+// Keep one canonical shared-practice implementation so auth, activation,
+// concurrency, check-in, and portal behavior cannot drift between bundles.
+export * from './shared.mjs?v=rp129';
