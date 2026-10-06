@@ -38,7 +38,11 @@ function enhance(){
   setCheckboxes(people,[...ids]);const help=panel.querySelector('#coach-search-help');if(help)help.textContent=q?(matches?matches+' matching outside-team coach'+(matches===1?'':'es')+' shown below with your team coaches.':'No additional Rebels coaches match that search. Your team coaches remain shown below.'):'Showing your team coaches plus any outside coaches you added. Search above to add another Rebels coach.';updateCount();updateExtras();
  };
  if(search.dataset.bound!=='true'){search.dataset.bound='true';search.addEventListener('input',draw);}
- if(people.dataset.coachBound!=='true'){people.dataset.coachBound='true';people.addEventListener('change',e=>{const el=e.target.closest('input[data-coach]');if(!el)return;e.preventDefault();e.stopImmediatePropagation();const ids=new Set(selectedIds());if(el.checked)ids.add(el.dataset.include);else ids.delete(el.dataset.include);if(saveCoachIds([...ids]))draw();},true);}
+ // IMPORTANT: do not stop the checkbox change event here. The scheduler app owns its
+ // in-memory practice state, so its native checkbox handler must receive the same change.
+ // Build 123 saved only the localStorage copy, which made the coach screen look correct
+ // while Review/Build still believed zero coaches were selected.
+ if(people.dataset.coachBound!=='true'){people.dataset.coachBound='true';people.addEventListener('change',e=>{const el=e.target.closest('input[data-coach]');if(!el)return;const ids=new Set(selectedIds());if(el.checked)ids.add(el.dataset.include);else ids.delete(el.dataset.include);saveCoachIds([...ids]);},false);}
  if(all&&all.dataset.teamBound!=='true'){all.dataset.teamBound='true';all.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const current=selectedIds(),outside=current.filter(id=>!homeIds.has(id)),next=[...outside,...home.map(c=>c.id)];search.value='';search.blur();if(saveCoachIds(next))draw();},true);}
  if(clear&&clear.dataset.teamBound!=='true'){clear.dataset.teamBound='true';clear.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();search.value='';search.blur();if(saveCoachIds([]))draw();},true);}
  draw();
