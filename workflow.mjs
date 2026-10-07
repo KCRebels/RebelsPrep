@@ -21,6 +21,6 @@ export function drillIssues(state,drills){
  for(const id of state.selectedDrills){const d=drills.find(d=>d.id===id);if(!d)issues.push('Remove an unknown drill.');}
  return issues;
 }
-export function resetPractice(state,date){return {...state,date,started:true,practiceType:'',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,steps:{}};}
+export function resetPractice(state,date){return {...state,date,durationMinutes:120,started:true,practiceType:'',included:[],coachIds:[],selectedDrills:[],adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,steps:{}};}
 
 export function teeRequirement(selectedIds,drills){return [...new Set(selectedIds)].reduce((n,id)=>n+(Number(drills.find(d=>d.id===id)?.tees)||0),0);}
