@@ -2,15 +2,12 @@ import './worker.mjs?v=structural237';
 
 const baseHandler=self.onmessage;
 const BJ_ID='rp-c-57';
-const ALL_NATIONAL='kc-rebels-nationals';
 const MIN=5,MAX=15,PREFERRED_MIN=8,PREFERRED_MAX=12;
 
-function isAllNationalHitting(input){
- const ids=[...(Array.isArray(input?.teamIds)?input.teamIds:[]),input?.teamId].filter(Boolean);
- const allNational=ids.includes(ALL_NATIONAL);
+function mentalMastersAvailable(input){
  const hitting=!input?.practiceType||String(input.practiceType).toLowerCase().includes('hitting');
  const bj=(input?.coaches||[]).some(c=>c.id===BJ_ID);
- return allNational&&hitting&&bj;
+ return hitting&&bj;
 }
 function groupScore(n){
  if(n>=PREFERRED_MIN&&n<=PREFERRED_MAX)return 100-Math.abs(10-n);
@@ -45,7 +42,7 @@ function rebuildCoachAssignments(block,coaches){
  });
 }
 function addMentalMasters(plan,input){
- if(!plan||!isAllNationalHitting(input))return plan;
+ if(!plan||!mentalMastersAvailable(input))return plan;
  const coaches=input.coaches||[],served=new Set();let sessions=0;
  for(const block of plan.blocks||[]){
   if(!reserveBJ(block,coaches))continue;
