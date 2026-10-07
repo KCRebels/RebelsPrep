@@ -1,4 +1,4 @@
-/* Build 229 — consistent RebelsPrep presentation and lean builder controls. */
+/* Build 230 — consistent RebelsPrep presentation and lean builder controls. */
 #app .practice-hero{border:2px solid #d8dce3!important;border-radius:20px!important;background:#fff!important;box-shadow:none!important}
 #app .panel{border:1.5px solid #d8dce3!important;border-radius:18px!important;background:#fff!important;box-shadow:none!important}
 #app .practice-hero-title h1,#app .panel h2{color:#0c1222!important;font-weight:800!important;letter-spacing:-.02em}
@@ -7,22 +7,33 @@
 #app .practice-hero-actions button,#app .panel button,#app .panel a.button{border-radius:12px!important;font-weight:800!important;box-shadow:none!important}
 #app .practice-hero-actions .primary,#app #activate-shared{background:#cf0a2c!important;color:#fff!important;border-color:#cf0a2c!important}
 
+/* HotB-style attendance adjustment sheet. */
+#dialog:has(#adjust-form){width:min(92vw,560px)!important;max-width:560px!important;padding:0!important;border:0!important;border-radius:22px!important;background:#fff!important;box-shadow:0 12px 40px rgba(0,0,0,.22)!important;overflow:hidden!important}
+#dialog:has(#adjust-form)::backdrop{background:rgba(0,0,0,.52)!important}
+#adjust-form{padding:24px 22px 22px!important;margin:0!important;color:#0c1222!important}
+#adjust-form h2{margin:0 0 22px!important;font-size:28px!important;line-height:1.05!important;font-weight:850!important;color:#0c1222!important}
+#adjust-form>.grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin:0 0 16px!important}
+#adjust-form>.grid label{margin:0!important;color:#59657d!important;font-size:13px!important;font-weight:900!important;letter-spacing:.045em!important;text-transform:uppercase!important}
+#adjust-form>.grid input[type="time"]{box-sizing:border-box!important;width:100%!important;height:58px!important;margin:7px 0 0!important;padding:0 8px!important;border:1.5px solid #cfd5d2!important;border-radius:14px!important;background:#fff!important;color:#0c1222!important;font-size:21px!important;font-weight:800!important;text-align:center!important}
+#adjust-form>p.muted{margin:0 0 18px!important;padding:0!important;color:#59657d!important;font-size:14px!important;font-weight:700!important;line-height:1.35!important}
+#adjust-form>label.check{display:flex!important;align-items:center!important;gap:10px!important;margin:10px 0!important;color:#0c1222!important;font-size:17px!important;font-weight:800!important}
+#adjust-form>label.check input{width:25px!important;height:25px!important;min-width:25px!important;margin:0!important;accent-color:#111!important}
+#adjust-form #adjust-error:empty{display:none!important}
+#adjust-form>.actions{display:grid!important;grid-template-columns:.8fr 1.5fr!important;gap:10px!important;margin:22px 0 0!important}
+#adjust-form>.actions button{min-height:52px!important;margin:0!important;border-radius:12px!important;font-size:17px!important;font-weight:850!important}
+#adjust-form>.actions #cancel{background:#fff!important;color:#111!important;border:1.5px solid #cfd5d2!important}
+#adjust-form>.actions .primary{background:#cf0a2c!important;color:#fff!important;border:1.5px solid #cf0a2c!important}
+
 /* Review step: same scheduler header hierarchy as Setup / Attendance / Drills. */
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp-practice-title-card{display:none!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header{margin:0 0 16px!important;padding:15px 16px!important;border-radius:18px!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-team{margin:0 0 3px!important;font-size:12px!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:28px!important;line-height:1.04!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-page{margin-top:6px!important;font-size:14px!important}
-
-/* Drills auto-saves locally as choices are made; the separate Save button is redundant. */
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .actions.step-actions #save-draft{display:none!important}
-
-/* Build screen: remove both possible redundant Hitting Practice title treatments, but retain stats and controls. */
 #app #rp-practice-title-card{display:none!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero>.practice-hero-title{display:none!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{padding-top:18px!important}
-
-/* Built practice control card: align to the cards above/below and remove excess vertical air. */
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{width:100%!important;max-width:none!important;margin:0 0 18px!important;padding:18px!important;box-sizing:border-box!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats{margin:0 0 10px!important;gap:8px!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats>div{min-height:104px!important;padding:12px 8px!important}
@@ -35,20 +46,15 @@
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock span{font-size:14px!important;line-height:1.1!important;margin-bottom:8px!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock strong{font-size:34px!important;line-height:1!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero + .panel{margin-top:0!important}
-
-/* Built-plan summary: retain validation, remove reset/admin clutter. */
 #app .panel:has(.practice-plan-summary){padding:18px!important}
 #app .panel:has(.practice-plan-summary) .practice-plan-summary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin:0 0 12px!important}
 #app .panel:has(.practice-plan-summary) .practice-plan-summary strong{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;min-height:54px!important;padding:8px!important;border:1.5px solid #d8dce3!important;border-radius:12px!important;background:#fff!important;font-size:15px!important}
 #app .panel:has(.practice-plan-summary) .ready{margin:10px 0 14px!important;padding:11px 12px!important;border-radius:12px!important;background:#f3f8f4!important;color:#176b3a!important;font-weight:700!important;line-height:1.35!important}
 #app .panel:has(.practice-plan-summary) #start-over{display:none!important}
 #app .panel:has(.practice-plan-summary) .actions{margin-top:8px!important}
-#app .panel:has(.practice-plan-summary) .actions button[data-view="review"]{width:100%!important}
-#app .panel:has(.practice-plan-summary) .actions button[data-view="review"]{font-size:0!important}
+#app .panel:has(.practice-plan-summary) .actions button[data-view="review"]{width:100%!important;font-size:0!important}
 #app .panel:has(.practice-plan-summary) .actions button[data-view="review"]::after{content:'Edit Practice';font-size:16px!important}
 #app .panel:has(.practice-plan-summary) .status{margin:10px 0 0!important;font-size:13px!important;color:#6b7280!important}
-
-/* Shared Practice becomes a compact Practice Status card. */
 #app .panel:has(#activate-shared),#app .panel:has(#coach-login),#app .panel:has(.shared-clock){padding:18px!important}
 #app .panel:has(#activate-shared)>h2,#app .panel:has(#coach-login)>h2,#app .panel:has(.shared-clock)>h2{font-size:0!important;margin:0 0 12px!important}
 #app .panel:has(#activate-shared)>h2::after,#app .panel:has(#coach-login)>h2::after,#app .panel:has(.shared-clock)>h2::after{content:'Practice Status';font-size:24px!important}
@@ -56,8 +62,6 @@
 #app .panel:has(#activate-shared) #coach-logout,#app .panel:has(.shared-clock) #coach-logout{display:none!important}
 #app .panel:has(#activate-shared) .actions{display:block!important;margin:0!important}
 #app .panel:has(#activate-shared) #activate-shared{width:100%!important;min-height:52px!important;font-size:17px!important}
-
-/* Check-In: keep live count/action, hide setup explanation. */
 #app .panel:has(a[href*="checkin=1"]){padding:18px!important}
 #app .panel:has(a[href*="checkin=1"]) h2{margin:0 0 12px!important;font-size:24px!important}
 #app .panel:has(a[href*="checkin=1"]) p:has(a[href*="checkin=1"]){margin:0 0 10px!important}
@@ -65,5 +69,4 @@
 #app .panel:has(a[href*="checkin=1"]) p.muted:first-of-type{display:none!important}
 #app .panel:has(a[href*="checkin=1"])>p{margin:8px 0!important}
 #app .panel:has(a[href*="checkin=1"])>p:last-child.muted{font-size:13px!important;margin-bottom:0!important}
-
-@media(max-width:430px){#app .panel:has(.practice-plan-summary) .practice-plan-summary strong{font-size:14px!important;padding:7px 5px!important}#app .practice-hero-title h1{font-size:36px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:27px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{padding:16px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats>div{min-height:98px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock>div{min-height:94px!important}}
+@media(max-width:430px){#dialog:has(#adjust-form){width:calc(100vw - 30px)!important}#adjust-form{padding:22px 18px 20px!important}#adjust-form h2{font-size:27px!important}#app .panel:has(.practice-plan-summary) .practice-plan-summary strong{font-size:14px!important;padding:7px 5px!important}#app .practice-hero-title h1{font-size:36px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:27px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{padding:16px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats>div{min-height:98px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock>div{min-height:94px!important}}
