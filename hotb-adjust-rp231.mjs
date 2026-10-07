@@ -1,4 +1,4 @@
-// Build 231: make Attendance > Adjust behave like HotB's inline expanded player card.
+// Build 232: HotB-style inline Attendance > Adjust card and controls.
 let pendingPerson=null;
 let activeForm=null;
 
@@ -18,18 +18,39 @@ HTMLDialogElement.prototype.showModal=function(){
   pendingPerson=null;
   if(!person) return nativeShowModal.call(this);
 
-  // HotB expands the adjustment controls directly under the selected player.
   document.querySelectorAll('.rp231-adjust-inline').forEach(x=>x.remove());
   const wrap=document.createElement('div');
   wrap.className='rp231-adjust-inline';
   person.insertAdjacentElement('afterend',wrap);
   wrap.appendChild(form);
 
+  // Match HotB wording/meaning. The underlying RebelsPrep fields remain unchanged:
+  // unchecked "Not pitching" means available to pitch; unchecked noPitchWarmup means warm-up required.
+  const noWarm=form.querySelector('input[name="noPitchWarmup"]');
+  const notPitch=form.querySelector('input[name="notPitching"]');
+  if(noWarm){
+    const label=noWarm.closest('label');
+    if(label){
+      const hot=document.createElement('label');hot.className='check rp232-hotb-check';
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=!noWarm.checked;
+      cb.addEventListener('change',()=>{noWarm.checked=!cb.checked;});
+      hot.append(cb,document.createTextNode('Pitch warm-up required'));
+      label.replaceWith(hot);
+    }
+  }
+  if(notPitch){
+    const label=notPitch.closest('label');
+    if(label){
+      const hot=document.createElement('label');hot.className='check rp232-hotb-check';
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=!notPitch.checked;
+      cb.addEventListener('change',()=>{notPitch.checked=!cb.checked;});
+      hot.append(cb,document.createTextNode('Available to pitch live'));
+      label.replaceWith(hot);
+    }
+  }
+
   const adjustButton=person.querySelector('[data-adjust]');
   if(adjustButton){adjustButton.textContent='Done';adjustButton.dataset.rp231Open='1';}
-
-  // Do not focus a time input when opening. This prevents iOS from immediately
-  // opening its scrolling time picker; the picker opens only when the coach taps a time box.
   requestAnimationFrame(()=>document.activeElement?.blur?.());
 };
 
