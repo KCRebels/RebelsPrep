@@ -1,4 +1,4 @@
-/* Build 226 — consistent RebelsPrep presentation and lean builder controls. */
+/* Build 228 — consistent RebelsPrep presentation and lean builder controls. */
 #app .practice-hero{border:2px solid #d8dce3!important;border-radius:20px!important;background:#fff!important;box-shadow:none!important}
 #app .panel{border:1.5px solid #d8dce3!important;border-radius:18px!important;background:#fff!important;box-shadow:none!important}
 #app .practice-hero-title h1,#app .panel h2{color:#0c1222!important;font-weight:800!important;letter-spacing:-.02em}
@@ -17,9 +17,10 @@
 /* Drills auto-saves locally as choices are made; the separate Save button is redundant. */
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .actions.step-actions #save-draft{display:none!important}
 
-/* Built practice: remove the redundant Hitting Practice title box. The scheduler header already identifies the practice. */
-#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp-practice-title-card{display:none!important}
+/* Build screen: remove both possible redundant Hitting Practice title treatments, but retain stats and controls. */
 #app #rp-practice-title-card{display:none!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero>.practice-hero-title{display:none!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{padding-top:18px!important}
 
 /* Built-plan summary: retain validation, remove reset/admin clutter. */
 #app .panel:has(.practice-plan-summary){padding:18px!important}
