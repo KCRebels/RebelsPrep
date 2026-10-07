@@ -1,4 +1,4 @@
-// Mental Masters belongs to BJ Fox: show it in Drill Selection whenever BJ is selected.
+// Mental Masters belongs to BJ Fox: show it as a simple drill whenever BJ is selected.
 const BJ_ID='rp-c-57';
 const CARD_ID='rp-mental-masters-library-card';
 function bjSelected(){
@@ -18,7 +18,7 @@ function mount(){
  const app=document.getElementById('app');
  const anchor=[...app.querySelectorAll('section,.panel')].find(x=>/drill/i.test(x.querySelector('h1,h2')?.textContent||''))||app.firstElementChild;
  card=document.createElement('section');card.id=CARD_ID;card.className='panel';
- card.innerHTML=`<div style="border:2px solid #111;border-radius:18px;background:#fff;padding:16px;margin:12px 0"><div style="font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#b51f2e;margin-bottom:5px">BJ Fox Only</div><div style="font-size:22px;font-weight:900;color:#111;margin-bottom:7px">Mental Masters</div><div style="font-size:15px;font-weight:700;line-height:1.35;color:#59657d">Mental side of the game · 8–12 preferred · 5–15 allowed · No equipment or practice space required.</div><div style="margin-top:10px;font-size:14px;font-weight:900;color:#111">Automatically included while BJ Fox is attending.</div></div>`;
+ card.innerHTML='<div style="border:2px solid #cfd5d2;border-radius:14px;background:#fff;padding:14px 16px;margin:10px 0;font-size:18px;font-weight:850;color:#111">Mental Masters</div>';
  anchor?.before(card);
 }
 window.addEventListener('load',mount);setTimeout(mount,0);setInterval(mount,600);
