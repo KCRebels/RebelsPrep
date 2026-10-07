@@ -1,13 +1,14 @@
-/* Build 221 — Drills uses the same page hierarchy as Attendance. */
+/* Build 223 — Drills uses the same page hierarchy as Attendance. */
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) #rp-builder-top{margin:0 0 14px!important;padding:0!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) #rp207-setup-header{margin:0 0 16px!important;padding:15px 16px!important;border:2px solid #d8ddd9!important;border-radius:18px!important;background:#fff!important;text-align:center!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) #rp207-setup-header .rp207-team{margin:0 0 3px!important;font-size:12px!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:28px!important;line-height:1.04!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) #rp207-setup-header .rp207-page{margin-top:6px!important;font-size:14px!important}
 
-/* The drill chooser is now a separate card below the scheduler header. */
+/* The drill chooser is a separate card below the scheduler header. Keep PRACTICE DRILLS; suppress the injected duplicate DRILL STATIONS label. */
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .rp221-drills-content{border:1.5px solid #d8dce3!important;border-radius:18px!important;background:#fff!important;box-shadow:none!important;padding:16px!important;margin:10px 0!important}
-#app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .rp221-drills-content>.rp-section-label{margin:0 0 7px!important;font-size:12px!important;letter-spacing:.1em!important}
+#app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .rp221-drills-content>.rp-section-label{display:none!important}
+#app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .rp221-drills-content .drill-category{margin:0 0 7px!important;color:#b51f2e!important;font-size:12px!important;font-weight:900!important;letter-spacing:.1em!important;text-transform:uppercase!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .rp221-drills-content>h2{margin:0 0 10px!important;line-height:1.08!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) .rp221-drills-content>p{margin-top:7px!important;margin-bottom:7px!important;line-height:1.35!important}
 #app:has(.bottom-nav [data-view="drills"][aria-current="page"]) input[placeholder*="Search drills"]{min-height:48px!important;height:48px!important;margin:8px 0!important}
