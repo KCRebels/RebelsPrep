@@ -1,4 +1,4 @@
-import {buildPractice,validatePractice} from './scheduler.mjs?v=structural102';
+import {buildPractice,validatePractice} from './scheduler.mjs?v=structural237';
 import {rosterPlayers as organizationPlayers} from './team-rosters.mjs?v=teamaware101';
 const orgById=new Map(organizationPlayers.map(p=>[p.id,p]));
 function enrich(input){return {...input,players:input.players.map(p=>{const o=orgById.get(p.id);return o?{...p,memberTeamIds:o.memberTeamIds||[],pitcher:p.pitcher??o.pitcher,catcher:p.catcher??o.catcher}:p;})};}
