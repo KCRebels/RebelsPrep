@@ -1,4 +1,4 @@
-/* Build 202 — presentation-only HotB-style cleanup. No scheduler/startup behavior changes. */
+/* Build 219 — presentation-only HotB-style cleanup. No scheduler/startup behavior changes. */
 #app .practice-hero{border:2px solid #d8dce3!important;border-radius:20px!important;background:#fff!important;box-shadow:none!important}
 #app .panel{border:1.5px solid #d8dce3!important;border-radius:18px!important;background:#fff!important;box-shadow:none!important}
 #app .practice-hero-title h1,#app .panel h2{color:#0c1222!important;font-weight:800!important;letter-spacing:-.02em}
@@ -6,6 +6,13 @@
 #app .practice-hero-stats>div,#app .practice-hero-clock>div{background:#fff!important;border:1.5px solid #d8dce3!important;border-radius:14px!important}
 #app .practice-hero-actions button,#app .panel button,#app .panel a.button{border-radius:12px!important;font-weight:800!important;box-shadow:none!important}
 #app .practice-hero-actions .primary,#app #activate-shared{background:#cf0a2c!important;color:#fff!important;border-color:#cf0a2c!important}
+
+/* Review step: use the same scheduler header hierarchy as Setup / Attendance / Drills. */
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp-practice-title-card{display:none!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header{margin:0 0 16px!important;padding:15px 16px!important;border-radius:18px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-team{margin:0 0 3px!important;font-size:12px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:28px!important;line-height:1.04!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-page{margin-top:6px!important;font-size:14px!important}
 
 /* Built-plan summary: retain validation, remove reset/admin clutter. */
 #app .panel:has(.practice-plan-summary){padding:18px!important}
@@ -37,4 +44,4 @@
 #app .panel:has(a[href*="checkin=1"])>p{margin:8px 0!important}
 #app .panel:has(a[href*="checkin=1"])>p:last-child.muted{font-size:13px!important;margin-bottom:0!important}
 
-@media(max-width:430px){#app .panel:has(.practice-plan-summary) .practice-plan-summary strong{font-size:14px!important;padding:7px 5px!important}#app .practice-hero-title h1{font-size:36px!important}}
+@media(max-width:430px){#app .panel:has(.practice-plan-summary) .practice-plan-summary strong{font-size:14px!important;padding:7px 5px!important}#app .practice-hero-title h1{font-size:36px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:27px!important}}
