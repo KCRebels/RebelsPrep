@@ -1,4 +1,4 @@
-// Build 205: HotB-style built-in hitting choices + selected drills on Review Practice only.
+// Build 236: HotB-style built-in hitting choices + selected drills on Review Practice only.
 const CARD_ID='rp-review-drills-hotb',BUILT_ID='rp-review-built-in-hotb';
 function activeView(){return document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -17,14 +17,23 @@ function css(){if(document.getElementById('rp204-review-drills-style'))return;co
 `;document.head.appendChild(s);}
 function drillNames(native){return [...native.querySelectorAll('.review-list li')].map(li=>li.textContent.trim()).filter(Boolean);}
 function builtInOptions(names,type){const tests=type==='machine'?[/machine/i,/velocity/i,/velo/i,/high.*speed/i,/speed/i]:[/front\s*toss/i,/toss/i,/hunt.*zone/i,/zone/i];const found=names.filter(n=>tests.some(r=>r.test(n)));const defaults=type==='machine'?['Standard','Velocity Training']:['Standard','Hunt Your Zone'];return [...new Set([...defaults,...found])];}
+function selectMarkup(id,label,options,value){return '<label for="'+id+'">'+label+'</label><select id="'+id+'">'+options.map(x=>'<option'+(x===value?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';}
 function mount(){css();const app=document.querySelector('#app'),old=document.getElementById(CARD_ID),oldBuilt=document.getElementById(BUILT_ID);if(!app||activeView()!=='review'){old?.remove();oldBuilt?.remove();return;}
  const panels=[...app.querySelectorAll('section.panel')];const native=panels.find(p=>p.querySelector('h2')?.textContent.trim()==='Drills');if(!native)return;
  const names=drillNames(native);if(!names.length)return;
- let built=oldBuilt;if(!built){built=document.createElement('section');built.id=BUILT_ID;native.before(built);}
  const machine=builtInOptions(names,'machine'),front=builtInOptions(names,'front');
- built.innerHTML='<p class="rp-drill-eyebrow">Built-In Hitting</p><h2>Machine + Front Toss Focus</h2><p class="rp-built-copy">Choose Standard or a library drill. This changes the existing rotation—it does not add another block.</p><label for="rp-machine-focus">Machine</label><select id="rp-machine-focus">'+machine.map(x=>'<option>'+esc(x)+'</option>').join('')+'</select><label for="rp-front-focus">Front Toss</label><select id="rp-front-focus">'+front.map(x=>'<option>'+esc(x)+'</option>').join('')+'</select>';
- let card=old;if(!card){card=document.createElement('section');card.id=CARD_ID;native.before(card);}
- card.innerHTML='<p class="rp-drill-eyebrow">Drill Stations</p><h2>Practice Drills Selected</h2><div class="rp-drill-list">'+names.map((name,i)=>'<div class="rp-drill-row"><span class="rp-drill-num">'+(i+1)+'</span><span>Drill Station '+(i+1)+' — '+esc(name)+'</span></div>').join('')+'</div><button type="button" id="rp-change-drills">Change Drills</button>';
- native.style.display='none';card.querySelector('#rp-change-drills').onclick=()=>native.querySelector('[data-view="drills"]')?.click();
+ let built=oldBuilt;
+ if(!built){
+   built=document.createElement('section');built.id=BUILT_ID;native.before(built);
+   built.innerHTML='<p class="rp-drill-eyebrow">Built-In Hitting</p><h2>Machine + Front Toss Focus</h2><p class="rp-built-copy">Choose Standard or a library drill. This changes the existing rotation—it does not add another block.</p>'+selectMarkup('rp-machine-focus','Machine',machine,'Standard')+selectMarkup('rp-front-focus','Front Toss',front,'Standard');
+ } else {
+   // Do not rebuild this card while a native select menu is open. Replacing the
+   // select every 700ms caused the browser picker to flash and immediately close.
+   const m=built.querySelector('#rp-machine-focus'),f=built.querySelector('#rp-front-focus');
+   if(m&&!m.matches(':focus')){const v=m.value;m.innerHTML=machine.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');}
+   if(f&&!f.matches(':focus')){const v=f.value;f.innerHTML=front.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');}
+ }
+ let card=old;if(!card){card=document.createElement('section');card.id=CARD_ID;native.before(card);card.innerHTML='<p class="rp-drill-eyebrow">Drill Stations</p><h2>Practice Drills Selected</h2><div class="rp-drill-list">'+names.map((name,i)=>'<div class="rp-drill-row"><span class="rp-drill-num">'+(i+1)+'</span><span>Drill Station '+(i+1)+' — '+esc(name)+'</span></div>').join('')+'</div><button type="button" id="rp-change-drills">Change Drills</button>';card.querySelector('#rp-change-drills').onclick=()=>native.querySelector('[data-view="drills"]')?.click();}
+ native.style.display='none';
 }
 window.addEventListener('load',mount);setTimeout(mount,0);setInterval(mount,700);
