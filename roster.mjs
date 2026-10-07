@@ -75,7 +75,8 @@ const coachRows = [
  ['rp-c-53','Chip Ufford','chufford93@gmail.com',['kc-rebels-14-ufford']],
  ['rp-c-54','Bob Waddell','bobwad01@gmail.com',['kc-rebels-16-regional']],
  ['rp-c-55','Brian Woods','race66bw@gmail.com',['kc-rebels-14-mason-shafer']],
- ['rp-c-56','Hannah Jenkins','',['kc-rebels-18-regional']]
+ ['rp-c-56','Hannah Jenkins','',['kc-rebels-18-regional']],
+ ['rp-c-57','BJ Fox','bjfox@mentalmastersathlete.com',['kc-rebels-16-national','kc-rebels-nationals']]
 ];
 export const coaches = coachRows.map(([id,name,email,teamIds])=>({id,name,email,teamIds})).sort((a,b)=>a.name.split(' ').at(-1).localeCompare(b.name.split(' ').at(-1))||a.name.localeCompare(b.name));
 export const rosterReview = {
