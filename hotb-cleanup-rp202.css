@@ -1,4 +1,4 @@
-/* Build 228 — consistent RebelsPrep presentation and lean builder controls. */
+/* Build 229 — consistent RebelsPrep presentation and lean builder controls. */
 #app .practice-hero{border:2px solid #d8dce3!important;border-radius:20px!important;background:#fff!important;box-shadow:none!important}
 #app .panel{border:1.5px solid #d8dce3!important;border-radius:18px!important;background:#fff!important;box-shadow:none!important}
 #app .practice-hero-title h1,#app .panel h2{color:#0c1222!important;font-weight:800!important;letter-spacing:-.02em}
@@ -21,6 +21,20 @@
 #app #rp-practice-title-card{display:none!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero>.practice-hero-title{display:none!important}
 #app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{padding-top:18px!important}
+
+/* Built practice control card: align to the cards above/below and remove excess vertical air. */
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{width:100%!important;max-width:none!important;margin:0 0 18px!important;padding:18px!important;box-sizing:border-box!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats{margin:0 0 10px!important;gap:8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats>div{min-height:104px!important;padding:12px 8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats strong{font-size:40px!important;line-height:1!important;margin:0 0 8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats span{font-size:15px!important;line-height:1.15!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-actions{margin:0 0 10px!important;gap:8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-actions button{min-height:52px!important;padding:10px 8px!important;font-size:17px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock{margin:0!important;gap:8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock>div{min-height:100px!important;padding:12px 8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock span{font-size:14px!important;line-height:1.1!important;margin-bottom:8px!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock strong{font-size:34px!important;line-height:1!important}
+#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero + .panel{margin-top:0!important}
 
 /* Built-plan summary: retain validation, remove reset/admin clutter. */
 #app .panel:has(.practice-plan-summary){padding:18px!important}
@@ -52,4 +66,4 @@
 #app .panel:has(a[href*="checkin=1"])>p{margin:8px 0!important}
 #app .panel:has(a[href*="checkin=1"])>p:last-child.muted{font-size:13px!important;margin-bottom:0!important}
 
-@media(max-width:430px){#app .panel:has(.practice-plan-summary) .practice-plan-summary strong{font-size:14px!important;padding:7px 5px!important}#app .practice-hero-title h1{font-size:36px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:27px!important}}
+@media(max-width:430px){#app .panel:has(.practice-plan-summary) .practice-plan-summary strong{font-size:14px!important;padding:7px 5px!important}#app .practice-hero-title h1{font-size:36px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) #rp207-setup-header .rp207-title{font-size:27px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero{padding:16px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-stats>div{min-height:98px!important}#app:has(.bottom-nav [data-view="review"][aria-current="page"]) .practice-hero-clock>div{min-height:94px!important}}
