@@ -56,12 +56,44 @@ function addMentalMasters(plan,input){
   rebuildCoachAssignments(block,coaches);
  }
  plan.mentalMasters={enabled:true,coach:BJ_ID,sessions,players:[...served],preferredMin:PREFERRED_MIN,preferredMax:PREFERRED_MAX,min:MIN,max:MAX};
- plan.warnings=[...(plan.warnings||[]),'Mental Masters: '+served.size+' players scheduled with BJ Fox across '+sessions+' block'+(sessions===1?'':'s')+' (8–12 preferred; 5–15 allowed).'];
+ // A zero-session Mental Masters note is not a plan error. Only report it when a session was actually scheduled.
+ if(sessions)plan.warnings=[...(plan.warnings||[]),'Mental Masters: '+served.size+' players scheduled with BJ Fox across '+sessions+' block'+(sessions===1?'':'s')+' (8–12 preferred; 5–15 allowed).'];
  return plan;
+}
+function rotations(players){
+ const out=[],seen=new Set(),add=a=>{const key=a.map(p=>p.id).join('|');if(!seen.has(key)){seen.add(key);out.push(a);}};
+ add(players);
+ add([...players].reverse());
+ for(let n=1;n<players.length&&out.length<24;n++)add(players.slice(n).concat(players.slice(0,n)));
+ return out;
+}
+function planRank(plan){
+ if(!plan)return -Infinity;
+ const pitchers=plan.missingPitchers?.length||0;
+ const mandatory=(plan.missingMachine?.length||0)+(plan.missingFront?.length||0);
+ const live=plan.missingLive?.length||0;
+ const catchers=plan.missingCatchers?.length||0;
+ return -pitchers*1000000000-mandatory*10000000-live*10000-catchers*100+(plan.score||0);
+}
+function buildBestSmallTeam(event,raw){
+ const players=raw?.players||[];
+ if(event?.data?.mode!=='build'||players.length<3||players.length>24)return null;
+ let best=null,bestRank=-Infinity;
+ for(const order of rotations(players)){
+  const messages=[];
+  const originalPost=self.postMessage;
+  self.postMessage=m=>messages.push(m);
+  try{baseHandler({data:{...event.data,input:{...raw,players:order}}});}catch{}finally{self.postMessage=originalPost;}
+  const msg=messages.find(m=>m?.plan)||messages[0];
+  if(msg?.plan){const rank=planRank(msg.plan);if(rank>bestRank){bestRank=rank;best=msg;}if((msg.plan.missingPitchers?.length||0)===0&&(msg.plan.missingMachine?.length||0)===0&&(msg.plan.missingFront?.length||0)===0)break;}
+ }
+ return best;
 }
 
 self.onmessage=event=>{
  const raw=event?.data?.input||event?.data||{};
+ const best=buildBestSmallTeam(event,raw);
+ if(best){if(best.plan)addMentalMasters(best.plan,raw);self.postMessage(best);return;}
  const originalPost=self.postMessage.bind(self);
  self.postMessage=message=>{
   if(message?.plan)addMentalMasters(message.plan,raw);
