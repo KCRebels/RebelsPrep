@@ -273,6 +273,7 @@ function historyPage(){
 }
 function openHashRoute(){if(location.hash==='#rp-drills'){view='drills';drillPickerOpen=true;error='';render();window.scrollTo(0,0);}}
 function render(){
+ $('#app').dataset.practiceView=view;
  const preview=document.querySelector('.preview');preview.hidden=true;
  const picker=false;document.querySelector('main>header').hidden=false;document.querySelector('.preview').hidden=true;document.querySelector('main>footer').hidden=false;
  $('#team-name').textContent='Practice With Purpose';$('#team-name').hidden=false;
