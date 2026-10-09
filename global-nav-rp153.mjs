@@ -1,4 +1,4 @@
-// Build 184: Start Over without a startup MutationObserver/render loop.
+// Build 251: Start Over exists only while building; never recreate it on a built/ready/live practice.
 import * as shared from './shared-rp52.mjs?v=rpauth52';
 const KEY='RebelsPrep:coach-pilot:1';
 const RESET='RebelsPrep:hard-reset';
@@ -10,10 +10,12 @@ async function closePublished(teamId,onlyReady=false){if(!teamId||!shared.config
 async function releaseReadyShared(){const teamId=activeId();if(!teamId||releasing||releasedFor===teamId||!document.querySelector('#drill-picker'))return;releasing=true;try{await closePublished(teamId,true);releasedFor=teamId;}finally{releasing=false;}}
 async function hardReset(){if(!confirm('Start over and clear this practice draft?'))return;const teamId=activeId();try{sessionStorage.setItem(RESET,'1');}catch{}clearPracticeStorage();await closePublished(teamId,false);location.replace(location.origin+location.pathname+'?reset='+Date.now());}
 function finishReset(){let armed=false;try{armed=sessionStorage.getItem(RESET)==='1'||new URLSearchParams(location.search).has('reset');}catch{}if(!armed)return;clearPracticeStorage();try{sessionStorage.removeItem(RESET);}catch{}try{history.replaceState(null,'',location.pathname);}catch{}}
+function builtPractice(){const view=document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';return view==='plan'||view==='active'||!!document.querySelector('#activate-practice,#start-practice,#active-practice,[data-practice-ready]');}
+function removeBar(){document.querySelector('#rp-global-nav')?.remove();}
 function bar(){let el=document.querySelector('#rp-global-nav');if(el)return el;el=document.createElement('div');el.id='rp-global-nav';el.style.cssText='display:flex;justify-content:flex-end;gap:12px;margin:0 0 22px;position:relative;z-index:9999';el.innerHTML='<button type="button" id="rp-global-start" style="font-weight:700;padding:10px 18px;min-width:150px">Start Over</button>';return el;}
-function mount(){const app=document.querySelector('#app');if(!app)return;const el=bar();if(el.parentElement!==app)app.prepend(el);if(document.querySelector('#drill-picker'))releaseReadyShared();}
+function mount(){const app=document.querySelector('#app');if(!app)return;if(builtPractice()){removeBar();return;}const el=bar();if(el.parentElement!==app)app.prepend(el);if(document.querySelector('#drill-picker'))releaseReadyShared();}
 document.addEventListener('click',e=>{const b=e.target.closest?.('#rp-global-start,#start-over');if(!b)return;e.preventDefault();e.stopImmediatePropagation();hardReset();},true);
 window.addEventListener('hashchange',()=>setTimeout(mount,50));
 window.addEventListener('load',()=>setTimeout(mount,500));
-setInterval(()=>{const app=document.querySelector('#app');if(!app)return;if(!document.querySelector('#rp-global-nav')||document.querySelector('#drill-picker'))mount();},1500);
+setInterval(()=>{const app=document.querySelector('#app');if(!app)return;if(builtPractice()){removeBar();return;}if(!document.querySelector('#rp-global-nav')||document.querySelector('#drill-picker'))mount();},500);
 finishReset();setTimeout(mount,700);
