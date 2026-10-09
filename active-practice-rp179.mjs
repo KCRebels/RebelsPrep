@@ -13,9 +13,10 @@ function mount(){
  const started=/Start Shared Practice/.test(shared.textContent||'')?false:true;
  const controls='<div class="rp-live-controls">'+button('start',started?'Resume':'Start Shared Practice',!started)+button('pause','Pause')+button('skip','Skip')+button('done','Done')+'</div>';
  let clean=document.getElementById(ACTIVE_ID);if(!clean){clean=document.createElement('section');clean.id=ACTIVE_ID;clean.className='rp-active-practice';}
- clean.innerHTML='<div class="rp-live-top">'+backButton()+'</div>'+stats+'<div class="rp-live-status">'+clock+phase+controls+'</div>';
+ const markup='<div class="rp-live-top">'+backButton()+'</div>'+stats+'<div class="rp-live-status">'+clock+phase+controls+'</div>';
+ if(clean.dataset.markup!==markup){clean.innerHTML=markup;clean.dataset.markup=markup;}
  const header=document.querySelector('main>header');if(header?.nextSibling!==clean)header.after(clean);
- app.querySelector('.bottom-nav')?.setAttribute('hidden','');
+ app.querySelector('.bottom-nav')?.removeAttribute('hidden');
  hero.style.display='none';
  const sharedPanel=shared.closest('.panel');if(sharedPanel){shared.style.display='none';const h2=sharedPanel.querySelector('h2');if(h2)h2.style.display='none';}
  const my=app.querySelector('#rp-my-practice');if(my)my.style.display='none';
