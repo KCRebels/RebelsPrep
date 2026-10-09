@@ -56,7 +56,6 @@ function addMentalMasters(plan,input){
   rebuildCoachAssignments(block,coaches);
  }
  plan.mentalMasters={enabled:true,coach:BJ_ID,sessions,players:[...served],preferredMin:PREFERRED_MIN,preferredMax:PREFERRED_MAX,min:MIN,max:MAX};
- // A zero-session Mental Masters note is not a plan error. Only report it when a session was actually scheduled.
  if(sessions)plan.warnings=[...(plan.warnings||[]),'Mental Masters: '+served.size+' players scheduled with BJ Fox across '+sessions+' block'+(sessions===1?'':'s')+' (8–12 preferred; 5–15 allowed).'];
  return plan;
 }
@@ -74,6 +73,20 @@ function planRank(plan){
  const live=plan.missingLive?.length||0;
  const catchers=plan.missingCatchers?.length||0;
  return -pitchers*1000000000-mandatory*10000000-live*10000-catchers*100+(plan.score||0);
+}
+function cleanApprovedFallbacks(plan){
+ if(!plan)return plan;
+ // 9-square is an approved Live fallback when a player catcher cannot be assigned.
+ // Keep the assignment in the plan, but do not present it as a warning/error requiring review.
+ if(Array.isArray(plan.warnings)){
+  plan.warnings=plan.warnings.filter(w=>!(/9[- ]?square/i.test(String(w))&&/catcher|live block/i.test(String(w))));
+ }
+ const blocking=(plan.warnings||[]).filter(w=>!/^Mental Masters:/i.test(String(w)));
+ if(!blocking.length){
+  plan.fallbackApplied=false;
+  plan.fallbackLevel=null;
+ }
+ return plan;
 }
 function buildBestSmallTeam(event,raw){
  const players=raw?.players||[];
@@ -93,10 +106,10 @@ function buildBestSmallTeam(event,raw){
 self.onmessage=event=>{
  const raw=event?.data?.input||event?.data||{};
  const best=buildBestSmallTeam(event,raw);
- if(best){if(best.plan)addMentalMasters(best.plan,raw);self.postMessage(best);return;}
+ if(best){if(best.plan){addMentalMasters(best.plan,raw);cleanApprovedFallbacks(best.plan);}self.postMessage(best);return;}
  const originalPost=self.postMessage.bind(self);
  self.postMessage=message=>{
-  if(message?.plan)addMentalMasters(message.plan,raw);
+  if(message?.plan){addMentalMasters(message.plan,raw);cleanApprovedFallbacks(message.plan);}
   originalPost(message);
  };
  try{return baseHandler(event);}finally{self.postMessage=originalPost;}
