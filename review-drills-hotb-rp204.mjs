@@ -1,4 +1,4 @@
-// Build 236: HotB-style built-in hitting choices + selected drills on Review Practice only.
+// Build 246: HotB-style built-in hitting choices + selected drills on Review Practice only.
 const CARD_ID='rp-review-drills-hotb',BUILT_ID='rp-review-built-in-hotb';
 function activeView(){return document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -16,7 +16,14 @@ function css(){if(document.getElementById('rp204-review-drills-style'))return;co
 @media(max-width:430px){#${BUILT_ID},#${CARD_ID}{padding:18px 16px}#${BUILT_ID} h2,#${CARD_ID} h2{font-size:26px}#${CARD_ID} .rp-drill-row{font-size:17px}}
 `;document.head.appendChild(s);}
 function drillNames(native){return [...native.querySelectorAll('.review-list li')].map(li=>li.textContent.trim()).filter(Boolean);}
-function builtInOptions(names,type){const tests=type==='machine'?[/machine/i,/velocity/i,/velo/i,/high.*speed/i,/speed/i]:[/front\s*toss/i,/toss/i,/hunt.*zone/i,/zone/i];const found=names.filter(n=>tests.some(r=>r.test(n)));const defaults=type==='machine'?['Standard','Velocity Training']:['Standard','Hunt Your Zone'];return [...new Set([...defaults,...found])];}
+function builtInOptions(names,type){
+ const hotb=type==='machine'
+  ?['Standard','Velocity Training','Bunting w/ Direction']
+  :['Standard','Plate Recognition','Front Toss / 1 Tee Change','Hunt Your Zone','Damage or Take','Two Strike Approach','2 Tennis Balls In/Out'];
+ const tests=type==='machine'?[/machine/i,/velocity/i,/velo/i,/high.*speed/i,/speed/i,/bunt/i]:[/front\s*toss/i,/toss/i,/hunt.*zone/i,/zone/i,/plate.*recognition/i,/damage.*take/i,/two\s*strike/i,/tennis.*ball/i];
+ const found=names.filter(n=>tests.some(r=>r.test(n)));
+ return [...new Set([...hotb,...found])];
+}
 function selectMarkup(id,label,options,value){return '<label for="'+id+'">'+label+'</label><select id="'+id+'">'+options.map(x=>'<option'+(x===value?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>';}
 function mount(){css();const app=document.querySelector('#app'),old=document.getElementById(CARD_ID),oldBuilt=document.getElementById(BUILT_ID);if(!app||activeView()!=='review'){old?.remove();oldBuilt?.remove();return;}
  const panels=[...app.querySelectorAll('section.panel')];const native=panels.find(p=>p.querySelector('h2')?.textContent.trim()==='Drills');if(!native)return;
