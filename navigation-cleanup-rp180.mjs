@@ -3,7 +3,7 @@ const MIN_H='48px',KEY='RebelsPrep:coach-pilot:1';
 const backLabels={setup:'← Back to Home',attendance:'← Back to Setup',drills:'← Back to Attendance',review:'← Back to Drills',plan:'← Back to Review'};
 const targets={setup:'home',attendance:'setup',drills:'attendance',review:'drills',plan:'review'};
 let lastSignature='',observer=null,mounting=false,heldScroll=null;
-function activeView(){return document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';}
+function activeView(){return document.querySelector('#app')?.dataset.practiceView||document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';}
 function isCoachAttendance(){return activeView()==='attendance'&&Boolean(document.querySelector('#back-attendance-players'));}
 function hasDraft(){return Boolean(document.querySelector('[data-resume-team]'));}
 function css(){if(document.getElementById('rp248-style'))return;document.querySelectorAll('[id^="rp18"][id$="-style"],#rp190-style,#rp191-style,#rp192-style,#rp193-style,#rp194-style,#rp195-style,#rp196-style,#rp197-style,#rp198-style,#rp199-style,#rp244-style').forEach(x=>x.remove());const s=document.createElement('style');s.id='rp248-style';s.textContent=`
