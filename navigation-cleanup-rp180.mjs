@@ -1,4 +1,4 @@
-// Build 244: stable builder navigation. Review has Back to Drills; Review actions are Build | View | Start Over.
+// Build 248: stable builder navigation. Start Over is not shown on the built practice plan.
 const MIN_H='48px',KEY='RebelsPrep:coach-pilot:1';
 const backLabels={setup:'← Back to Home',attendance:'← Back to Setup',drills:'← Back to Attendance',review:'← Back to Drills',plan:'← Back to Review'};
 const targets={setup:'home',attendance:'setup',drills:'attendance',review:'drills',plan:'review'};
@@ -6,7 +6,7 @@ let lastSignature='',observer=null,mounting=false,heldScroll=null;
 function activeView(){return document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';}
 function isCoachAttendance(){return activeView()==='attendance'&&document.querySelector('#app h1')?.textContent?.includes('Coaches');}
 function hasDraft(){return Boolean(document.querySelector('[data-resume-team]'));}
-function css(){if(document.getElementById('rp244-style'))return;document.querySelectorAll('[id^="rp18"][id$="-style"],#rp190-style,#rp191-style,#rp192-style,#rp193-style,#rp194-style,#rp195-style,#rp196-style,#rp197-style,#rp198-style,#rp199-style').forEach(x=>x.remove());const s=document.createElement('style');s.id='rp244-style';s.textContent=`
+function css(){if(document.getElementById('rp248-style'))return;document.querySelectorAll('[id^="rp18"][id$="-style"],#rp190-style,#rp191-style,#rp192-style,#rp193-style,#rp194-style,#rp195-style,#rp196-style,#rp197-style,#rp198-style,#rp199-style,#rp244-style').forEach(x=>x.remove());const s=document.createElement('style');s.id='rp248-style';s.textContent=`
 #app button,.bottom-nav button,#rp-global-nav button{min-height:${MIN_H}}
 .actions.step-actions{align-items:stretch}.actions.step-actions>button{min-height:${MIN_H};height:${MIN_H}}
 #rp-builder-top{display:flex;align-items:center;justify-content:flex-start;gap:12px;margin:0 0 14px}
