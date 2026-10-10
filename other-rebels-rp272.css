@@ -1,0 +1,21 @@
+/* Add Other Rebels: approved team-filter mockup. */
+#dialog:has(#other-rebels-form){width:calc(100vw - 32px);max-width:520px;height:min(660px,calc(100dvh - 80px));max-height:calc(100dvh - 32px);padding:24px;border:1px solid #d8dcda;border-radius:22px;background:#fff;overflow:hidden;color:#111}
+#dialog:has(#other-rebels-form)::backdrop{background:rgba(0,0,0,.55)}
+#other-rebels-form{height:100%;min-height:0;display:flex;flex-direction:column;gap:12px}
+#other-rebels-form h2{font-size:22px;line-height:1.2;font-weight:750;margin:0 0 4px;color:#050505}
+#other-rebels-team{appearance:none;-webkit-appearance:none;flex:none;width:100%;height:44px;min-height:44px;border:3px solid #adb8b3;border-radius:11px;padding:0 40px 0 11px;font-size:18px;font-weight:400;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='12' viewBox='0 0 20 12'%3E%3Cpath d='M2 2l8 8 8-8' fill='none' stroke='%23595c5a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;color:#171717}
+#other-rebels-search{flex:none;width:100%;height:42px;min-height:42px;margin:0;padding:0 12px;border:1px solid #bfc4cb;border-radius:9px;font-size:18px;font-weight:400;background:#fff}
+#other-rebels-search::placeholder{color:#a3a3a3;opacity:1}
+#other-rebels-form .other-rebels-bulk{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#other-rebels-form .other-rebels-bulk button{border:3px solid #adb8b3;border-radius:11px;height:45px;min-height:45px;padding:7px 4px;font-size:18px;font-weight:400;background:#fff;color:#111}
+#other-rebels-count{flex:none;margin:0 0 2px;font-size:14px;line-height:1.4;font-weight:400;color:#626978}
+#other-rebels-list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;align-items:stretch;overscroll-behavior:contain}
+#other-rebels-list .other-rebels-player{flex:none;display:flex;flex-direction:row;gap:12px;align-items:center;width:100%;margin:0;padding:10px;border:3px solid #adb8b3;border-radius:14px;background:#fff;min-height:48px;font-size:17px;line-height:1.25;font-weight:400;color:#111}
+#other-rebels-list .other-rebels-player span{min-width:0;overflow-wrap:anywhere}
+#other-rebels-list input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:26px;height:26px;min-height:26px;margin:0;padding:0;border:2px solid #747b79;border-radius:7px;background:#fff}
+#other-rebels-list input[type=checkbox]:checked{background:#c8102e;border-color:#c8102e}
+#other-rebels-list input[type=checkbox]:checked::after{content:'';position:absolute;left:7px;top:3px;width:7px;height:13px;border:solid white;border-width:0 3px 3px 0;transform:rotate(45deg)}
+#other-rebels-form .other-rebels-footer{flex:none;display:grid;grid-template-columns:1fr 2.5fr;gap:10px;margin:4px 0 0;padding:0;background:#fff}
+#other-rebels-form .other-rebels-footer button{height:46px;min-height:46px;padding:8px 10px;border:1px solid #c7cbd0;border-radius:11px;font-size:18px;font-weight:750;white-space:nowrap}
+#other-rebels-form .other-rebels-footer .primary{background:#c8102e;border-color:#c8102e;color:#fff}
+@media(min-width:600px){#dialog:has(#other-rebels-form){padding:28px}#other-rebels-form h2{font-size:26px}}
