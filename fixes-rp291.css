@@ -1,0 +1,33 @@
+/* Build 291: make the three Home secondary actions exactly the same height/alignment. */
+#app .actions.step-actions.rp-home-actions-286{
+  align-items:stretch!important;
+}
+#app .actions.step-actions.rp-home-actions-286>.rp-home-secondary-286,
+#app .actions.step-actions.rp-home-actions-286>#rp-home-start-over-placeholder,
+#app .actions.step-actions.rp-home-actions-286>#my-practice-button,
+#app .actions.step-actions.rp-home-actions-286>#player-signin-entry{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:64px!important;
+  min-height:64px!important;
+  max-height:64px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  border:1px solid #c7cbd0!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#171717!important;
+  font-family:Arial,sans-serif!important;
+  font-size:16px!important;
+  line-height:1.1!important;
+  font-weight:700!important;
+  text-align:center!important;
+  text-decoration:none!important;
+  white-space:normal!important;
+  vertical-align:middle!important;
+}
