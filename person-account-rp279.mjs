@@ -16,7 +16,10 @@ function pending(){
 }
 function validRecord(r){return r&&r.practiceId&&/^[a-f0-9]{64}$/.test(r.clockToken||'')&&r.personId===(isPlayer(ctx?.account)?ctx.account.playerId:ctx?.account?.coachId)&&r.role===(isPlayer(ctx?.account)?'player':'coach');}
 function activeRecords(){return Object.values(sessions).filter(validRecord).filter(r=>{const c=clocks.get(r.clockToken);return c&&!c.clock?.done&&!clockState(c.clock)?.done;}).sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.start).localeCompare(String(b.start)));}
-function duty(s){return (s.kind==='live'&&s.duty==='Pitching'?'Pitch Live':s.kind==='live'&&s.duty==='Catching'?'Catch Live':s.drill||s.duty)+(s.pitcher?' — Pitcher: '+s.pitcher:'')+(s.catcher?' — Catcher: '+s.catcher:'');}
+function duty(s){
+ const base=s.kind==='live'&&s.duty==='Pitching'?'Pitch Live':s.kind==='live'&&s.duty==='Catching'?'Catch Live':s.kind==='machine'?'Machine Pitch: '+(s.drill||s.duty||'Machine'):s.kind==='front'?'Front Toss: '+(s.drill||s.duty||'Front Toss'):s.drill||s.duty;
+ return base+(s.pitcher?' — Pitcher: '+s.pitcher:'')+(s.catcher?' — Catcher: '+s.catcher:'');
+}
 function instructions(s){
  const d=s.drillId?drillById.get(s.drillId):null;
  if(!d)return s.equipment?'<div class="personal-instructions"><strong>Equipment:</strong> '+esc(s.equipment)+'</div>':'';
