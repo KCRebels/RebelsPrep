@@ -4,11 +4,12 @@ let user=null;
 function mount(){
  const actions=document.querySelector('.bottom-nav [data-view="home"][aria-current="page"]')&&document.querySelector('#build-selected-teams')?.closest('.actions.step-actions');
  if(!actions)return;
+ actions.classList.add('personal-entry-actions');
  if(shared.allowed(user)&&!document.querySelector('#my-practice-button')){
-  const b=document.createElement('button');b.id='my-practice-button';b.type='button';b.textContent='My Practice';b.onclick=()=>location.assign('./?coach=1');actions.appendChild(b);
+  const b=document.createElement('button');b.id='my-practice-button';b.type='button';b.textContent='Coach Sign In';b.className='personal-entry personal-entry-coach';b.onclick=()=>location.assign('./?coach=1');actions.appendChild(b);
  }
  if(!document.querySelector('#player-signin-entry')){
-  const a=document.createElement('a');a.id='player-signin-entry';a.href='./?player=1';a.textContent='Player Sign In';a.className='portal-open';actions.appendChild(a);
+  const a=document.createElement('a');a.id='player-signin-entry';a.href='./?player=1';a.textContent='Player Sign In';a.className='portal-open personal-entry personal-entry-player';actions.appendChild(a);
  }
 }
 let frame;function schedule(){cancelAnimationFrame(frame);frame=requestAnimationFrame(mount);}
