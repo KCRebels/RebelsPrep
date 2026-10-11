@@ -1,0 +1,41 @@
+/* Build 292: exact Practice Status two-button row before and after activation. */
+.rp-practice-status-actions-292{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:10px!important;
+  width:100%!important;
+  align-items:stretch!important;
+  margin-top:16px!important;
+}
+.rp-practice-status-actions-292>button{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:62px!important;
+  min-height:62px!important;
+  max-height:62px!important;
+  margin:0!important;
+  padding:0 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  border-radius:12px!important;
+  font-family:Arial,sans-serif!important;
+  font-size:16px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  letter-spacing:0!important;
+  text-align:center!important;
+  white-space:normal!important;
+}
+.rp-practice-status-actions-292>.rp-status-primary-292{
+  background:#bc0824!important;
+  border:1px solid #bc0824!important;
+  color:#fff!important;
+}
+.rp-practice-status-actions-292>.rp-status-secondary-292{
+  background:#fff!important;
+  border:1px solid #c7cbd0!important;
+  color:#171717!important;
+}
