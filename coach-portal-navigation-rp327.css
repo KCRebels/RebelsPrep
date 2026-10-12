@@ -1,0 +1,6 @@
+/* Build 327: visible Back control on every secondary coach screen + true viewport bottom nav. */
+.coach-page-head{position:relative!important;padding-top:0!important}
+.coach-page-head .coach-back{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:40px!important;margin:0 0 12px!important;padding:0 12px!important;border:1.5px solid #d8ddd9!important;border-radius:11px!important;background:#fff!important;color:#111827!important;font-size:14px!important;font-weight:850!important;line-height:1!important;box-shadow:none!important}
+.coach-page-head .coach-back:active{background:#f3f4f5!important}
+body>.coach-bottom-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;width:100vw!important;max-width:none!important;margin:0!important;transform:none!important;z-index:10000!important;background:#fff!important;padding-bottom:max(6px,env(safe-area-inset-bottom))!important}
+body{padding-bottom:0!important}
