@@ -1,0 +1,9 @@
+/* Build 341: active My Practice tile + compact active-practice header. */
+.coach-card[data-coach-view="practice"]{position:relative}
+.coach-card.rp-active-practice-card{border-color:#c8102e!important}
+.rp-active-practice-tag{position:absolute;top:20px;right:22px;display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 11px;border-radius:999px;background:#c8102e;color:#fff;font-size:12px;font-weight:900;letter-spacing:.09em;line-height:1;text-transform:uppercase}
+.rp-has-active-practice .coach-page-head{margin-bottom:12px!important}
+.rp-has-active-practice .coach-page-head h1,.rp-has-active-practice .coach-page-head p{display:none!important}
+.rp-has-active-practice .personal-status strong{font-size:clamp(20px,4.8vw,30px)!important;line-height:1.14!important;text-align:center!important}
+.rp-has-active-practice .personal-status span{letter-spacing:.08em!important}
+@media(max-width:520px){.rp-active-practice-tag{top:16px;right:17px;min-height:25px;padding:0 9px;font-size:11px}.coach-card.rp-active-practice-card h2{padding-right:72px}}
