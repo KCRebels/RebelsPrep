@@ -1,4 +1,4 @@
-// Build 318: correct coach display name and lightly normalize the portal after render.
+// Build 319: correct coach display name without creating a render loop.
 import {accountContext} from './account-model-rp276.mjs?v=rp276';
 import {coachIdentity} from './coach-identity-rp276.mjs?v=rp276';
 
@@ -12,14 +12,21 @@ function cleanName(ctx){
 }
 function apply(){
  const greeting=document.querySelector('.coach-greeting h1');
- if(greeting)greeting.textContent='Hi, '+first;
+ const greetingText='Hi, '+first;
+ if(greeting&&greeting.textContent!==greetingText)greeting.textContent=greetingText;
  const practiceName=document.querySelector('.personal-coach-eyebrow');
- if(practiceName&&full!=='Coach')practiceName.textContent=full.toUpperCase();
+ const practiceText=full.toUpperCase();
+ if(practiceName&&full!=='Coach'&&practiceName.textContent!==practiceText)practiceName.textContent=practiceText;
 }
 (async()=>{
  try{const ctx=await accountContext();({first,full}=cleanName(ctx));}catch{}
  apply();
- const observer=new MutationObserver(apply);
- observer.observe(document.body,{childList:true,subtree:true});
+ let queued=false;
+ const observer=new MutationObserver(()=>{
+  if(queued)return;
+  queued=true;
+  requestAnimationFrame(()=>{queued=false;apply();});
+ });
+ observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
  window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
 })();
