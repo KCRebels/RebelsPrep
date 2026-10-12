@@ -1,4 +1,4 @@
-// Build 206: consistent HotB-style section labels across RebelsPrep. Presentation only.
+// Build 305: consistent HotB-style section labels across RebelsPrep without delayed timer flashes.
 const ID='rp206-section-label-style';
 const rules=[
  {match:/practice settings|setup|practice details/i,label:'PRACTICE DETAILS'},
@@ -15,4 +15,7 @@ function css(){if(document.getElementById(ID))return;const s=document.createElem
 `;document.head.appendChild(s);}
 function labelPanel(panel){if(panel.id==='rp-review-built-in-hotb'||panel.id==='rp-review-drills-hotb')return;if(panel.querySelector(':scope > .rp-section-label'))return;const h=panel.querySelector(':scope > h1,:scope > h2,:scope > h3');if(!h)return;const text=(h.textContent||'').trim();if(!text)return;const hit=rules.find(r=>r.match.test(text));if(!hit)return;const p=document.createElement('p');p.className='rp-section-label';p.textContent=hit.label;h.before(p);}
 function mount(){css();document.querySelectorAll('#app section.panel,#app .panel').forEach(labelPanel);}
-window.addEventListener('load',mount);setTimeout(mount,0);setInterval(mount,900);
+css();mount();
+const app=document.getElementById('app');
+if(app)new MutationObserver(()=>mount()).observe(app,{childList:true,subtree:true});
+window.addEventListener('load',mount);
