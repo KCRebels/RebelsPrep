@@ -1,4 +1,4 @@
-// Build 311: completed practice is a final summary screen only.
+// Build 312: completed practice is a final summary screen only.
 const app=document.getElementById('app');
 const KEY='RebelsPrep:shared-practice-finished';
 const STYLE_ID='rp309-complete-style';
@@ -15,11 +15,41 @@ function style(){
  `;document.head.appendChild(s);
 }
 function restoreHidden(){
- app?.querySelectorAll('[data-rp311-complete-hidden="true"]').forEach(node=>{node.style.display='';delete node.dataset.rp311CompleteHidden;});
+ app?.querySelectorAll('[data-rp311-complete-hidden="true"],[data-rp312-live-timing="true"]').forEach(node=>{
+  node.style.display='';
+  delete node.dataset.rp311CompleteHidden;
+  delete node.dataset.rp312LiveTiming;
+ });
+}
+function hideLiveTimingInsideSummary(summary){
+ if(!summary)return;
+ const candidates=[...summary.querySelectorAll('div,section')].filter(node=>{
+  const text=(node.textContent||'').replace(/\s+/g,' ').trim().toUpperCase();
+  return text.includes('BLOCK')&&text.includes('TIME LEFT')&&!text.includes('PLAYERS')&&!text.includes('DRILLS');
+ }).sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length);
+ const row=candidates[0];
+ if(row){
+  row.dataset.rp312LiveTiming='true';
+  row.style.display='none';
+  return;
+ }
+ const block=[...summary.querySelectorAll('*')].find(n=>(n.textContent||'').trim().toUpperCase()==='BLOCK');
+ const time=[...summary.querySelectorAll('*')].find(n=>(n.textContent||'').trim().toUpperCase()==='TIME LEFT');
+ if(!block||!time)return;
+ let ancestor=block.parentElement;
+ while(ancestor&&ancestor!==summary){
+  if(ancestor.contains(time)){
+   ancestor.dataset.rp312LiveTiming='true';
+   ancestor.style.display='none';
+   return;
+  }
+  ancestor=ancestor.parentElement;
+ }
 }
 function hideAfterSummary(actions){
  const summary=actions?.closest('section.panel')||actions?.parentElement;
  if(!summary)return;
+ hideLiveTimingInsideSummary(summary);
  let node=summary.nextElementSibling;
  while(node){
   if(node.classList?.contains('bottom-nav')){node=node.nextElementSibling;continue;}
