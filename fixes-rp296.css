@@ -1,0 +1,16 @@
+/* Build 296: make all three Home secondary buttons the same compact thickness. */
+#app .actions.step-actions.rp-home-actions-286 > .rp-home-secondary-286,
+#app .actions.step-actions.rp-home-actions-286 > #my-practice-button,
+#app .actions.step-actions.rp-home-actions-286 > #player-signin-entry,
+#app .actions.step-actions.rp-home-actions-286 > #start-over,
+#app .actions.step-actions.rp-home-actions-286 > #rp-home-start-over-placeholder{
+  height:52px!important;
+  min-height:52px!important;
+  max-height:52px!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+}
