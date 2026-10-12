@@ -1,0 +1,18 @@
+/* Build 294: Accept button state. */
+#accept-drills{
+  width:100%!important;
+  transition:none!important;
+}
+#accept-drills.rp-accept-waiting,
+#accept-drills:disabled{
+  background:#d7d9dd!important;
+  border-color:#d7d9dd!important;
+  color:#8a8f98!important;
+  opacity:1!important;
+  cursor:default!important;
+}
+#accept-drills.rp-accept-ready:not(:disabled){
+  background:#bc0824!important;
+  border-color:#bc0824!important;
+  color:#fff!important;
+}
