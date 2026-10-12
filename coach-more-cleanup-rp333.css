@@ -1,0 +1,6 @@
+/* Build 333: utility controls in More should not compete with coach tools. */
+.coach-more-utilities{display:grid!important;gap:10px!important;margin-top:28px!important;padding-top:18px!important;border-top:1.5px solid #d8ddd9!important}
+.coach-more-utilities>a,.coach-more-utilities>button{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:44px!important;margin:0!important;padding:0 2px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#596273!important;font-size:14px!important;font-weight:800!important;text-decoration:none!important}
+.coach-more-utilities>a::after{content:'›';font-size:22px;line-height:1;color:#8d96a5}
+.coach-more-utilities .coach-signout-utility{justify-content:flex-start!important;color:#9c2630!important}
+.coach-more-utilities .coach-admin-utility{color:#596273!important}
