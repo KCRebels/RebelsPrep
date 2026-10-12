@@ -5,7 +5,6 @@ import {rosterPlayers} from './team-rosters.mjs?v=teamaware101';
 const app=document.getElementById('app');
 let selectedIds=[];
 let activePlayerId='';
-let activePlayerName='';
 let publishing=false;
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -29,20 +28,20 @@ function selectedHTML(){
 function optionHTML(d){
  const checked=selectedIds.includes(d.id);
  const disabled=!checked&&selectedIds.length>=3;
- return '<label class="coach-drill-option '+(disabled?'is-disabled':'')+'" data-drill-row="'+esc(d.id)+'"><input type="checkbox" value="'+esc(d.id)+'" '+(checked?'checked':'')+' '+(disabled?'disabled':'')+'><span>'+esc(d.name)+'</span></label>';
+ return '<label class="coach-drill-option '+(checked?'is-selected ':'')+(disabled?'is-disabled':'')+'" data-drill-row="'+esc(d.id)+'"><input type="checkbox" value="'+esc(d.id)+'" '+(checked?'checked':'')+' '+(disabled?'disabled':'')+'><span>'+esc(d.name)+'</span></label>';
 }
 
 function renderPickerRows(filter=''){
  const list=document.querySelector('.coach-drill-picker-list');
  if(!list)return;
  const q=filter.trim().toLowerCase();
- const items=[...drills].sort((a,b)=>a.name.localeCompare(b.name)).filter(d=>!q||d.name.toLowerCase().includes(q)||(d.category||'').toLowerCase().includes(q));
- list.innerHTML=items.map(optionHTML).join('')||'<p class="muted" style="margin:4px 2px">No matching drills.</p>';
+ const items=[...drills].sort((a,b)=>a.name.localeCompare(b.name)).filter(d=>!q||[d.name,d.category,d.primaryPurpose,d.secondaryFocus,d.bestUsedFor].some(v=>String(v||'').toLowerCase().includes(q)));
+ list.innerHTML=items.map(optionHTML).join('')||'<p class="coach-drill-picker-empty">No matching drills.</p>';
 }
 
 function syncPickerUI(){
  const count=document.querySelector('.coach-pick-drills-count');
- if(count)count.textContent=selectedIds.length+' of 3';
+ if(count)count.textContent=selectedIds.length+' of 3 selected';
  const picked=document.querySelector('.coach-picked-drills');
  if(picked)picked.outerHTML=selectedHTML();
  const search=document.querySelector('.coach-drill-picker-search');
@@ -51,11 +50,10 @@ function syncPickerUI(){
 
 function buildPicker(){
  return '<section class="coach-pick-drills">'+
-  '<div class="coach-pick-drills-head"><span class="coach-pick-drills-title">Drills</span><span class="coach-pick-drills-count">'+selectedIds.length+' of 3</span></div>'+
-  '<button type="button" class="coach-pick-drills-button">Pick Drills</button>'+
+  '<button type="button" class="coach-pick-drills-button"><span>Pick Drills</span><span class="coach-pick-drills-count">'+selectedIds.length+' of 3 selected</span></button>'+
   selectedHTML()+
-  '<div class="coach-drill-picker">'+
-   '<input class="coach-drill-picker-search" type="search" placeholder="Search drills">'+
+  '<div class="coach-drill-picker" aria-hidden="true">'+
+   '<input class="coach-drill-picker-search" type="search" placeholder="Search drills" autocomplete="off">'+
    '<div class="coach-drill-picker-list"></div>'+
    '<button type="button" class="coach-drill-picker-done">Done</button>'+
   '</div>'+ 
@@ -64,8 +62,8 @@ function buildPicker(){
 
 function patch(){
  const form=app?.querySelector('#hitting-observation-form');
- if(!form||form.dataset.rp325==='1')return;
- form.dataset.rp325='1';
+ if(!form||form.dataset.rp332==='1')return;
+ form.dataset.rp332='1';
  const page=form.closest('.coach-portal-page');
  page?.classList.add('coach-observation-page');
  const oldSelect=form.querySelector('#focus-drill')?.closest('label');
@@ -75,7 +73,6 @@ function patch(){
   if(!p)return;
   if(activePlayerId&&activePlayerId!==p.id)selectedIds=[];
   activePlayerId=p.id;
-  activePlayerName=p.name;
   syncPickerUI();
  }).catch(()=>{});
 }
@@ -122,13 +119,9 @@ async function publish(form){
   });
   selectedIds=[];
   activePlayerId=player.id;
-  activePlayerName=player.name;
   goBackToPlayer(player.id);
  }catch(e){
-  const p=document.createElement('p');
-  p.className='obs-error';
-  p.textContent=e?.message||String(e);
-  form.prepend(p);
+  const p=document.createElement('p');p.className='obs-error';p.textContent=e?.message||String(e);form.prepend(p);
  }finally{
   publishing=false;
   if(button&&button.isConnected){button.disabled=false;button.textContent=oldText;}
@@ -138,38 +131,34 @@ async function publish(form){
 document.addEventListener('click',e=>{
  const pick=e.target.closest?.('.coach-pick-drills-button');
  if(pick){
+  e.preventDefault();e.stopPropagation();
   const panel=document.querySelector('.coach-drill-picker');
-  panel?.classList.toggle('is-open');
-  if(panel?.classList.contains('is-open'))document.querySelector('.coach-drill-picker-search')?.focus();
+  const open=!panel?.classList.contains('is-open');
+  panel?.classList.toggle('is-open',open);
+  panel?.setAttribute('aria-hidden',open?'false':'true');
+  if(open)setTimeout(()=>document.querySelector('.coach-drill-picker-search')?.focus(),0);
   return;
  }
  const done=e.target.closest?.('.coach-drill-picker-done');
- if(done){document.querySelector('.coach-drill-picker')?.classList.remove('is-open');return;}
+ if(done){const panel=document.querySelector('.coach-drill-picker');panel?.classList.remove('is-open');panel?.setAttribute('aria-hidden','true');return;}
  const remove=e.target.closest?.('[data-remove-drill]');
  if(remove){selectedIds=selectedIds.filter(id=>id!==remove.dataset.removeDrill);syncPickerUI();return;}
 },true);
 
-document.addEventListener('input',e=>{
- if(e.target.matches?.('.coach-drill-picker-search'))renderPickerRows(e.target.value);
-},true);
+document.addEventListener('input',e=>{if(e.target.matches?.('.coach-drill-picker-search'))renderPickerRows(e.target.value);},true);
 
 document.addEventListener('change',e=>{
  const box=e.target.closest?.('.coach-drill-option input');
  if(!box)return;
  const id=box.value;
- if(box.checked){
-  if(selectedIds.length>=3){box.checked=false;return;}
-  if(!selectedIds.includes(id))selectedIds.push(id);
- }else selectedIds=selectedIds.filter(x=>x!==id);
+ if(box.checked){if(selectedIds.length>=3){box.checked=false;return;}if(!selectedIds.includes(id))selectedIds.push(id);}else selectedIds=selectedIds.filter(x=>x!==id);
  syncPickerUI();
 },true);
 
 document.addEventListener('submit',e=>{
  const form=e.target.closest?.('#hitting-observation-form');
  if(!form)return;
- e.preventDefault();
- e.stopImmediatePropagation();
- publish(form);
+ e.preventDefault();e.stopImmediatePropagation();publish(form);
 },true);
 
 if(app){new MutationObserver(()=>queueMicrotask(patch)).observe(app,{childList:true,subtree:true});patch();}
