@@ -1,7 +1,7 @@
 // Build 338: stable home/account helpers + matching practice review headers.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalUrl='./coach.html?v=337';
+const coachPortalUrl='./coach.html?v=338';
 
 function ensurePracticeStatusShortcut(){
  const sections=[...document.querySelectorAll('#app section.panel')];
