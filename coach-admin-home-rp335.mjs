@@ -1,5 +1,5 @@
-// Build 335: keep admin utilities on Coach Home without touching portal click handlers.
-import {accountContext} from './account-model-rp276.mjs?v=rp276';
+// Build 336: admin utilities on Coach Home; use actual RebelsPrep org/admin access and do not touch portal click handlers.
+import {accountContext,isOrgCoach} from './account-model-rp276.mjs?v=rp276';
 const app=document.getElementById('app');
 let queued=false;
 function norm(v){return String(v||'').trim().toLowerCase();}
@@ -21,7 +21,7 @@ function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queu
  try{ctx=await accountContext();}catch{}
  const account=ctx?.account||{};
  const display=norm(account.displayName||ctx?.user?.displayName||'');
- const admin=account.accountAdmin===true||display==='dan lickel';
+ const admin=account.accountAdmin===true||isOrgCoach(account)||display==='dan lickel';
  document.body.classList.toggle('rp-coach-admin',admin);
  document.body.classList.toggle('rp-coach-standard',!admin);
  schedule();
