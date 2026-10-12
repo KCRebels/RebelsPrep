@@ -1,4 +1,4 @@
-// Build 339: consistent HotB-style section labels across RebelsPrep without duplicate headings.
+// Build 340: consistent HotB-style section labels without duplicate headings or observer loops.
 const ID='rp206-section-label-style';
 const rules=[
  {match:/practice settings|setup|practice details/i,label:'PRACTICE DETAILS'},
@@ -14,7 +14,16 @@ function css(){if(document.getElementById(ID))return;const s=document.createElem
 #app .panel>.rp-section-label+ h2{margin-top:0!important}
 #app .panel.rp-section-label-only>.rp-section-label+ h2{display:none!important}
 `;document.head.appendChild(s);}
-function labelPanel(panel){if(panel.id==='rp-review-built-in-hotb'||panel.id==='rp-review-drills-hotb')return;const h=panel.querySelector(':scope > h1,:scope > h2,:scope > h3');if(!h)return;const text=(h.textContent||'').trim();if(!text)return;const hit=rules.find(r=>r.match.test(text));if(!hit)return;if(hit.hideHeading)panel.classList.add('rp-section-label-only');let p=panel.querySelector(':scope > .rp-section-label');if(!p){p=document.createElement('p');p.className='rp-section-label';h.before(p);}p.textContent=hit.label;}
+function labelPanel(panel){
+ if(panel.id==='rp-review-built-in-hotb'||panel.id==='rp-review-drills-hotb')return;
+ const h=panel.querySelector(':scope > h1,:scope > h2,:scope > h3');if(!h)return;
+ const text=(h.textContent||'').trim();if(!text)return;
+ const hit=rules.find(r=>r.match.test(text));if(!hit)return;
+ if(hit.hideHeading&&!panel.classList.contains('rp-section-label-only'))panel.classList.add('rp-section-label-only');
+ let p=panel.querySelector(':scope > .rp-section-label');
+ if(!p){p=document.createElement('p');p.className='rp-section-label';p.textContent=hit.label;h.before(p);return;}
+ if(p.textContent!==hit.label)p.textContent=hit.label;
+}
 function mount(){css();document.querySelectorAll('#app section.panel,#app .panel').forEach(labelPanel);}
 css();mount();
 const app=document.getElementById('app');
