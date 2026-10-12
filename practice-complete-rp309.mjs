@@ -1,12 +1,9 @@
-// Build 315: completed practice is a final summary screen and Back to Home performs a true fresh reset.
+// Build 316: completed practice is a final summary screen. Back to Home delegates to the app's native Start Over reset.
 const app=document.getElementById('app');
 const KEY='RebelsPrep:shared-practice-finished';
-const FORCE_HOME='RebelsPrep:force-home-after-complete';
-const BASE='RebelsPrep:coach-pilot:1';
 const STYLE_ID='rp309-complete-style';
 function flagged(){try{return sessionStorage.getItem(KEY)==='1';}catch{return false;}}
 function setFlag(v){try{v?sessionStorage.setItem(KEY,'1'):sessionStorage.removeItem(KEY);}catch{}}
-function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function style(){
  if(document.getElementById(STYLE_ID))return;
  const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
@@ -51,51 +48,24 @@ function hideAfterSummary(actions){
   node.dataset.rp311CompleteHidden='true';node.style.display='none';node=node.nextElementSibling;
  }
 }
-function resetFinishedDraft(){
- try{
-  const active=localStorage.getItem(BASE+':active-team');
-  let draft={};
-  if(active){
-   const draftKey=BASE+':team:'+active;
-   try{draft=JSON.parse(localStorage.getItem(draftKey)||'{}')||{};}catch{}
-   const teamIds=Array.isArray(draft.teamIds)&&draft.teamIds.length?draft.teamIds:[draft.teamId||active];
-   const fresh={teamId:active,teamIds:[...teamIds],started:false,practiceType:'',steps:{},date:today(),start:'17:30',durationMinutes:120,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],drillStationTarget:null,adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,history:Array.isArray(draft.history)?draft.history:[]};
-   localStorage.setItem(draftKey,JSON.stringify(fresh));
-   // The app can fall back to this older base key if a team-specific draft is missing.
-   localStorage.setItem(BASE,JSON.stringify(fresh));
-  }else{
-   localStorage.removeItem(BASE);
-  }
-  for(let i=localStorage.length-1;i>=0;i--){
-   const k=localStorage.key(i);
-   if(k?.startsWith(BASE+':resume:'))localStorage.removeItem(k);
-  }
-  localStorage.removeItem(BASE+':active-team');
- }catch{}
-}
 function goFreshHome(){
+ // The main app already owns the correct reset behavior in startOverDraft().
+ // Navigate to Setup so its native Start Over button is rendered and wired,
+ // then invoke that button. This clears both in-memory and persisted draft state.
  setFlag(false);
- resetFinishedDraft();
  restoreHidden();
- try{
-  sessionStorage.removeItem('rp199-pending-drills');
-  sessionStorage.setItem(FORCE_HOME,'1');
- }catch{}
- location.replace(location.origin+location.pathname+'?fresh='+Date.now());
-}
-function forceHomeIfRequested(){
- let forced=false;
- try{forced=sessionStorage.getItem(FORCE_HOME)==='1';}catch{}
- if(!forced||!app)return;
- const home=app.querySelector('.bottom-nav [data-view="home"]');
- if(home){
-  try{sessionStorage.removeItem(FORCE_HOME);}catch{}
-  home.click();
+ try{sessionStorage.removeItem('rp199-pending-drills');}catch{}
+ const setup=app?.querySelector('.bottom-nav [data-view="setup"]');
+ if(setup)setup.click();
+ setTimeout(()=>{
+  const nativeReset=document.getElementById('start-over');
+  if(nativeReset){nativeReset.click();return;}
+  // Safe fallback: go Home if the native button could not be rendered.
+  app?.querySelector('.bottom-nav [data-view="home"]')?.click();
   window.scrollTo(0,0);
- }
+ },40);
 }
 function mount(){
- forceHomeIfRequested();
  if(!app||!flagged())return;
  style();
  const actions=app.querySelector('.practice-hero-actions');
