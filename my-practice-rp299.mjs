@@ -1,7 +1,7 @@
-// Build 329: stable home/account helpers + dedicated fresh coach portal route.
+// Build 330: stable home/account helpers + dedicated fresh coach portal route.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalUrl='./coach.html?v=329';
+const coachPortalUrl='./coach.html?v=330';
 
 function ensurePracticeStatusShortcut(){
  const sections=[...document.querySelectorAll('#app section.panel')];
