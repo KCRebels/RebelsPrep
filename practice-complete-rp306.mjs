@@ -1,4 +1,4 @@
-// Build 306: keep a finished shared practice in a clear completed state instead of falling back to pre-practice controls.
+// Build 307: show a completed-practice state after a finished shared practice.
 const app=document.getElementById('app');
 const STYLE_ID='rp306-complete-style';
 function addStyle(){
@@ -11,18 +11,20 @@ function addStyle(){
  .rp306-practice-complete button{width:100%;min-height:54px;border:0;border-radius:14px;background:#c8102e;color:#fff;font-size:17px;font-weight:800}
  `;document.head.appendChild(s);
 }
-function sharedPracticePanel(){
- return [...app.querySelectorAll('section.panel,.panel')].find(p=>/shared practice/i.test(p.textContent||''));
-}
 function mount(){
  if(!app)return;addStyle();
  const localDone=app.querySelector('#done[disabled]');
- const sharedPanel=sharedPracticePanel();
+ const localStart=app.querySelector('#run-local[disabled]');
  const activate=app.querySelector('#activate-shared');
  const liveDone=app.querySelector('[data-shared-control="done"]');
- const complete=Boolean(localDone&&sharedPanel&&!activate&&!liveDone&&['plan','review'].includes(app.dataset.practiceView||''));
+ const complete=Boolean(localDone&&localStart&&!activate&&!liveDone);
  const old=app.querySelector('.rp306-practice-complete');
- if(!complete){old?.remove();return;}
+ if(!complete){
+  old?.remove();
+  const actions=app.querySelector('.practice-hero-actions');
+  if(actions)actions.style.display='';
+  return;
+ }
  const actions=localDone.closest('.practice-hero-actions');
  if(!actions)return;
  actions.style.display='none';
@@ -33,6 +35,6 @@ function mount(){
  card.querySelector('#rp306-home').onclick=()=>app.querySelector('.bottom-nav [data-view="home"]')?.click();
 }
 if(app){
- new MutationObserver(()=>queueMicrotask(mount)).observe(app,{childList:true,subtree:true,attributes:true,attributeFilter:['data-practice-view','disabled']});
+ new MutationObserver(()=>queueMicrotask(mount)).observe(app,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});
  window.addEventListener('load',mount);setTimeout(mount,0);
 }
