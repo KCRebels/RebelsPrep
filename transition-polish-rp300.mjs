@@ -1,38 +1,38 @@
-// Build 300: hide intermediate builder renders until the destination view is fully decorated.
+// Build 301 hotfix: hide a destination view before its first paint and reveal only after decorators settle.
 const app=document.getElementById('app');
 if(app){
  const style=document.createElement('style');
- style.textContent=`#app.rp-view-transitioning{opacity:0!important}#app{transition:opacity .08s ease}`;
+ style.textContent=`#app.rp-view-transitioning{visibility:hidden!important}`;
  document.head.appendChild(style);
- let token=0;
+ let lastView=app.dataset.practiceView||'';
  let timer=0;
- const begin=()=>{
-  token++;
+ let token=0;
+ const hide=()=>{token++;app.classList.add('rp-view-transitioning');};
+ const settle=()=>{
   const mine=token;
   clearTimeout(timer);
-  app.classList.add('rp-view-transitioning');
-  const settle=()=>{
+  timer=setTimeout(()=>{
    if(mine!==token)return;
    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    if(mine!==token)return;
-    app.classList.remove('rp-view-transitioning');
+    if(mine===token)app.classList.remove('rp-view-transitioning');
    }));
-  };
-  timer=setTimeout(settle,90);
+  },70);
  };
- const maybeBegin=(target)=>{
-  if(!target)return;
-  const nav=target.closest?.('.bottom-nav [data-view]');
-  const button=target.closest?.('button,a');
-  const text=(button?.textContent||'').trim().toLowerCase();
-  if(nav||['continue','next','back','build','edit','change drills','accept'].includes(text))begin();
- };
- document.addEventListener('pointerdown',e=>maybeBegin(e.target),true);
- new MutationObserver(()=>{
-  if(!app.classList.contains('rp-view-transitioning'))return;
-  clearTimeout(timer);
-  timer=setTimeout(()=>{
-   requestAnimationFrame(()=>requestAnimationFrame(()=>app.classList.remove('rp-view-transitioning')));
-  },45);
- }).observe(app,{childList:true,subtree:true,attributes:true,characterData:true});
+ const observer=new MutationObserver(records=>{
+  const nextView=app.dataset.practiceView||'';
+  const viewChanged=nextView!==lastView;
+  const rootRebuilt=records.some(r=>r.type==='childList'&&r.target===app);
+  if(viewChanged||rootRebuilt){
+   lastView=nextView;
+   hide();
+  }
+  if(app.classList.contains('rp-view-transitioning'))settle();
+ });
+ observer.observe(app,{childList:true,subtree:true,attributes:true,attributeFilter:['data-practice-view','data-attendance-stage','class'],characterData:true});
+ document.addEventListener('pointerdown',e=>{
+  const nav=e.target.closest?.('.bottom-nav [data-view]');
+  const button=e.target.closest?.('button,a');
+  const text=(button?.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+  if(nav||['continue','next','back','build','edit','change drills','accept','next: attendance','next: drills'].some(x=>text===x||text.startsWith(x))){hide();settle();}
+ },true);
 }
