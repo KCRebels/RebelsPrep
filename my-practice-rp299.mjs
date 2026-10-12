@@ -1,6 +1,7 @@
-// Build 299: stable home/account helpers + Practice Status state labels + drill Accept state + assignment view title + single Home Start Over.
+// Build 320: stable home/account helpers + force fresh coach portal navigation.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
+const coachPortalUrl='./?coach=1&build=320';
 
 function ensurePracticeStatusShortcut(){
  const sections=[...document.querySelectorAll('#app section.panel')];
@@ -11,7 +12,7 @@ function ensurePracticeStatusShortcut(){
  const activate=sharedSection.querySelector('#activate-shared');
  const signOut=sharedSection.querySelector('#coach-logout');
  let coach=sharedSection.querySelector('#practice-status-coach-signin');
- if(!coach){coach=document.createElement('button');coach.id='practice-status-coach-signin';coach.type='button';coach.onclick=()=>location.assign('./?coach=1');}
+ if(!coach){coach=document.createElement('button');coach.id='practice-status-coach-signin';coach.type='button';coach.onclick=()=>location.assign(coachPortalUrl);}
  coach.textContent='My Practice';
  row.replaceChildren();
  if(activate){activate.classList.add('rp-status-primary-292');coach.classList.remove('rp-status-primary-292');coach.classList.add('rp-status-secondary-292');row.append(activate,coach);}
@@ -40,45 +41,22 @@ function ensureHomeActions(){
  actions.classList.add('rp-home-actions-286');
  const continueBtn=actions.querySelector('#build-selected-teams');
  if(continueBtn)continueBtn.classList.add('rp-home-continue-286');
-
- // Find every real Start Over control on Home. Keep one; remove the rest before rebuilding the row.
  const realStarts=[...document.querySelectorAll('button,a')].filter(el=>el!==continueBtn&&el.id!=='rp-home-start-over-placeholder'&&el.textContent.trim()==='Start Over'&&!el.disabled);
  let start=realStarts.find(el=>el.id==='start-over')||realStarts[0]||null;
  for(const extra of realStarts){if(extra!==start)extra.remove();}
-
  let placeholder=actions.querySelector('#rp-home-start-over-placeholder');
- if(start){
-  placeholder?.remove();
-  if(start.parentElement!==actions)actions.appendChild(start);
-  start.classList.add('rp-home-secondary-286');
- }else{
-  if(!placeholder){placeholder=document.createElement('button');placeholder.id='rp-home-start-over-placeholder';placeholder.type='button';placeholder.textContent='Start Over';placeholder.disabled=true;placeholder.className='rp-home-secondary-286';}
-  if(placeholder.parentElement!==actions)actions.appendChild(placeholder);
- }
-
+ if(start){placeholder?.remove();if(start.parentElement!==actions)actions.appendChild(start);start.classList.add('rp-home-secondary-286');}
+ else{if(!placeholder){placeholder=document.createElement('button');placeholder.id='rp-home-start-over-placeholder';placeholder.type='button';placeholder.textContent='Start Over';placeholder.disabled=true;placeholder.className='rp-home-secondary-286';}if(placeholder.parentElement!==actions)actions.appendChild(placeholder);}
  let coach=actions.querySelector('#my-practice-button');
- if(shared.allowed(user)&&!coach){coach=document.createElement('button');coach.id='my-practice-button';coach.type='button';coach.textContent='My Practice';coach.className='rp-home-secondary-286';coach.onclick=()=>location.assign('./?coach=1');actions.appendChild(coach);}
+ if(shared.allowed(user)&&!coach){coach=document.createElement('button');coach.id='my-practice-button';coach.type='button';coach.textContent='My Practice';coach.className='rp-home-secondary-286';coach.onclick=()=>location.assign(coachPortalUrl);actions.appendChild(coach);}
  let player=actions.querySelector('#player-signin-entry');
  if(!player){player=document.createElement('a');player.id='player-signin-entry';player.href='./?player=1';player.textContent='Player Sign In';player.className='rp-home-secondary-286';actions.appendChild(player);}
  document.querySelectorAll('#personal-entry-actions').forEach(el=>el.remove());
-
- // Enforce the exact Home order every render.
- if(continueBtn)actions.appendChild(continueBtn);
- if(coach)actions.appendChild(coach);
- if(player)actions.appendChild(player);
- if(start)actions.appendChild(start); else if(placeholder)actions.appendChild(placeholder);
+ if(continueBtn)actions.appendChild(continueBtn);if(coach)actions.appendChild(coach);if(player)actions.appendChild(player);if(start)actions.appendChild(start);else if(placeholder)actions.appendChild(placeholder);
 }
-
-function ensureAssignmentViewTitle(){
- const panel=document.querySelector('#rp-assignment-actions');
- if(!panel)return;
- let title=panel.querySelector('.rp-assignment-view-title');
- if(!title){title=document.createElement('p');title.className='rp-assignment-view-title';title.textContent='VIEW PRACTICE BY';panel.prepend(title);}
-}
-
+function ensureAssignmentViewTitle(){const panel=document.querySelector('#rp-assignment-actions');if(!panel)return;let title=panel.querySelector('.rp-assignment-view-title');if(!title){title=document.createElement('p');title.className='rp-assignment-view-title';title.textContent='VIEW PRACTICE BY';panel.prepend(title);}}
 function mount(){ensureHomeActions();ensurePracticeStatusShortcut();syncAcceptDrills();ensureAssignmentViewTitle();}
 let frame;function schedule(){cancelAnimationFrame(frame);frame=requestAnimationFrame(mount);}
 shared.observeAuth(u=>{user=u;schedule();}).catch(()=>{});
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['aria-pressed','disabled']});
-document.addEventListener('click',schedule,true);
-schedule();
+document.addEventListener('click',schedule,true);schedule();
