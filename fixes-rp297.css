@@ -1,0 +1,11 @@
+/* Build 297: label the Coach / Player / All Stations view selector. */
+#rp-assignment-actions .rp-assignment-view-title{
+  margin:0 0 12px!important;
+  color:#b51f2e!important;
+  font-family:Arial,sans-serif!important;
+  font-size:14px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+  letter-spacing:.10em!important;
+  text-transform:uppercase!important;
+}
