@@ -1,4 +1,4 @@
-// Build 309: lightweight completion state. No startup or class observers.
+// Build 310: lightweight completion state. Hide live timing once the practice is complete.
 const app=document.getElementById('app');
 const KEY='RebelsPrep:shared-practice-finished';
 const STYLE_ID='rp309-complete-style';
@@ -14,22 +14,37 @@ function style(){
  .rp309-practice-complete button{width:100%;min-height:54px;border:0;border-radius:14px;background:#c8102e;color:#fff;font-size:17px;font-weight:800}
  `;document.head.appendChild(s);
 }
+function hideLiveTiming(actions){
+ let node=actions?.nextElementSibling;
+ while(node&&node.classList?.contains('rp309-practice-complete'))node=node.nextElementSibling;
+ if(!node)return;
+ const text=(node.textContent||'').replace(/\s+/g,' ').trim().toUpperCase();
+ if(text.includes('BLOCK')&&text.includes('TIME LEFT')){
+  node.dataset.rp309LiveTiming='true';
+  node.style.display='none';
+ }
+}
+function restoreLiveTiming(){
+ app?.querySelectorAll('[data-rp309-live-timing="true"]').forEach(node=>{node.style.display='';delete node.dataset.rp309LiveTiming;});
+}
 function mount(){
  if(!app||!flagged())return;
  style();
  const actions=app.querySelector('.practice-hero-actions');
  if(!actions)return;
  actions.style.display='none';
+ hideLiveTiming(actions);
  if(app.querySelector('.rp309-practice-complete'))return;
  const card=document.createElement('section');card.className='rp309-practice-complete';
  card.innerHTML='<p class="rp309-label">Practice Complete</p><h2>Practice Complete</h2><p>This practice has ended.</p><button type="button" id="rp309-home">Back to Home</button>';
  actions.after(card);
- card.querySelector('#rp309-home').onclick=()=>{setFlag(false);app.querySelector('.bottom-nav [data-view="home"]')?.click();};
+ hideLiveTiming(actions);
+ card.querySelector('#rp309-home').onclick=()=>{setFlag(false);restoreLiveTiming();app.querySelector('.bottom-nav [data-view="home"]')?.click();};
 }
 if(app){
  document.addEventListener('click',e=>{
   if(e.target.closest?.('[data-shared-control="done"]')){setFlag(true);setTimeout(mount,0);}
-  if(e.target.closest?.('#activate-shared,#start-over'))setFlag(false);
+  if(e.target.closest?.('#activate-shared,#start-over')){setFlag(false);restoreLiveTiming();}
  },true);
  new MutationObserver(mount).observe(app,{childList:true,subtree:true});
  setTimeout(mount,0);
