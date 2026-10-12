@@ -1,7 +1,7 @@
-// Build 340: stable home/account helpers + matching practice review labels without observer loops.
+// Build 341: stable home/account helpers + matching practice review labels without observer loops.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalUrl='./coach.html?v=340';
+const coachPortalUrl='./coach.html?v=341';
 const sameElements=(parent,desired)=>{const current=[...parent.children];return current.length===desired.length&&current.every((el,i)=>el===desired[i]);};
 function setChildren(parent,desired){if(!sameElements(parent,desired))parent.replaceChildren(...desired);}
 
