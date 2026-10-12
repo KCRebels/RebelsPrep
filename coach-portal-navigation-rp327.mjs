@@ -1,15 +1,20 @@
-/* Build 328: keep coach nav inside #app so the portal's own bindings and HotB icon patch stay alive.
-   Add visible Back controls and guard iOS edge-swipe without reparenting live navigation. */
+/* Build 329: keep coach nav inside #app so portal bindings stay alive.
+   Visible Back controls + iOS edge-swipe guard without reparenting navigation.
+   IMPORTANT: only mutate Back text when it actually changes; the prior unconditional
+   textContent assignment retriggered the MutationObserver forever on secondary pages. */
 const app=document.getElementById('app');
 let handlingPop=false;
+let patchQueued=false;
 
 function onHome(){return !!app?.querySelector('.coach-portal-home');}
 
 function patchBack(){
   const back=app?.querySelector('.coach-page-head .coach-back');
   if(!back)return;
-  back.textContent='← Back';
-  back.setAttribute('aria-label','Back to previous coach portal screen');
+  if(back.textContent!=='← Back')back.textContent='← Back';
+  if(back.getAttribute('aria-label')!=='Back to previous coach portal screen'){
+    back.setAttribute('aria-label','Back to previous coach portal screen');
+  }
 }
 
 function goPortalBack(){
@@ -18,10 +23,15 @@ function goPortalBack(){
   return false;
 }
 
-function patch(){patchBack();}
+function patch(){patchQueued=false;patchBack();}
+function schedulePatch(){
+  if(patchQueued)return;
+  patchQueued=true;
+  requestAnimationFrame(patch);
+}
 if(app){
-  new MutationObserver(()=>queueMicrotask(patch)).observe(app,{childList:true,subtree:true});
-  patch();
+  new MutationObserver(schedulePatch).observe(app,{childList:true,subtree:true});
+  schedulePatch();
 }
 
 /* Keep a same-document guard entry so an iPhone edge swipe stays inside Coach Portal.
@@ -35,7 +45,7 @@ try{
     handlingPop=true;
     const wasSecondary=!onHome();
     history.pushState({...state,rpCoachGuard:1},'',location.href);
-    if(wasSecondary)queueMicrotask(goPortalBack);
-    setTimeout(()=>{handlingPop=false;},80);
+    if(wasSecondary)requestAnimationFrame(goPortalBack);
+    setTimeout(()=>{handlingPop=false;},100);
   });
 }catch(_){ }
