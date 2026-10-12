@@ -1,6 +1,7 @@
-// Build 314: completed practice is a final summary screen and Back to Home performs a true fresh reset.
+// Build 315: completed practice is a final summary screen and Back to Home performs a true fresh reset.
 const app=document.getElementById('app');
 const KEY='RebelsPrep:shared-practice-finished';
+const FORCE_HOME='RebelsPrep:force-home-after-complete';
 const BASE='RebelsPrep:coach-pilot:1';
 const STYLE_ID='rp309-complete-style';
 function flagged(){try{return sessionStorage.getItem(KEY)==='1';}catch{return false;}}
@@ -53,20 +54,21 @@ function hideAfterSummary(actions){
 function resetFinishedDraft(){
  try{
   const active=localStorage.getItem(BASE+':active-team');
-  if(!active)return;
-  const draftKey=BASE+':team:'+active;
   let draft={};
-  try{draft=JSON.parse(localStorage.getItem(draftKey)||'{}')||{};}catch{}
-  const teamIds=Array.isArray(draft.teamIds)&&draft.teamIds.length?draft.teamIds:[draft.teamId||active];
-  const fresh={
-   teamId:active,teamIds:[...teamIds],started:false,practiceType:'',steps:{},date:today(),start:'17:30',
-   durationMinutes:120,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],drillStationTarget:null,
-   adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,history:Array.isArray(draft.history)?draft.history:[]
-  };
-  localStorage.setItem(draftKey,JSON.stringify(fresh));
+  if(active){
+   const draftKey=BASE+':team:'+active;
+   try{draft=JSON.parse(localStorage.getItem(draftKey)||'{}')||{};}catch{}
+   const teamIds=Array.isArray(draft.teamIds)&&draft.teamIds.length?draft.teamIds:[draft.teamId||active];
+   const fresh={teamId:active,teamIds:[...teamIds],started:false,practiceType:'',steps:{},date:today(),start:'17:30',durationMinutes:120,blockMinutes:12,facility:'The Barn',included:[],coachIds:[],selectedDrills:[],drillStationTarget:null,adjustments:{},guests:[],allowReplacements:false,plan:null,clock:null,history:Array.isArray(draft.history)?draft.history:[]};
+   localStorage.setItem(draftKey,JSON.stringify(fresh));
+   // The app can fall back to this older base key if a team-specific draft is missing.
+   localStorage.setItem(BASE,JSON.stringify(fresh));
+  }else{
+   localStorage.removeItem(BASE);
+  }
   for(let i=localStorage.length-1;i>=0;i--){
    const k=localStorage.key(i);
-   if(k?.startsWith(BASE+':resume:')&&localStorage.getItem(k)===active)localStorage.removeItem(k);
+   if(k?.startsWith(BASE+':resume:'))localStorage.removeItem(k);
   }
   localStorage.removeItem(BASE+':active-team');
  }catch{}
@@ -75,11 +77,25 @@ function goFreshHome(){
  setFlag(false);
  resetFinishedDraft();
  restoreHidden();
- try{sessionStorage.removeItem('rp199-pending-drills');}catch{}
- const url=location.origin+location.pathname+'?fresh='+Date.now();
- location.replace(url);
+ try{
+  sessionStorage.removeItem('rp199-pending-drills');
+  sessionStorage.setItem(FORCE_HOME,'1');
+ }catch{}
+ location.replace(location.origin+location.pathname+'?fresh='+Date.now());
+}
+function forceHomeIfRequested(){
+ let forced=false;
+ try{forced=sessionStorage.getItem(FORCE_HOME)==='1';}catch{}
+ if(!forced||!app)return;
+ const home=app.querySelector('.bottom-nav [data-view="home"]');
+ if(home){
+  try{sessionStorage.removeItem(FORCE_HOME);}catch{}
+  home.click();
+  window.scrollTo(0,0);
+ }
 }
 function mount(){
+ forceHomeIfRequested();
  if(!app||!flagged())return;
  style();
  const actions=app.querySelector('.practice-hero-actions');
