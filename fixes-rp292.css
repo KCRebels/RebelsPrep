@@ -1,4 +1,4 @@
-/* Build 292: exact Practice Status two-button row before and after activation. */
+/* Build 293: exact Practice Status two-button row + tighter Home secondary actions. */
 .rp-practice-status-actions-292{
   display:grid!important;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
@@ -38,4 +38,16 @@
   background:#fff!important;
   border:1px solid #c7cbd0!important;
   color:#171717!important;
+}
+#app .actions.step-actions.rp-home-actions-286{
+  gap:6px!important;
+}
+#app .actions.step-actions.rp-home-actions-286>.rp-home-secondary-286,
+#app .actions.step-actions.rp-home-actions-286>#rp-home-start-over-placeholder,
+#app .actions.step-actions.rp-home-actions-286>#my-practice-button,
+#app .actions.step-actions.rp-home-actions-286>#player-signin-entry{
+  font-size:15px!important;
+  white-space:nowrap!important;
+  padding-left:4px!important;
+  padding-right:4px!important;
 }
