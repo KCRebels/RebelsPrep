@@ -1,4 +1,4 @@
-/* Build 335: admin-only utilities live under Ask the Librarian on Coach Home. */
+/* Build 336: admin-only utilities on Coach Home + practice page alignment cleanup. */
 .coach-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 .coach-bottom-nav [data-coach-view="more"]{display:none!important}
 body:not(.rp-coach-admin) .coach-portal-home>.coach-portal-actions{display:none!important}
@@ -10,3 +10,15 @@ body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actio
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-accounts{grid-column:2!important;grid-row:2!important}
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>a:active,
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>button:active{transform:translateY(1px)}
+
+/* Practice page: keep the heading, empty-state card, and copy on the same left/right grid. */
+.coach-portal-page .coach-page-head{margin-left:0!important;margin-right:0!important}
+.coach-portal-page>.panel{box-sizing:border-box!important;width:100%!important;margin:0!important;padding:18px 20px!important;border:2px solid #d8ddd9!important;border-radius:22px!important;background:#fff!important;box-shadow:0 4px 0 rgba(12,18,34,.04)!important}
+.coach-portal-page>.panel h2{margin:0 0 10px!important;font-size:22px!important;line-height:1.15!important;color:#111!important}
+.coach-portal-page>.panel p{margin:0!important;font-size:16px!important;line-height:1.4!important;color:#252a33!important}
+.coach-portal-page>.panel>.coach-card-stack{margin-bottom:0!important}
+@media(max-width:430px){
+ .coach-portal-page>.panel{padding:17px 18px!important;border-radius:20px!important}
+ .coach-portal-page>.panel h2{font-size:21px!important}
+ .coach-portal-page>.panel p{font-size:15.5px!important}
+}
