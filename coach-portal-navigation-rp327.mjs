@@ -1,48 +1,31 @@
-/* Build 327: keep coach navigation inside the coach portal, show a real Back button,
-   and mount the bottom nav at the viewport root so it reaches the physical bottom. */
+/* Build 328: keep coach nav inside #app so the portal's own bindings and HotB icon patch stay alive.
+   Add visible Back controls and guard iOS edge-swipe without reparenting live navigation. */
 const app=document.getElementById('app');
 let handlingPop=false;
 
-function pageTitle(){return app?.querySelector('.coach-page-head h1')?.textContent?.trim()||'';}
 function onHome(){return !!app?.querySelector('.coach-portal-home');}
-
-function mountBottomNav(){
-  const live=app?.querySelector('.coach-bottom-nav');
-  if(!live)return;
-  const old=[...document.body.children].find(el=>el.classList?.contains('coach-bottom-nav'));
-  if(old&&old!==live)old.remove();
-  document.body.appendChild(live);
-}
 
 function patchBack(){
   const back=app?.querySelector('.coach-page-head .coach-back');
   if(!back)return;
-  back.style.removeProperty('display');
   back.textContent='← Back';
   back.setAttribute('aria-label','Back to previous coach portal screen');
 }
 
 function goPortalBack(){
   const back=app?.querySelector('.coach-page-head .coach-back');
-  if(back){
-    /* The portal's own back control is intentionally used rather than browser
-       history. That keeps coaches inside coach.html instead of returning to Builder. */
-    back.click();
-    return true;
-  }
+  if(back){back.click();return true;}
   return false;
 }
 
-function patch(){mountBottomNav();patchBack();}
-
+function patch(){patchBack();}
 if(app){
   new MutationObserver(()=>queueMicrotask(patch)).observe(app,{childList:true,subtree:true});
   patch();
 }
 
-/* iOS edge-swipe is browser Back. Keep one same-document guard entry armed.
-   On secondary coach screens, a swipe now performs the visible portal Back action.
-   On Coach Home, it stays in the coach portal instead of exposing Practice Builder. */
+/* Keep a same-document guard entry so an iPhone edge swipe stays inside Coach Portal.
+   Secondary screens use the portal's own Back button; Coach Home remains on Coach Home. */
 try{
   const state={...(history.state||{}),rpCoachPortal:true,rpCoachGuard:0};
   history.replaceState(state,'',location.href);
