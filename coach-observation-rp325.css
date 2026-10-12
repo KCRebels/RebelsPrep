@@ -1,0 +1,30 @@
+/* Build 325: clean hitting observation + three-drill picker. */
+.coach-observation-page .coach-page-head{margin:4px 0 16px!important}
+.coach-observation-page .coach-page-head h1{font-size:31px!important;margin:0 0 4px!important}
+.coach-observation-page .coach-page-head p{font-size:17px!important;font-weight:800!important;color:#657084!important}
+.coach-observation-page>.panel{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.coach-observation-page>.panel>.coach-section-eyebrow,.coach-observation-page>.panel>h2,.coach-observation-page>.panel>.muted{display:none!important}
+.coach-observation-page .coach-form{display:grid!important;gap:16px!important;padding:18px!important;border:2px solid #d8ddd9!important;border-radius:22px!important;background:#fff!important;box-shadow:0 4px 0 rgba(12,18,34,.04)!important}
+.coach-observation-page .coach-form label{display:grid!important;gap:7px!important;margin:0!important;color:#111827!important;font-size:16px!important;font-weight:850!important;line-height:1.2!important}
+.coach-observation-page .coach-form textarea{box-sizing:border-box!important;width:100%!important;min-height:108px!important;margin:0!important;padding:13px 14px!important;border:2px solid #d8ddd9!important;border-radius:16px!important;background:#fff!important;color:#111827!important;font-size:16px!important;line-height:1.35!important;resize:vertical!important}
+.coach-observation-page .coach-form textarea::placeholder{color:#a7abb2!important;font-weight:700!important}
+.coach-observation-page .coach-form .primary{width:100%!important;min-height:50px!important;margin:2px 0 0!important;border:0!important;border-radius:14px!important;background:#c8102e!important;color:#fff!important;font-size:16px!important;font-weight:900!important}
+.coach-pick-drills{display:grid;gap:9px}
+.coach-pick-drills-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.coach-pick-drills-title{font-size:16px;font-weight:850;color:#111827}
+.coach-pick-drills-count{font-size:12px;font-weight:900;color:#657084}
+.coach-pick-drills-button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:50px;padding:0 14px;border:2px solid #d8ddd9;border-radius:14px;background:#fff;color:#111827;font-size:16px;font-weight:850;text-align:left}
+.coach-pick-drills-button::after{content:'›';font-size:25px;line-height:1;color:#657084}
+.coach-picked-drills{display:flex;flex-wrap:wrap;gap:7px}
+.coach-picked-chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:5px 9px;border:1.5px solid #c8102e;border-radius:999px;background:#fff;color:#111827;font-size:12px;font-weight:800}
+.coach-picked-chip button{border:0;background:transparent;color:#c8102e;font-size:17px;font-weight:900;line-height:1;padding:0}
+.coach-drill-picker{display:none;margin-top:2px;padding:12px;border:2px solid #d8ddd9;border-radius:16px;background:#f8f9fa}
+.coach-drill-picker.is-open{display:grid;gap:10px}
+.coach-drill-picker-search{width:100%;box-sizing:border-box;height:44px;padding:0 12px;border:1.5px solid #d8ddd9;border-radius:12px;background:#fff;font-size:15px}
+.coach-drill-picker-list{display:grid;gap:7px;max-height:300px;overflow:auto;-webkit-overflow-scrolling:touch}
+.coach-drill-option{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border:1.5px solid #d8ddd9;border-radius:12px;background:#fff;font-size:14px;font-weight:750;line-height:1.25}
+.coach-drill-option input{width:18px;height:18px;margin:0;flex:0 0 auto;accent-color:#c8102e}
+.coach-drill-option.is-disabled{opacity:.45}
+.coach-drill-picker-done{min-height:44px;border:0;border-radius:12px;background:#171717;color:#fff;font-size:14px;font-weight:900}
+.obs-error{margin:0;padding:10px 12px;border-radius:10px;background:#fff2f3;color:#a20f23;font-size:13px;font-weight:800}
+@media(max-width:430px){.coach-observation-page .coach-page-head h1{font-size:29px!important}.coach-observation-page .coach-form{padding:15px!important;border-radius:19px!important}.coach-observation-page .coach-form textarea{min-height:100px!important}}
