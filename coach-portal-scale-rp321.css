@@ -1,0 +1,28 @@
+/* Build 321: tighten the coach portal to the same visual density as the player portal. */
+.coach-portal-home,.coach-portal-page{max-width:760px;margin:0 auto;padding-left:14px!important;padding-right:14px!important;padding-bottom:112px!important;box-sizing:border-box}
+.coach-portal-home{padding-top:4px!important}
+.coach-greeting{margin:10px 0 14px!important;padding:18px 20px 20px!important;border:2px solid #d8ddd9!important;border-radius:22px!important;box-shadow:0 5px 0 rgba(12,18,34,.045)!important}
+.coach-greeting .eyebrow,.coach-card .eyebrow,.coach-section-eyebrow{margin:0 0 7px!important;font-size:13px!important;letter-spacing:.12em!important;line-height:1.15!important}
+.coach-greeting h1{margin:0 0 9px!important;font-size:34px!important;line-height:1.02!important;letter-spacing:-.025em!important}
+.coach-greeting p{font-size:16px!important;font-weight:700!important;line-height:1.34!important}
+.coach-card-stack{gap:14px!important}
+.coach-card{padding:18px 20px 20px!important;border:2px solid #d8ddd9!important;border-radius:22px!important;box-shadow:0 5px 0 rgba(12,18,34,.045)!important}
+.coach-card h2{margin:0 0 7px!important;font-size:28px!important;line-height:1.04!important;letter-spacing:-.02em!important}
+.coach-card p{font-size:16px!important;font-weight:700!important;line-height:1.34!important}
+.coach-card .coming{margin-top:7px!important;font-size:12px!important}
+.coach-page-head{margin:6px 0 16px!important}
+.coach-page-head h1{margin:0 0 6px!important;font-size:32px!important;line-height:1.04!important}
+.coach-page-head p{font-size:16px!important;line-height:1.35!important}
+.coach-list{gap:12px!important}
+.coach-list-card{padding:16px 18px!important;border-radius:19px!important}
+.coach-list-card h3{font-size:20px!important;margin-bottom:5px!important}
+.coach-list-card p{font-size:15px!important;line-height:1.35!important}
+.coach-focus-row{padding:16px 18px!important;border-radius:19px!important}
+.coach-focus-row strong{font-size:19px!important}
+.coach-form{gap:13px!important;padding:18px!important;border-radius:20px!important}
+.coach-note{padding:16px 18px!important;border-radius:19px!important;font-size:15px!important}
+.coach-portal-actions{margin-top:16px!important}
+.coach-bottom-nav{grid-template-columns:repeat(5,minmax(0,1fr))!important;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important}
+.coach-bottom-nav button{min-width:0!important;min-height:58px!important;padding:7px 3px!important;border-radius:14px!important;font-size:12px!important;line-height:1.12!important;white-space:normal!important}
+.coach-bottom-nav button[aria-current="page"]{background:#171717!important;color:#e31837!important}
+@media(max-width:430px){.coach-portal-home,.coach-portal-page{padding-left:12px!important;padding-right:12px!important}.coach-greeting{padding:17px 18px 19px!important}.coach-greeting h1{font-size:32px!important}.coach-greeting p{font-size:15.5px!important}.coach-card{padding:17px 18px 19px!important}.coach-card h2{font-size:27px!important}.coach-card p{font-size:15.5px!important}.coach-page-head h1{font-size:30px!important}.coach-bottom-nav button{font-size:11.5px!important}}
