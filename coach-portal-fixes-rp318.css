@@ -1,0 +1,36 @@
+/* Build 318: make the NPB coach portal match the HotB portal visual language more closely. */
+.coach-portal-home,.coach-portal-page{max-width:760px;margin:0 auto;padding:0 0 118px}
+.coach-portal-home{padding-top:8px}
+.coach-greeting{margin:16px 0 26px;padding:30px 34px 34px;border:3px solid #d8ddd9;border-radius:30px;background:#fff;box-shadow:0 7px 0 rgba(12,18,34,.05)}
+.coach-greeting .eyebrow,.coach-card .eyebrow,.coach-section-eyebrow{margin:0 0 10px;color:#a92c32;font-size:17px;font-weight:900;letter-spacing:.13em;line-height:1.15;text-transform:uppercase}
+.coach-greeting h1{margin:0 0 16px;font-size:48px;line-height:1.02;letter-spacing:-.03em;color:#0c1222}
+.coach-greeting p{margin:0;color:#657084;font-size:22px;font-weight:700;line-height:1.38}
+.coach-card-stack{display:grid;gap:24px}
+.coach-card{display:block;width:100%;box-sizing:border-box;padding:30px 34px 32px;border:3px solid #d8ddd9;border-radius:30px;background:#fff;color:#0c1222;text-align:left;text-decoration:none;box-shadow:0 7px 0 rgba(12,18,34,.05)}
+.coach-card h2{margin:0 0 12px;font-size:40px;line-height:1.04;letter-spacing:-.025em}
+.coach-card p{margin:0;color:#657084;font-size:21px;font-weight:700;line-height:1.4}
+.coach-card .coming{display:block;margin:10px 0 0;color:#8b8f98;font-size:14px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.coach-page-head{margin:8px 0 24px}
+.coach-page-head .coach-back{display:none!important}
+.coach-page-head h1{margin:0 0 10px;font-size:43px;line-height:1.03;letter-spacing:-.025em;color:#111}
+.coach-page-head p{margin:0;color:#657084;font-size:20px;font-weight:600;line-height:1.4}
+.coach-portal-page>.panel{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.coach-portal-page>.panel>.coach-card-stack{margin-bottom:24px!important}
+.coach-note{padding:20px 22px;border:2px solid #d8ddd9;border-radius:22px;background:#fff;color:#657084;font-size:17px;line-height:1.45}
+.coach-list{gap:16px}
+.coach-list-card,.coach-focus-row{border-radius:22px}
+.coach-form{padding:24px;border:2px solid #d8ddd9;border-radius:24px;background:#fff}
+.coach-bottom-nav{padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom));box-shadow:0 -3px 14px rgba(12,18,34,.06)}
+.coach-bottom-nav button{min-height:58px;font-size:14px}
+@media(max-width:520px){
+ .coach-portal-home,.coach-portal-page{padding-left:14px;padding-right:14px;padding-bottom:120px}
+ .coach-greeting{padding:26px 28px 30px;border-radius:26px}
+ .coach-greeting h1{font-size:43px}
+ .coach-greeting p{font-size:20px}
+ .coach-card-stack{gap:20px}
+ .coach-card{padding:26px 28px 28px;border-radius:26px}
+ .coach-card h2{font-size:35px}
+ .coach-card p{font-size:19px}
+ .coach-page-head h1{font-size:39px}
+ .coach-page-head p{font-size:18px}
+}
