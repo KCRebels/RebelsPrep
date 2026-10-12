@@ -1,0 +1,13 @@
+/* Build 293: keep Home secondary action labels on one line. */
+#app .actions.step-actions.rp-home-actions-286{
+  gap:6px!important;
+}
+#app .actions.step-actions.rp-home-actions-286>.rp-home-secondary-286,
+#app .actions.step-actions.rp-home-actions-286>#rp-home-start-over-placeholder,
+#app .actions.step-actions.rp-home-actions-286>#my-practice-button,
+#app .actions.step-actions.rp-home-actions-286>#player-signin-entry{
+  font-size:15px!important;
+  white-space:nowrap!important;
+  padding-left:4px!important;
+  padding-right:4px!important;
+}
