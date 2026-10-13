@@ -1,6 +1,6 @@
 // Build 344: active practice emphasis + shared live-practice state for My Practice routing.
 import {services,accountContext,watchAccount,isCoach} from './account-model-rp276.mjs?v=rp276';
-import {clockState} from './portal-model-rp129.mjs?v=rp129';
+import {clockState} from './portal-model.mjs?v=rp129';
 
 let account=null;
 let assignments={};
