@@ -1,6 +1,6 @@
-// Build 344: one coach dashboard; My Practice opens the live coach assignment when active and the builder when inactive.
+// Build 347: one coach dashboard; My Practice opens the live coach assignment when active and the builder when inactive.
 import {accountContext,services,watchAccount,isCoach} from './account-model-rp276.mjs?v=rp276';
-import {builderAccess,builderHref} from './builder-access-rp342.mjs?v=rp344';
+import {builderAccess,builderHref} from './builder-access-rp342.mjs?v=rp347';
 
 let email='';
 let frame=0;
@@ -54,10 +54,7 @@ function decorate(){
   }
  }
  ensureBuilderReturn(access);
- if(routePractice&&!routedPractice&&active&&tile){
-  routedPractice=true;
-  tile.click();
- }
+ if(routePractice&&!routedPractice&&active&&tile){routedPractice=true;tile.click();}
 }
 
 function builderClick(event){
