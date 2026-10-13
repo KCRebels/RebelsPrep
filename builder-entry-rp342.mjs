@@ -1,4 +1,4 @@
-// Build 357: authorize builder entry and keep team-only builders inside their assigned team scope.
+// Build 360: authorize builder entry and keep team-only builders inside their assigned team scope.
 import {services} from './account-model-rp276.mjs?v=rp276';
 import {builderAccess} from './builder-access-rp342.mjs?v=rp355';
 
@@ -12,10 +12,10 @@ export async function authorizeBuilderEntry(){
   await auth.authStateReady();
   const email=String(auth.currentUser?.email||'').trim().toLowerCase();
   access=builderAccess(email);
-  if(!auth.currentUser||!access.builder){location.replace('./coach.html?v=357');return false;}
+  if(!auth.currentUser||!access.builder){location.replace('./coach.html?v=360');return false;}
   return true;
  }catch{
-  location.replace('./coach.html?v=357');
+  location.replace('./coach.html?v=360');
   return false;
  }
 }
