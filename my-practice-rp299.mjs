@@ -1,8 +1,8 @@
-// Build 363: stable My Practice helpers without owning built-practice section titles.
+// Build 364: stable My Practice helpers without owning built-practice section titles.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=363';
-const coachPortalPractice='./coach.html?v=363&practice=1';
+const coachPortalHome='./coach.html?v=364';
+const coachPortalPractice='./coach.html?v=364&practice=1';
 
 function findSignOut(scope){
  const local=[...scope.querySelectorAll('button,a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim()));
