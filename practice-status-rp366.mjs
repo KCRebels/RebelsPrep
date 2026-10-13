@@ -1,13 +1,15 @@
-// Build 368: one owner for Practice Status. Preserve native box placement and native controls.
+// Build 369: keep the working Practice Status buttons and remove duplicate headings only.
 const app=document.getElementById('app');
 
 function ensureStyle(){
- if(document.getElementById('rp368-practice-status-style'))return;
+ document.getElementById('rp366-practice-status-style')?.remove();
  document.getElementById('rp367-practice-status-style')?.remove();
+ document.getElementById('rp368-practice-status-style')?.remove();
+ if(document.getElementById('rp369-practice-status-style'))return;
  const style=document.createElement('style');
- style.id='rp368-practice-status-style';
+ style.id='rp369-practice-status-style';
  style.textContent=`
-  #app #rp367-practice-status>.rp368-practice-status-heading{
+  #app #rp367-practice-status>.rp369-practice-status-heading{
    display:block!important;
    visibility:visible!important;
    opacity:1!important;
@@ -63,26 +65,22 @@ function findPanel(){
  return [...app.querySelectorAll('section.panel,.panel')].find(panel=>/^(Shared Practice|Practice Status)$/i.test((panel.querySelector(':scope > h2')?.textContent||'').trim()))||null;
 }
 
-function ensureHeading(panel){
- let heading=panel.querySelector(':scope > h2');
+function ensureSingleHeading(panel){
+ // Remove every legacy/direct heading that can render a second Practice Status title.
+ [...panel.children].forEach(el=>{
+  const text=(el.textContent||'').replace(/\s+/g,' ').trim();
+  const legacy=el.matches('h1,h2,h3,.rp368-practice-status-heading,.rp367-practice-status-title,.rp363-section-title,.rp365-practice-status-title,.rp-practice-status-title-fixed,.rp359-status-label,.rp-section-label');
+  if(legacy&&/^(Shared Practice|Practice Status)$/i.test(text))el.remove();
+ });
+ let heading=panel.querySelector(':scope > .rp369-practice-status-heading');
  if(!heading){
-  heading=document.createElement('h2');
+  heading=document.createElement('p');
+  heading.className='rp369-practice-status-heading';
   panel.prepend(heading);
  }
  heading.textContent='PRACTICE STATUS';
- heading.classList.add('rp368-practice-status-heading');
- heading.style.setProperty('display','block','important');
- heading.style.setProperty('visibility','visible','important');
- heading.style.setProperty('opacity','1','important');
- heading.style.setProperty('margin','0 0 7px','important');
- heading.style.setProperty('padding','0','important');
- heading.style.setProperty('color','#b51f2e','important');
- heading.style.setProperty('font-size','14px','important');
- heading.style.setProperty('font-weight','900','important');
- heading.style.setProperty('letter-spacing','.12em','important');
- heading.style.setProperty('text-transform','uppercase','important');
- heading.style.setProperty('line-height','1.2','important');
- panel.querySelectorAll(':scope > .rp367-practice-status-title,:scope > .rp363-section-title,:scope > .rp365-practice-status-title,:scope > .rp-practice-status-title-fixed,:scope > .rp359-status-label,:scope > .rp-section-label').forEach(el=>el.remove());
+ // If anything duplicated our exact replacement, keep only the first one.
+ [...panel.querySelectorAll(':scope > .rp369-practice-status-heading')].slice(1).forEach(el=>el.remove());
 }
 
 function ensureButtons(panel){
@@ -97,7 +95,7 @@ function ensureButtons(panel){
   mine.type='button';
   mine.textContent='My Practice';
  }
- mine.onclick=()=>location.assign('./coach.html?v=368&practice=1');
+ mine.onclick=()=>location.assign('./coach.html?v=369&practice=1');
 
  let row=panel.querySelector(':scope > .rp-practice-status-actions-292');
  if(!row){
@@ -123,7 +121,8 @@ function repair(){
  const panel=findPanel();
  if(!panel)return;
  panel.id='rp367-practice-status';
- ensureHeading(panel);
+ panel.classList.remove('rp366-practice-status');
+ ensureSingleHeading(panel);
  ensureButtons(panel);
 }
 
