@@ -1,4 +1,4 @@
-// Build 346: completed practice returns to the universal coach dashboard after resetting the builder draft.
+// Build 347: completed practice returns to the universal coach dashboard after resetting the builder draft.
 const app=document.getElementById('app');
 const KEY='RebelsPrep:shared-practice-finished';
 const STYLE_ID='rp309-complete-style';
@@ -57,7 +57,7 @@ function goFreshHome(){
  setTimeout(()=>{
   const nativeReset=document.getElementById('start-over');
   if(nativeReset)nativeReset.click();
-  setTimeout(()=>location.assign('./coach.html?v=346'),60);
+  setTimeout(()=>location.assign('./coach.html?v=347'),60);
  },40);
 }
 function mount(){
