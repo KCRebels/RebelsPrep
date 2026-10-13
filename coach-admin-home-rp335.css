@@ -1,13 +1,14 @@
-/* Build 336: admin-only utilities on Coach Home + practice page alignment cleanup. */
+/* Build 343: admin-only utilities on Coach Home + practice page alignment cleanup. */
 .coach-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 .coach-bottom-nav [data-coach-view="more"]{display:none!important}
 body:not(.rp-coach-admin) .coach-portal-home>.coach-portal-actions{display:none!important}
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin:16px 0 0!important}
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>a,
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>button{box-sizing:border-box!important;width:100%!important;min-height:48px!important;margin:0!important;padding:0 14px!important;border:1.5px solid #d8ddd9!important;border-radius:12px!important;background:#fff!important;color:#252a33!important;font-size:14px!important;font-weight:850!important;line-height:1.15!important;text-align:center!important;text-decoration:none!important;box-shadow:none!important;display:flex!important;align-items:center!important;justify-content:center!important}
-body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-builder{grid-column:1/-1!important;min-height:52px!important;border-color:#111!important;background:#111!important;color:#fff!important;font-size:15px!important}
-body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-signout{grid-column:1!important;grid-row:2!important}
-body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-accounts{grid-column:2!important;grid-row:2!important}
+/* My Practice is now the builder entry, so the old Back to Builder control is redundant. */
+body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-builder{display:none!important}
+body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-signout{grid-column:1!important;grid-row:1!important}
+body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>.rp-admin-accounts{grid-column:2!important;grid-row:1!important}
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>a:active,
 body.rp-coach-admin .coach-portal-home>.coach-portal-actions.rp-admin-home-actions>button:active{transform:translateY(1px)}
 
