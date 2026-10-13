@@ -44,6 +44,8 @@ function directToRoster(){
   if(go&&!go.disabled){go.click();return;}
  }
  if(view==='setup'){
+  const hitting=document.querySelector('[data-practice-type="Hitting"]');
+  if(hitting&&hitting.getAttribute('aria-pressed')!=='true'){hitting.click();return;}
   const attendance=document.querySelector('.bottom-nav [data-view="attendance"]');
   if(attendance){autoDone=true;attendance.click();}
  }
