@@ -1,4 +1,4 @@
-// Build 357: prioritize Practice Status on the built-practice screen and label the hero summary.
+// Build 358: prioritize Practice Status and normalize all red built-practice section labels.
 const app=document.getElementById('app');
 let frame=0;
 
@@ -7,8 +7,21 @@ function ensureStyle(){
  const style=document.createElement('style');
  style.id='rp357-plan-layout-style';
  style.textContent=`
-  .practice-hero>.rp357-hero-label{margin:0 0 10px!important;color:#b51f2e!important;font-size:14px!important;font-weight:900!important;letter-spacing:.12em!important;text-transform:uppercase!important;line-height:1.2!important}
-  #rp357-practice-status>.rp-section-label{margin:0 0 7px!important;color:#b51f2e!important;font-size:14px!important;font-weight:900!important;letter-spacing:.12em!important;text-transform:uppercase!important;line-height:1.2!important}
+  #app[data-practice-view="plan"] .rp-section-label,
+  #app[data-practice-view="review"] .rp-section-label,
+  #app[data-practice-view="plan"] .drill-category,
+  #app[data-practice-view="review"] .drill-category,
+  #app[data-practice-view="plan"] .rp357-hero-label,
+  #app[data-practice-view="review"] .rp357-hero-label{
+   margin:0 0 7px!important;
+   color:#b51f2e!important;
+   font-size:14px!important;
+   font-weight:900!important;
+   letter-spacing:.12em!important;
+   text-transform:uppercase!important;
+   line-height:1.2!important;
+  }
+  .practice-hero>.rp357-hero-label{margin-bottom:10px!important}
  `;
  document.head.appendChild(style);
 }
