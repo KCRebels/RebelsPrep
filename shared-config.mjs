@@ -9,7 +9,9 @@ export const firebaseConfig={
 };
 export const builderEmails=[
  'recruiting@rebelssoftball.org',
+ 'lickel@rebelssoftball.org',
  'chrisolsen@finditds.com',
+ 'olsen@rebelssoftball.org',
  'corycairns@hotmail.com',
  'cbachkora@logosmart365.com',
  'carrollm@usd231.com',
