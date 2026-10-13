@@ -7,6 +7,29 @@ export * from './shared-rp49.mjs?v=rp134';
 export {activate} from './shared-live-rp276.mjs?v=rp276';
 export {control} from './shared-control-rp134.mjs?v=rp134';
 
+// Build 354: recover an installed/PWA window that reopened an older cached HTML document.
+// The marker request is always cache-busted; when the visible footer is stale, reload the
+// exact current route with a unique query so iOS cannot reuse the old document cache entry.
+(function installBuildRecovery(){
+ const check=async()=>{
+  try{
+   if(!/\/RebelsPrep\/(?:index\.html|coach\.html)?$/.test(location.pathname))return;
+   const response=await fetch('./build-current.txt?_='+Date.now(),{cache:'no-store'});
+   if(!response.ok)return;
+   const current=(await response.text()).trim();
+   const shown=(document.querySelector('footer')?.textContent.match(/Build\s+(\d+)/i)||[])[1]||'';
+   if(!current||!shown||current===shown)return;
+   const url=new URL(location.href);
+   url.searchParams.set('v',current);
+   url.searchParams.set('_fresh',Date.now().toString());
+   location.replace(url.toString());
+  }catch{}
+ };
+ check();
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
+ window.addEventListener('pageshow',check);
+})();
+
 export async function completeLogin(email,url){const {A,auth}=await services();await A.setPersistence(auth,A.browserLocalPersistence);const cred=await A.signInWithEmailLink(auth,email,url);await cred.user.getIdToken(true);localStorage.removeItem('RebelsPrep:login-email');return cred.user;}
 export async function signInCoach(email,password){const {A,auth}=await services();await A.setPersistence(auth,A.browserLocalPersistence);const cred=await A.signInWithEmailAndPassword(auth,email,password);return cred.user;}
 export async function sendCoachPasswordEmail(email){const {A,auth}=await services();if(!allowed({email,emailVerified:true}))throw Error('That coach email is not enabled yet.');await A.sendPasswordResetEmail(auth,email);}
