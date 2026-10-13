@@ -1,66 +1,18 @@
-// Build 348: correct builder Back label and keep one working Start Over control on Teams.
+// Build 350: deterministic Teams-page Resume + Start Over.
+// Loaded after the native builder so reset cleanup runs after the builder's pagehide save.
 const app=document.getElementById('app');
+const KEY='RebelsPrep:coach-pilot:1';
+const RESET='RebelsPrep:builder-reset-350';
 let frame=0;
-
-function activeView(){
- return app?.dataset.practiceView||document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';
-}
-function ensureStyle(){
- if(document.getElementById('rp347-builder-nav-style'))return;
- const style=document.createElement('style');
- style.id='rp347-builder-nav-style';
- style.textContent=`
-  #rp-home-start-wrap,#rp-home-start-over-placeholder{display:none!important}
-  #rp-global-nav{display:none!important}
- `;
- document.head.appendChild(style);
-}
-function fixBackLabel(){
- const back=document.getElementById('rp-context-back');
- if(back&&/back to home/i.test(back.textContent||''))back.textContent='← Back to Teams';
-}
+function activeView(){return app?.dataset.practiceView||document.querySelector('.bottom-nav [aria-current="page"]')?.dataset.view||'';}
+function clearDraftStorage(){try{const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k===KEY||k===KEY+':active-team'||k.startsWith(KEY+':resume:')||k.startsWith(KEY+':team:')))keys.push(k);}keys.forEach(k=>localStorage.removeItem(k));['rp156-drill-repair','rp157-drill-cleared','rp163-review-after-reload','rp170-review-after-reload','rp171-review-after-reload','rp199-pending-drills'].forEach(k=>sessionStorage.removeItem(k));}catch{}}
+function ensureStyle(){if(document.getElementById('rp350-builder-nav-style'))return;const style=document.createElement('style');style.id='rp350-builder-nav-style';style.textContent='#rp-home-start-wrap,#rp-home-start-over-placeholder,#rp-global-nav{display:none!important}';document.head.appendChild(style);}
+function fixBackLabel(){const back=document.getElementById('rp-context-back');if(back&&/back to home/i.test(back.textContent||''))back.textContent='← Back to Teams';}
 function hasSavedDraft(){return !!document.querySelector('[data-resume-team]');}
-function runNativeStartOver(){
- const setup=document.querySelector('.bottom-nav [data-view="setup"]');
- if(!setup)return;
- setup.click();
- requestAnimationFrame(()=>{
-  const nativeReset=document.getElementById('start-over');
-  if(nativeReset)nativeReset.click();
- });
-}
-function fixTeamsStartOver(){
- const old=document.getElementById('rp347-home-start-over');
- if(activeView()!=='home'||!hasSavedDraft()){old?.remove();return;}
- const actions=document.querySelector('#build-selected-teams')?.closest('.actions.step-actions');
- if(!actions)return;
- let start=old;
- if(!start){
-  start=document.createElement('button');
-  start.type='button';
-  start.id='rp347-home-start-over';
-  start.textContent='Start Over';
-  start.className='rp-home-secondary-286';
-  start.onclick=e=>{
-   e.preventDefault();
-   e.stopPropagation();
-   if(!confirm('Start over and clear this practice draft?'))return;
-   runNativeStartOver();
-  };
- }
- if(start.parentElement!==actions)actions.appendChild(start);
- document.querySelectorAll('#rp-home-start-wrap,#rp-global-nav,#rp-home-start-over-placeholder').forEach(el=>el.remove());
-}
-function mount(){
- ensureStyle();
- fixBackLabel();
- fixTeamsStartOver();
-}
+function fixTeamsStartOver(){let start=document.getElementById('rp350-home-start-over');if(activeView()!=='home'||!hasSavedDraft()){start?.remove();return;}const actions=document.querySelector('#build-selected-teams')?.closest('.actions.step-actions');if(!actions)return;if(!start){start=document.createElement('button');start.type='button';start.id='rp350-home-start-over';start.textContent='Start Over';start.className='rp-home-secondary-286';start.onclick=e=>{e.preventDefault();e.stopPropagation();if(!confirm('Start over and clear this practice draft?'))return;try{sessionStorage.setItem(RESET,'1');}catch{}clearDraftStorage();location.replace('./?build=1&fresh=350-'+Date.now());};}if(start.parentElement!==actions)actions.appendChild(start);}
+function handleResume(e){const button=e.target.closest?.('[data-resume-team]');if(!button)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const teamId=button.dataset.resumeTeam;if(!teamId)return;try{const draftId=localStorage.getItem(KEY+':resume:'+teamId)||teamId;localStorage.setItem(KEY+':active-team',draftId);}catch{}location.replace('./?build=1&resumeTeam='+encodeURIComponent(teamId)+'&v=350&t='+Date.now());}
+function mount(){ensureStyle();fixBackLabel();fixTeamsStartOver();}
 function schedule(){cancelAnimationFrame(frame);frame=requestAnimationFrame(mount);}
-
-if(app){
- new MutationObserver(schedule).observe(app,{childList:true,subtree:true,characterData:true});
- document.addEventListener('click',schedule,true);
- setInterval(schedule,500);
- schedule();
-}
+window.addEventListener('pagehide',()=>{try{if(sessionStorage.getItem(RESET)==='1')clearDraftStorage();}catch{}});
+if(app){document.addEventListener('click',handleResume,true);new MutationObserver(schedule).observe(app,{childList:true,subtree:true,characterData:true});document.addEventListener('click',schedule,true);setInterval(schedule,500);schedule();}
+setTimeout(()=>{try{sessionStorage.removeItem(RESET);}catch{}},1000);
