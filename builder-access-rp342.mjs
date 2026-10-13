@@ -1,7 +1,9 @@
 // Build 342: shared builder-access rules for the universal coach dashboard.
 export const FULL_BUILDER_EMAILS=Object.freeze([
  'recruiting@rebelssoftball.org',
- 'chrisolsen@finditds.com'
+ 'lickel@rebelssoftball.org',
+ 'chrisolsen@finditds.com',
+ 'olsen@rebelssoftball.org'
 ]);
 
 export const TEAM_BUILDER_ACCESS=Object.freeze({
