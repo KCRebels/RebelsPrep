@@ -1,4 +1,4 @@
-// Build 316: completed practice is a final summary screen. Back to Home delegates to the app's native Start Over reset.
+// Build 345: completed practice returns to the universal coach dashboard after resetting the builder draft.
 const app=document.getElementById('app');
 const KEY='RebelsPrep:shared-practice-finished';
 const STYLE_ID='rp309-complete-style';
@@ -49,9 +49,6 @@ function hideAfterSummary(actions){
  }
 }
 function goFreshHome(){
- // The main app already owns the correct reset behavior in startOverDraft().
- // Navigate to Setup so its native Start Over button is rendered and wired,
- // then invoke that button. This clears both in-memory and persisted draft state.
  setFlag(false);
  restoreHidden();
  try{sessionStorage.removeItem('rp199-pending-drills');}catch{}
@@ -59,10 +56,8 @@ function goFreshHome(){
  if(setup)setup.click();
  setTimeout(()=>{
   const nativeReset=document.getElementById('start-over');
-  if(nativeReset){nativeReset.click();return;}
-  // Safe fallback: go Home if the native button could not be rendered.
-  app?.querySelector('.bottom-nav [data-view="home"]')?.click();
-  window.scrollTo(0,0);
+  if(nativeReset)nativeReset.click();
+  setTimeout(()=>location.assign('./coach.html?v=345'),60);
  },40);
 }
 function mount(){
