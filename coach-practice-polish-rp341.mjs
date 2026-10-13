@@ -1,4 +1,4 @@
-// Build 344: active practice emphasis + shared live-practice state for My Practice routing.
+// Build 354: active practice emphasis + shared live-practice state for My Practice routing.
 import {services,accountContext,watchAccount,isCoach} from './account-model-rp276.mjs?v=rp276';
 import {clockState} from './portal-model.mjs?v=rp129';
 
@@ -46,6 +46,10 @@ function decoratePractice(){
  if(!page)return;
  page.classList.toggle('rp-has-active-practice',!!shell);
  if(!shell)return;
+ const heading=page.querySelector('#blocks .rp-cards-heading');
+ if(heading)heading.style.display='none';
+ const banner=page.querySelector('#blocks .rp-card-name');
+ if(banner&&banner.textContent!=='My Assignments')banner.textContent='My Assignments';
  const status=shell.querySelector('.personal-status');
  const strong=status?.querySelector('strong');
  const label=status?.querySelector('span');
