@@ -1,5 +1,5 @@
-// Build 363: transform the built-practice HTML before it enters #app.
-// This avoids post-render observers fighting the core render order.
+// Build 364: transform the built-practice HTML before it enters #app and restore
+// section titles if async shared-practice rendering replaces panel contents later.
 const app=document.getElementById('app');
 const inner=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
 
@@ -46,6 +46,17 @@ function statusPanel(root){
   ||null;
 }
 
+function titleFor(parent,text){
+ let title=parent.querySelector(':scope > .rp363-section-title');
+ if(!title){
+  title=document.createElement('p');
+  title.className='rp363-section-title';
+  parent.prepend(title);
+ }
+ title.textContent=text;
+ return title;
+}
+
 function transform(value){
  if(typeof value!=='string'||!value.includes('practice-hero'))return value;
  const template=document.createElement('template');
@@ -54,30 +65,37 @@ function transform(value){
  const hero=root.querySelector('.practice-hero');
  if(!hero)return value;
 
- let overview=hero.querySelector(':scope > .rp363-section-title');
- if(!overview){
-  overview=document.createElement('p');
-  overview.className='rp363-section-title';
-  overview.textContent='PRACTICE OVERVIEW';
-  hero.prepend(overview);
- }
+ titleFor(hero,'PRACTICE OVERVIEW');
 
  const panel=statusPanel(root);
  if(panel){
   panel.id='rp363-practice-status';
   panel.querySelectorAll(':scope > .rp-practice-status-title-fixed,:scope > .rp-section-label,:scope > .rp359-status-label').forEach(el=>el.remove());
-  let status=panel.querySelector(':scope > .rp363-section-title');
-  if(!status){
-   status=document.createElement('p');
-   status.className='rp363-section-title';
-   panel.prepend(status);
-  }
-  status.textContent='PRACTICE STATUS';
+  titleFor(panel,'PRACTICE STATUS');
   const heading=panel.querySelector(':scope > h2');
   if(heading)heading.style.display='none';
   if(hero.nextElementSibling!==panel)hero.after(panel);
  }
  return template.innerHTML;
+}
+
+// Shared-practice/auth rendering can replace the inside of the status panel after the
+// core page is already in place. Repair only the two titles here; do not move boxes.
+function restoreLiveTitles(){
+ ensureStyle();
+ const hero=app?.querySelector('.practice-hero');
+ if(hero)titleFor(hero,'PRACTICE OVERVIEW');
+ let panel=app?.querySelector('#rp363-practice-status');
+ if(!panel&&app){
+  const control=app.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin');
+  panel=control?.closest('section.panel')||null;
+ }
+ if(!panel)return;
+ panel.id='rp363-practice-status';
+ panel.querySelectorAll(':scope > .rp-practice-status-title-fixed,:scope > .rp359-status-label').forEach(el=>el.remove());
+ titleFor(panel,'PRACTICE STATUS');
+ const heading=panel.querySelector(':scope > h2');
+ if(heading&&/^(Shared Practice|Practice Status)$/i.test((heading.textContent||'').trim()))heading.style.setProperty('display','none','important');
 }
 
 ensureStyle();
@@ -86,6 +104,9 @@ if(app&&inner?.get&&inner?.set){
   configurable:true,
   enumerable:false,
   get(){return inner.get.call(this);},
-  set(value){inner.set.call(this,transform(value));}
+  set(value){inner.set.call(this,transform(value));queueMicrotask(restoreLiveTitles);}
  });
+ new MutationObserver(()=>requestAnimationFrame(restoreLiveTitles)).observe(app,{childList:true,subtree:true});
 }
+window.addEventListener('pageshow',restoreLiveTitles);
+window.addEventListener('load',restoreLiveTitles);
