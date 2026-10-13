@@ -1,6 +1,6 @@
-// Build 341: active practice emphasis + cleaner practice header/status.
+// Build 344: active practice emphasis + shared live-practice state for My Practice routing.
 import {services,accountContext,watchAccount,isCoach} from './account-model-rp276.mjs?v=rp276';
-import {clockState} from './portal-model.mjs?v=rp129';
+import {clockState} from './portal-model-rp129.mjs?v=rp129';
 
 let account=null;
 let assignments={};
@@ -27,9 +27,10 @@ function currentAssignmentText(){
  return clone.textContent.replace(/\s+/g,' ').trim();
 }
 function decorateHome(){
+ const active=activeRecords().length>0;
+ document.body.classList.toggle('rp-coach-has-active-practice',active);
  const tile=document.querySelector('.coach-card[data-coach-view="practice"]');
  if(!tile)return;
- const active=activeRecords().length>0;
  tile.classList.toggle('rp-active-practice-card',active);
  let tag=tile.querySelector('.rp-active-practice-tag');
  if(active&&!tag){
