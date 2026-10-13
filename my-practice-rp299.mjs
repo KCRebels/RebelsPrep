@@ -1,8 +1,8 @@
-// Build 347: stable home/account helpers + My Practice routes to the live coach assignment; builder Home returns to coach dashboard.
+// Build 350: stable home/account helpers + My Practice routes to the live coach assignment; builder Home returns to coach dashboard.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=347';
-const coachPortalPractice='./coach.html?v=347&practice=1';
+const coachPortalHome='./coach.html?v=350';
+const coachPortalPractice='./coach.html?v=350&practice=1';
 const sameElements=(parent,desired)=>{const current=[...parent.children];return current.length===desired.length&&current.every((el,i)=>el===desired[i]);};
 function setChildren(parent,desired){if(!sameElements(parent,desired))parent.replaceChildren(...desired);}
 
@@ -32,7 +32,7 @@ function ensureHomeActions(){
  actions.classList.add('rp-home-actions-286');
  const continueBtn=actions.querySelector('#build-selected-teams');if(continueBtn)continueBtn.classList.add('rp-home-continue-286');
  const realStarts=[...document.querySelectorAll('button,a')].filter(el=>el!==continueBtn&&el.id!=='rp-home-start-over-placeholder'&&el.textContent.trim()==='Start Over'&&!el.disabled);
- let start=realStarts.find(el=>el.id==='start-over')||realStarts[0]||null;for(const extra of realStarts){if(extra!==start)extra.remove();}
+ let start=realStarts.find(el=>el.id==='rp350-home-start-over')||realStarts.find(el=>el.id==='start-over')||realStarts[0]||null;for(const extra of realStarts){if(extra!==start)extra.remove();}
  let placeholder=actions.querySelector('#rp-home-start-over-placeholder');
  if(start){placeholder?.remove();start.classList.add('rp-home-secondary-286');}
  else if(!placeholder){placeholder=document.createElement('button');placeholder.id='rp-home-start-over-placeholder';placeholder.type='button';placeholder.textContent='Start Over';placeholder.disabled=true;placeholder.className='rp-home-secondary-286';}
