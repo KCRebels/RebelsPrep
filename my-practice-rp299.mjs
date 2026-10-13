@@ -1,8 +1,8 @@
-// Build 346: stable home/account helpers + My Practice routes to the live coach assignment; builder Home returns to coach dashboard.
+// Build 347: stable home/account helpers + My Practice routes to the live coach assignment; builder Home returns to coach dashboard.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=346';
-const coachPortalPractice='./coach.html?v=346&practice=1';
+const coachPortalHome='./coach.html?v=347';
+const coachPortalPractice='./coach.html?v=347&practice=1';
 const sameElements=(parent,desired)=>{const current=[...parent.children];return current.length===desired.length&&current.every((el,i)=>el===desired[i]);};
 function setChildren(parent,desired){if(!sameElements(parent,desired))parent.replaceChildren(...desired);}
 
