@@ -1,4 +1,5 @@
-// Build 361: consistent HotB-style section labels; Practice Status is owned by my-practice-rp299.mjs.
+// Build 362: consistent HotB-style section labels. Practice Status / Overview are
+// owned only by plan-layout-rp357.mjs so generic labels cannot conflict with them.
 const ID='rp206-section-label-style';
 const rules=[
  {match:/practice settings|setup|practice details/i,label:'PRACTICE DETAILS'},
@@ -21,7 +22,10 @@ function ensureLabel(panel,label,heading,hideHeading=false){
  return p;
 }
 function isPracticeStatus(panel){
- return !!panel.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin,.rp-practice-status-title-fixed');
+ const h=panel.querySelector(':scope > h2');
+ return panel.id==='rp362-practice-status'
+  ||!!panel.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin')
+  ||/^(Shared Practice|Practice Status)$/i.test((h?.textContent||'').trim());
 }
 function labelPanel(panel){
  if(panel.id==='rp-review-built-in-hotb'||panel.id==='rp-review-drills-hotb'||isPracticeStatus(panel))return;
