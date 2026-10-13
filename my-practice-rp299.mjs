@@ -1,42 +1,57 @@
-// Build 364: stable My Practice helpers without owning built-practice section titles.
+// Build 365: stable My Practice helpers. Do not move or replace native Practice Status controls.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=364';
-const coachPortalPractice='./coach.html?v=364&practice=1';
+const coachPortalHome='./coach.html?v=365';
+const coachPortalPractice='./coach.html?v=365&practice=1';
 
 function findSignOut(scope){
  const local=[...scope.querySelectorAll('button,a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim()));
  if(local)return local;
  return [...document.querySelectorAll('#app button,#app a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim())&&el.offsetParent!==null)||null;
 }
-function ensurePracticeStatusShortcut(){
- const sections=[...document.querySelectorAll('#app section.panel')];
- const sharedSection=sections.find(section=>[...section.querySelectorAll('h2')].some(h=>['Shared Practice','Practice Status'].includes(h.textContent.trim())))
-  ||sections.find(section=>section.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin'))
+function statusPanel(){
+ const direct=document.querySelector('#activate-shared')?.closest('section.panel')
+  ||document.querySelector('#practice-status-coach-signin')?.closest('section.panel')
   ||document.getElementById('rp363-practice-status');
- if(!sharedSection||!shared.allowed(user))return;
- let row=sharedSection.querySelector('.rp-practice-status-actions-292');
- if(!row){row=document.createElement('div');row.className='rp-practice-status-actions-292';sharedSection.appendChild(row);}
- const activate=sharedSection.querySelector('#activate-shared');
- let coach=sharedSection.querySelector('#practice-status-coach-signin')||document.getElementById('practice-status-coach-signin');
- if(!coach){coach=document.createElement('button');coach.id='practice-status-coach-signin';coach.type='button';coach.textContent='My Practice';coach.onclick=()=>location.assign(coachPortalPractice);}
- const signOut=findSignOut(sharedSection);
- coach.classList.remove('rp-status-secondary-292');
- coach.classList.add('rp-status-primary-292');
- if(activate){
-  activate.classList.add('rp-status-primary-292');
-  coach.classList.remove('rp-status-primary-292');
-  coach.classList.add('rp-status-secondary-292');
-  if(activate.parentElement!==row)row.appendChild(activate);
-  if(coach.parentElement!==row)row.appendChild(coach);
- }else{
-  if(coach.parentElement!==row)row.appendChild(coach);
-  if(signOut&&signOut!==coach){
-   signOut.classList.remove('rp-status-primary-292');
-   signOut.classList.add('rp-status-secondary-292');
-   if(signOut.parentElement!==row)row.appendChild(signOut);
-  }
+ if(direct)return direct;
+ return [...document.querySelectorAll('#app section.panel')].find(section=>[...section.querySelectorAll(':scope > h2')].some(h=>/^(Shared Practice|Practice Status)$/i.test((h.textContent||'').trim())))||null;
+}
+function ensurePracticeStatusTitle(section){
+ let title=section.querySelector(':scope > .rp365-practice-status-title');
+ if(!title){
+  title=document.createElement('p');
+  title.className='rp365-practice-status-title';
+  section.prepend(title);
  }
+ title.textContent='PRACTICE STATUS';
+ Object.assign(title.style,{margin:'0 0 7px',padding:'0',color:'#b51f2e',fontSize:'14px',fontWeight:'900',letterSpacing:'.12em',textTransform:'uppercase',lineHeight:'1.2'});
+ title.style.setProperty('display','block','important');
+ title.style.setProperty('visibility','visible','important');
+ title.style.setProperty('opacity','1','important');
+ const heading=section.querySelector(':scope > h2');
+ if(heading&&/^(Shared Practice|Practice Status)$/i.test((heading.textContent||'').trim()))heading.style.setProperty('display','none','important');
+}
+function ensurePracticeStatusShortcut(){
+ const section=statusPanel();
+ if(!section)return;
+ ensurePracticeStatusTitle(section);
+ const activate=section.querySelector('#activate-shared');
+ let coach=section.querySelector('#practice-status-coach-signin');
+ if(!coach){
+  coach=document.createElement('button');
+  coach.id='practice-status-coach-signin';
+  coach.type='button';
+  coach.textContent='My Practice';
+  coach.className='rp-status-secondary-292';
+  coach.onclick=()=>location.assign(coachPortalPractice);
+  if(activate)activate.insertAdjacentElement('afterend',coach);
+  else section.appendChild(coach);
+ }
+ // Never move or replace Activate Practice. Only make sure My Practice sits beside/after it.
+ if(activate&&coach.previousElementSibling!==activate)activate.insertAdjacentElement('afterend',coach);
+ const signOut=findSignOut(section);
+ if(!activate&&signOut&&coach.nextElementSibling!==signOut)coach.insertAdjacentElement('afterend',signOut);
+ ensurePracticeStatusTitle(section);
 }
 function syncAcceptDrills(){
  const button=document.querySelector('#accept-drills');
