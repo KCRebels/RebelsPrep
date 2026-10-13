@@ -9,22 +9,27 @@ const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(deco
 
 function currentAccess(){return builderAccess(email);}
 function decorate(){
- const tile=document.querySelector('.coach-card[data-coach-view="practice"]');
- if(!tile)return;
  const access=currentAccess();
- const eyebrow=tile.querySelector('.eyebrow');
- const copy=tile.querySelector('p');
- if(access.builder){
-  tile.dataset.builderPractice='1';
-  if(eyebrow&&eyebrow.textContent!=='PRACTICE BUILDER')eyebrow.textContent='PRACTICE BUILDER';
-  const text=access.full?'Click here to build a practice for any Rebels team.':'Click here to build your practice.';
-  if(copy&&copy.textContent!==text)copy.textContent=text;
- }else{
-  delete tile.dataset.builderPractice;
-  if(eyebrow&&eyebrow.textContent!=='PRACTICE')eyebrow.textContent='PRACTICE';
-  const text='Click here to see your current active practice.';
-  if(copy&&copy.textContent!==text)copy.textContent=text;
+ const tile=document.querySelector('.coach-card[data-coach-view="practice"]');
+ if(tile){
+  const eyebrow=tile.querySelector('.eyebrow');
+  const copy=tile.querySelector('p');
+  if(access.builder){
+   tile.dataset.builderPractice='1';
+   if(eyebrow&&eyebrow.textContent!=='PRACTICE BUILDER')eyebrow.textContent='PRACTICE BUILDER';
+   const text=access.full?'Click here to build a practice for any Rebels team.':'Click here to build your practice.';
+   if(copy&&copy.textContent!==text)copy.textContent=text;
+  }else{
+   delete tile.dataset.builderPractice;
+   if(eyebrow&&eyebrow.textContent!=='PRACTICE')eyebrow.textContent='PRACTICE';
+   const text='Click here to see your current active practice.';
+   if(copy&&copy.textContent!==text)copy.textContent=text;
+  }
  }
+ const href=access.builder?builderHref(email):'';
+ document.querySelectorAll('.coach-portal-actions a').forEach(link=>{
+  if(/back to builder/i.test(link.textContent||'')&&href&&link.getAttribute('href')!==href)link.setAttribute('href',href);
+ });
 }
 
 function builderClick(event){
