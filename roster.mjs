@@ -48,7 +48,7 @@ const coachRows = [
  ['rp-c-26','Emily Hawkins','emilyhawkins2619@gmail.com',['kc-rebels-12-huebert']],
  ['rp-c-27','Brian Hubbs','bhubbs01@gmail.com',['kc-rebels-14-regional']],
  ['rp-c-28','Erin Huebert','ehuebert26@gmail.com',['kc-rebels-12-huebert']],
- ['rp-c-29','Mark Jenkins','Jenkins@rebelssoftball.org',['kc-rebels-18-regional']],
+ ['rp-c-29','Mark Jenkins','mjenkins@hearthhomemortgage.com',['kc-rebels-18-regional']],
  ['rp-c-30','Ashley Jenkins-Ruder','nickle.ruder05@gmail.com',['kc-rebels-18-national','kc-rebels-nationals']],
  ['rp-c-31','Adam Keating','akeating102211@gmail.com',['kc-rebels-10-graves']],
  ['rp-c-32','Bobbi Lewis','bobbifry@hotmail.com',['kc-rebels-16-national','kc-rebels-nationals']],
