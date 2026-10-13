@@ -1,9 +1,14 @@
-// Build 351: stable My Practice helpers without replacing native Teams-page controls.
+// Build 354: stable My Practice helpers without replacing native Teams-page controls.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=351';
-const coachPortalPractice='./coach.html?v=351&practice=1';
+const coachPortalHome='./coach.html?v=354';
+const coachPortalPractice='./coach.html?v=354&practice=1';
 
+function findSignOut(scope){
+ const local=[...scope.querySelectorAll('button,a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim()));
+ if(local)return local;
+ return [...document.querySelectorAll('#app button,#app a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim())&&el.offsetParent!==null)||null;
+}
 function ensurePracticeStatusShortcut(){
  const sections=[...document.querySelectorAll('#app section.panel')];
  const sharedSection=sections.find(section=>[...section.querySelectorAll('h2')].some(h=>['Shared Practice','Practice Status'].includes(h.textContent.trim())));
@@ -11,10 +16,25 @@ function ensurePracticeStatusShortcut(){
  let row=sharedSection.querySelector('.rp-practice-status-actions-292');
  if(!row){row=document.createElement('div');row.className='rp-practice-status-actions-292';sharedSection.appendChild(row);}
  const activate=sharedSection.querySelector('#activate-shared');
- let coach=sharedSection.querySelector('#practice-status-coach-signin');
+ let coach=sharedSection.querySelector('#practice-status-coach-signin')||document.getElementById('practice-status-coach-signin');
  if(!coach){coach=document.createElement('button');coach.id='practice-status-coach-signin';coach.type='button';coach.textContent='My Practice';coach.onclick=()=>location.assign(coachPortalPractice);}
- if(activate&&activate.parentElement!==row)row.appendChild(activate);
- if(coach.parentElement!==row)row.appendChild(coach);
+ const signOut=findSignOut(sharedSection);
+ coach.classList.remove('rp-status-secondary-292');
+ coach.classList.add('rp-status-primary-292');
+ if(activate){
+  activate.classList.add('rp-status-primary-292');
+  coach.classList.remove('rp-status-primary-292');
+  coach.classList.add('rp-status-secondary-292');
+  if(activate.parentElement!==row)row.appendChild(activate);
+  if(coach.parentElement!==row)row.appendChild(coach);
+ }else{
+  if(coach.parentElement!==row)row.appendChild(coach);
+  if(signOut&&signOut!==coach){
+   signOut.classList.remove('rp-status-primary-292');
+   signOut.classList.add('rp-status-secondary-292');
+   if(signOut.parentElement!==row)row.appendChild(signOut);
+  }
+ }
 }
 function syncAcceptDrills(){
  const button=document.querySelector('#accept-drills');
