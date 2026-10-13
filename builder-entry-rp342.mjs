@@ -1,6 +1,6 @@
-// Build 342: authorize builder entry and keep team-only builders inside their assigned team scope.
+// Build 343: authorize builder entry and keep team-only builders inside their assigned team scope.
 import {services} from './account-model-rp276.mjs?v=rp276';
-import {builderAccess} from './builder-access-rp342.mjs?v=rp342';
+import {builderAccess} from './builder-access-rp342.mjs?v=rp343';
 
 let access={builder:false,full:false,teamIds:[]};
 let autoDone=false;
@@ -12,10 +12,10 @@ export async function authorizeBuilderEntry(){
   await auth.authStateReady();
   const email=String(auth.currentUser?.email||'').trim().toLowerCase();
   access=builderAccess(email);
-  if(!auth.currentUser||!access.builder){location.replace('./coach.html?v=342');return false;}
+  if(!auth.currentUser||!access.builder){location.replace('./coach.html?v=343');return false;}
   return true;
  }catch{
-  location.replace('./coach.html?v=342');
+  location.replace('./coach.html?v=343');
   return false;
  }
 }
