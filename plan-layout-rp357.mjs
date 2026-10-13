@@ -1,4 +1,4 @@
-// Build 358: prioritize Practice Status and normalize all red built-practice section labels.
+// Build 359: prioritize Practice Status, force its visible label, and keep built-practice red labels consistent.
 const app=document.getElementById('app');
 let frame=0;
 
@@ -12,7 +12,9 @@ function ensureStyle(){
   #app[data-practice-view="plan"] .drill-category,
   #app[data-practice-view="review"] .drill-category,
   #app[data-practice-view="plan"] .rp357-hero-label,
-  #app[data-practice-view="review"] .rp357-hero-label{
+  #app[data-practice-view="review"] .rp357-hero-label,
+  #app[data-practice-view="plan"] .rp359-status-label,
+  #app[data-practice-view="review"] .rp359-status-label{
    margin:0 0 7px!important;
    color:#b51f2e!important;
    font-size:14px!important;
@@ -22,18 +24,18 @@ function ensureStyle(){
    line-height:1.2!important;
   }
   .practice-hero>.rp357-hero-label{margin-bottom:10px!important}
+  #rp357-practice-status>.rp359-status-label{display:block!important;visibility:visible!important;opacity:1!important}
  `;
  document.head.appendChild(style);
 }
 
 function sharedPanel(){
+ const byControls=app.querySelector('#activate-shared')?.closest('section.panel')
+  ||app.querySelector('#coach-logout')?.closest('section.panel')
+  ||app.querySelector('#practice-status-coach-signin')?.closest('section.panel');
+ if(byControls)return byControls;
  const panels=[...app.querySelectorAll('section.panel')];
- return panels.find(panel=>{
-  const h=panel.querySelector(':scope > h2');
-  const label=panel.querySelector(':scope > .rp-section-label');
-  const text=(h?.textContent||label?.textContent||'').trim();
-  return /^(Shared Practice|Practice Status)$/i.test(text);
- })||null;
+ return panels.find(panel=>/shared practice|practice status/i.test(panel.textContent||''))||null;
 }
 
 function decorateHero(){
@@ -53,14 +55,15 @@ function prioritizeStatus(){
  const panel=sharedPanel();
  if(!hero||!panel)return;
  panel.id='rp357-practice-status';
- let label=panel.querySelector(':scope > .rp-section-label');
- const heading=panel.querySelector(':scope > h2');
+ panel.querySelectorAll(':scope > .rp-section-label').forEach(el=>el.remove());
+ let label=panel.querySelector(':scope > .rp359-status-label');
  if(!label){
   label=document.createElement('p');
-  label.className='rp-section-label';
-  heading?.before(label);
+  label.className='rp359-status-label';
+  panel.prepend(label);
  }
  label.textContent='PRACTICE STATUS';
+ const heading=panel.querySelector(':scope > h2');
  if(heading)heading.style.display='none';
  if(hero.nextElementSibling!==panel)hero.after(panel);
 }
