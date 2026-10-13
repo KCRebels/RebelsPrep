@@ -1,8 +1,8 @@
-// Build 357: stable My Practice helpers without replacing native Teams-page controls.
+// Build 360: stable My Practice helpers without replacing native Teams-page controls.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=357';
-const coachPortalPractice='./coach.html?v=357&practice=1';
+const coachPortalHome='./coach.html?v=360';
+const coachPortalPractice='./coach.html?v=360&practice=1';
 
 function findSignOut(scope){
  const local=[...scope.querySelectorAll('button,a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim()));
