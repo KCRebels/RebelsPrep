@@ -1,7 +1,8 @@
-// Build 344: stable home/account helpers + My Practice routes to the live coach assignment.
+// Build 346: stable home/account helpers + My Practice routes to the live coach assignment; builder Home returns to coach dashboard.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalUrl='./coach.html?v=344&practice=1';
+const coachPortalHome='./coach.html?v=346';
+const coachPortalPractice='./coach.html?v=346&practice=1';
 const sameElements=(parent,desired)=>{const current=[...parent.children];return current.length===desired.length&&current.every((el,i)=>el===desired[i]);};
 function setChildren(parent,desired){if(!sameElements(parent,desired))parent.replaceChildren(...desired);}
 
@@ -14,7 +15,7 @@ function ensurePracticeStatusShortcut(){
  const activate=sharedSection.querySelector('#activate-shared');
  const signOut=sharedSection.querySelector('#coach-logout');
  let coach=sharedSection.querySelector('#practice-status-coach-signin');
- if(!coach){coach=document.createElement('button');coach.id='practice-status-coach-signin';coach.type='button';coach.onclick=()=>location.assign(coachPortalUrl);}
+ if(!coach){coach=document.createElement('button');coach.id='practice-status-coach-signin';coach.type='button';coach.onclick=()=>location.assign(coachPortalPractice);}
  if(coach.textContent!=='My Practice')coach.textContent='My Practice';
  let desired=[];
  if(activate){activate.classList.add('rp-status-primary-292');coach.classList.remove('rp-status-primary-292');coach.classList.add('rp-status-secondary-292');desired=[activate,coach];}
@@ -35,7 +36,7 @@ function ensureHomeActions(){
  let placeholder=actions.querySelector('#rp-home-start-over-placeholder');
  if(start){placeholder?.remove();start.classList.add('rp-home-secondary-286');}
  else if(!placeholder){placeholder=document.createElement('button');placeholder.id='rp-home-start-over-placeholder';placeholder.type='button';placeholder.textContent='Start Over';placeholder.disabled=true;placeholder.className='rp-home-secondary-286';}
- let coach=actions.querySelector('#my-practice-button');if(shared.allowed(user)&&!coach){coach=document.createElement('button');coach.id='my-practice-button';coach.type='button';coach.textContent='My Practice';coach.className='rp-home-secondary-286';coach.onclick=()=>location.assign(coachPortalUrl);}
+ let coach=actions.querySelector('#my-practice-button');if(shared.allowed(user)&&!coach){coach=document.createElement('button');coach.id='my-practice-button';coach.type='button';coach.textContent='My Practice';coach.className='rp-home-secondary-286';coach.onclick=()=>location.assign(coachPortalPractice);}
  let player=actions.querySelector('#player-signin-entry');if(!player){player=document.createElement('a');player.id='player-signin-entry';player.href='./?player=1';player.textContent='Player Sign In';player.className='rp-home-secondary-286';}
  document.querySelectorAll('#personal-entry-actions').forEach(el=>el.remove());
  const desired=[continueBtn,coach,player,start||placeholder].filter(Boolean);setChildren(actions,desired);
@@ -45,4 +46,15 @@ function mount(){ensureHomeActions();ensurePracticeStatusShortcut();syncAcceptDr
 let frame;function schedule(){cancelAnimationFrame(frame);frame=requestAnimationFrame(mount);}
 shared.observeAuth(u=>{user=u;schedule();}).catch(()=>{});
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
-document.addEventListener('click',schedule,true);schedule();
+document.addEventListener('click',e=>{
+ const home=e.target.closest?.('.bottom-nav [data-view="home"]');
+ if(home){
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+  location.assign(coachPortalHome);
+  return;
+ }
+ schedule();
+},true);
+schedule();
