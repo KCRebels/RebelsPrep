@@ -1,8 +1,8 @@
-// Build 362: stable My Practice helpers without replacing native Teams-page controls.
+// Build 363: stable My Practice helpers without owning built-practice section titles.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=362';
-const coachPortalPractice='./coach.html?v=362&practice=1';
+const coachPortalHome='./coach.html?v=363';
+const coachPortalPractice='./coach.html?v=363&practice=1';
 
 function findSignOut(scope){
  const local=[...scope.querySelectorAll('button,a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim()));
@@ -12,7 +12,8 @@ function findSignOut(scope){
 function ensurePracticeStatusShortcut(){
  const sections=[...document.querySelectorAll('#app section.panel')];
  const sharedSection=sections.find(section=>[...section.querySelectorAll('h2')].some(h=>['Shared Practice','Practice Status'].includes(h.textContent.trim())))
-  ||sections.find(section=>section.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin'));
+  ||sections.find(section=>section.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin'))
+  ||document.getElementById('rp363-practice-status');
  if(!sharedSection||!shared.allowed(user))return;
  let row=sharedSection.querySelector('.rp-practice-status-actions-292');
  if(!row){row=document.createElement('div');row.className='rp-practice-status-actions-292';sharedSection.appendChild(row);}
