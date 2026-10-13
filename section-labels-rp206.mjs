@@ -1,4 +1,4 @@
-// Build 360: consistent HotB-style section labels with one owner for Practice Status.
+// Build 361: consistent HotB-style section labels; Practice Status is owned by my-practice-rp299.mjs.
 const ID='rp206-section-label-style';
 const rules=[
  {match:/practice settings|setup|practice details/i,label:'PRACTICE DETAILS'},
@@ -21,16 +21,11 @@ function ensureLabel(panel,label,heading,hideHeading=false){
  return p;
 }
 function isPracticeStatus(panel){
- return !!panel.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin');
+ return !!panel.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin,.rp-practice-status-title-fixed');
 }
 function labelPanel(panel){
- if(panel.id==='rp-review-built-in-hotb'||panel.id==='rp-review-drills-hotb')return;
+ if(panel.id==='rp-review-built-in-hotb'||panel.id==='rp-review-drills-hotb'||isPracticeStatus(panel))return;
  const h=panel.querySelector(':scope > h1,:scope > h2,:scope > h3');
- if(isPracticeStatus(panel)){
-  panel.id='rp357-practice-status';
-  ensureLabel(panel,'PRACTICE STATUS',h,true);
-  return;
- }
  if(!h)return;
  const text=(h.textContent||'').trim();if(!text)return;
  const hit=rules.find(r=>r.match.test(text));if(!hit)return;
