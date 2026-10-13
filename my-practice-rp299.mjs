@@ -1,18 +1,42 @@
-// Build 360: stable My Practice helpers without replacing native Teams-page controls.
+// Build 361: stable My Practice helpers without replacing native Teams-page controls.
 import * as shared from './shared-rp52.mjs?v=rp276';
 let user=null;
-const coachPortalHome='./coach.html?v=360';
-const coachPortalPractice='./coach.html?v=360&practice=1';
+const coachPortalHome='./coach.html?v=361';
+const coachPortalPractice='./coach.html?v=361&practice=1';
 
 function findSignOut(scope){
  const local=[...scope.querySelectorAll('button,a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim()));
  if(local)return local;
  return [...document.querySelectorAll('#app button,#app a')].find(el=>/^sign\s*out$/i.test((el.textContent||'').trim())&&el.offsetParent!==null)||null;
 }
+function ensurePracticeStatusTitle(section){
+ let title=section.querySelector(':scope > .rp-practice-status-title-fixed');
+ if(!title){
+  title=document.createElement('p');
+  title.className='rp-practice-status-title-fixed';
+  section.prepend(title);
+ }
+ title.textContent='PRACTICE STATUS';
+ title.style.setProperty('display','block','important');
+ title.style.setProperty('visibility','visible','important');
+ title.style.setProperty('opacity','1','important');
+ title.style.setProperty('margin','0 0 7px','important');
+ title.style.setProperty('padding','0','important');
+ title.style.setProperty('color','#b51f2e','important');
+ title.style.setProperty('font-size','14px','important');
+ title.style.setProperty('font-weight','900','important');
+ title.style.setProperty('letter-spacing','.12em','important');
+ title.style.setProperty('text-transform','uppercase','important');
+ title.style.setProperty('line-height','1.2','important');
+ const heading=section.querySelector(':scope > h2');
+ if(heading&&/^(Shared Practice|Practice Status)$/i.test((heading.textContent||'').trim()))heading.style.setProperty('display','none','important');
+}
 function ensurePracticeStatusShortcut(){
  const sections=[...document.querySelectorAll('#app section.panel')];
- const sharedSection=sections.find(section=>[...section.querySelectorAll('h2')].some(h=>['Shared Practice','Practice Status'].includes(h.textContent.trim())));
+ const sharedSection=sections.find(section=>[...section.querySelectorAll('h2')].some(h=>['Shared Practice','Practice Status'].includes(h.textContent.trim())))
+  ||sections.find(section=>section.querySelector('#activate-shared,#coach-logout,#practice-status-coach-signin'));
  if(!sharedSection||!shared.allowed(user))return;
+ ensurePracticeStatusTitle(sharedSection);
  let row=sharedSection.querySelector('.rp-practice-status-actions-292');
  if(!row){row=document.createElement('div');row.className='rp-practice-status-actions-292';sharedSection.appendChild(row);}
  const activate=sharedSection.querySelector('#activate-shared');
@@ -35,6 +59,7 @@ function ensurePracticeStatusShortcut(){
    if(signOut.parentElement!==row)row.appendChild(signOut);
   }
  }
+ ensurePracticeStatusTitle(sharedSection);
 }
 function syncAcceptDrills(){
  const button=document.querySelector('#accept-drills');
