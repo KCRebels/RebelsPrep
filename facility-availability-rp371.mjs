@@ -89,7 +89,19 @@ function interceptNext(e){
  e.preventDefault();e.stopImmediatePropagation();renderAvailability();$('#facility-availability')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 let scheduled=false;
-function sync(){scheduled=false;if($('#date')&&$('#facility')&&$('#start'))loadAvailability(false);else $('#facility-availability')?.remove();}
+function sync(){
+ scheduled=false;
+ const date=$('#date')?.value,facility=$('#facility')?.value,start=$('#start');
+ if(!date||!facility||!start){$('#facility-availability')?.remove();return;}
+ const id=facilityId(facility);
+ if(!['barn','shed'].includes(id)){renderAvailability();return;}
+ const key=`${id}|${date}`;
+ if(state.key===key&&(state.loaded||state.loading||state.error)){
+  if(!$('#facility-availability'))renderAvailability();
+  return;
+ }
+ loadAvailability(false);
+}
 const observer=new MutationObserver(()=>{if(!scheduled){scheduled=true;queueMicrotask(sync);}});
 observer.observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener('change',onFieldChange,true);document.addEventListener('input',onFieldChange,true);document.addEventListener('click',interceptNext,true);
