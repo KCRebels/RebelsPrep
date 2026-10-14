@@ -1,4 +1,4 @@
-/* Build 324: coach portal aligned with RebelsPrep + HotB. */
+/* Build 376: coach portal aligned with RebelsPrep + HotB. */
 .coach-portal-home,.coach-portal-page{max-width:760px;margin:0 auto;padding-left:14px!important;padding-right:14px!important;padding-bottom:96px!important;box-sizing:border-box}
 .coach-portal-home{padding-top:4px!important}
 .coach-greeting{margin:10px 0 14px!important;padding:18px 20px 20px!important;border:2px solid #d8ddd9!important;border-radius:22px!important;background:#fff!important;box-shadow:0 4px 0 rgba(12,18,34,.04)!important}
@@ -12,14 +12,14 @@
 .coach-card .coming{margin-top:7px!important;font-size:12px!important}
 .coach-page-head{margin:6px 0 16px!important}.coach-page-head h1{margin:0 0 6px!important;font-size:32px!important;line-height:1.04!important}.coach-page-head p{font-size:16px!important;line-height:1.35!important}
 .coach-list{gap:12px!important}.coach-list-card{padding:16px 18px!important;border-radius:19px!important}.coach-list-card h3{font-size:20px!important;margin-bottom:5px!important}.coach-list-card p{font-size:15px!important;line-height:1.35!important}.coach-focus-row{padding:16px 18px!important;border-radius:19px!important}.coach-focus-row strong{font-size:19px!important}.coach-form{gap:13px!important;padding:18px!important;border-radius:20px!important}.coach-note{padding:16px 18px!important;border-radius:19px!important;font-size:15px!important}
-/* Account/admin utilities belong under More, not on the coach home dashboard. */
+/* Account/admin utilities belong under their own page, not on the coach home dashboard. */
 .coach-portal-home>.coach-portal-actions{display:none!important}
 .coach-portal-page>.coach-portal-actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;margin:16px 0 0!important}
 .coach-portal-page>.coach-portal-actions button,.coach-portal-page>.coach-portal-actions a{display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box!important;width:100%!important;min-height:46px!important;margin:0!important;padding:0 14px!important;border:1.5px solid #d8ddd9!important;border-radius:12px!important;background:#fff!important;color:#252a33!important;font-size:14px!important;font-weight:800!important;line-height:1.1!important;text-decoration:none!important;box-shadow:none!important}
 .coach-portal-page>.coach-portal-actions button:after,.coach-portal-page>.coach-portal-actions a:after{content:'›';font-size:20px;font-weight:700;color:#7b8495}
 .coach-portal-page>.coach-portal-actions button:active,.coach-portal-page>.coach-portal-actions a:active{background:#f4f5f6!important}
-/* HotB-style bottom navigation: white bar, icon over label, red active state, no black selected tile. */
-.coach-bottom-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:9999!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;align-items:end!important;gap:0!important;box-sizing:border-box!important;min-height:74px!important;padding:7px 7px calc(6px + env(safe-area-inset-bottom))!important;border-top:1px solid #d8ddd9!important;background:#fff!important;box-shadow:0 -2px 10px rgba(12,18,34,.05)!important}
+/* Four-button HotB-style bottom navigation, evenly spaced on every coach screen. */
+.coach-bottom-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:9999!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:end!important;gap:0!important;box-sizing:border-box!important;min-height:74px!important;padding:7px 7px calc(6px + env(safe-area-inset-bottom))!important;border-top:1px solid #d8ddd9!important;background:#fff!important;box-shadow:0 -2px 10px rgba(12,18,34,.05)!important}
 .coach-bottom-nav button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:57px!important;height:57px!important;margin:0!important;padding:3px 2px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#5b5b5b!important;font-size:12px!important;font-weight:800!important;line-height:1!important;text-align:center!important;white-space:nowrap!important;box-shadow:none!important}
 .coach-bottom-nav .coach-nav-icon{display:block!important;width:25px!important;height:25px!important;line-height:0!important;margin:0!important;padding:0!important;color:inherit!important}
 .coach-bottom-nav .coach-nav-icon svg{display:block!important;width:25px!important;height:25px!important}
