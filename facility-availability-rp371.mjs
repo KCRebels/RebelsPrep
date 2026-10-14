@@ -70,7 +70,7 @@ function useStart(value){
 }
 async function loadAvailability(force=false){
  const facility=$('#facility')?.value,date=$('#date')?.value,id=facilityId(facility);if(!date||!['barn','shed'].includes(id)){state.key='';state.sessions=[];state.loaded=false;renderAvailability();return;}
- const key=`${id}|${date}`;if(!force&&state.key===key&&(state.loaded||state.loading)){renderAvailability();return;}state.key=key;state.loading=true;state.loaded=false;state.error='';state.sessions=[];renderAvailability();
+ const key=`${id}|${date}`;if(!force&&state.key===key&&(state.loaded||state.loading))return;state.key=key;state.loading=true;state.loaded=false;state.error='';state.sessions=[];renderAvailability();
  try{
   const {F,db,auth}=await shared.services();if(!shared.allowed(auth.currentUser))throw Error('Coach sign-in is required to view facility bookings.');
   const snap=await F.getDocFromServer(F.doc(db,'rpCheckinLocations',id));if(state.key!==key)return;
