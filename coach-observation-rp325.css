@@ -127,27 +127,36 @@
 .coach-observation-page .coach-form>.primary{margin-top:23px!important}
 
 
-/* HotB governs the appearance of RebelsPrep observation categories. */
-.coach-observation-page{width:100%;max-width:760px}
-.coach-observation-page .coach-form{padding:14px 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
-.coach-observation-page .coach-obs-categories{display:block!important;border:0!important;padding:14px 0 20px!important;margin:0!important}
-.coach-observation-page .coach-obs-categories>.coach-obs-section-head{justify-content:flex-end!important;padding:0 0 12px!important}
+/* HotB authoritative observation styles, sourced from HotB styles-v3.css.
+   Scope to the RebelsPrep coach editor; do not override unrelated coach screens. */
+.coach-observation-page{max-width:760px}
+.coach-observation-page .coach-form{padding:10px!important;gap:12px!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important}
+.coach-observation-page .coach-obs-categories{display:grid!important;gap:8px!important;margin:0!important;padding:10px 0 14px!important;border-top:1px solid #e0e5e2!important}
+.coach-observation-page .coach-obs-categories>.coach-obs-section-head{justify-content:flex-end!important;margin:0!important;padding:0!important}
 .coach-observation-page .coach-obs-categories>.coach-obs-section-head h2{display:none!important}
-.coach-observation-page .coach-obs-tag-count{font-size:17px!important;color:#657084!important;font-weight:850!important}
-.coach-observation-page .coach-obs-tag-count::first-letter{color:#111827}
+.coach-observation-page .coach-obs-tag-count{font-size:12px!important;font-weight:850!important;line-height:1.2!important;color:#667085!important}
 .coach-observation-page .coach-obs-categories>.coach-obs-hint{display:none!important}
-.coach-observation-page .coach-obs-category{display:block;width:100%;box-sizing:border-box;margin:0 0 12px!important;border:2px solid #d5dcda!important;border-radius:15px!important;background:#f8f9f9!important;overflow:hidden!important;box-shadow:none!important}
-.coach-observation-page .coach-obs-category summary{display:flex!important;align-items:center!important;gap:10px!important;box-sizing:border-box;min-height:65px;padding:15px 14px!important;list-style:none!important;font-size:16px!important;text-transform:none;cursor:pointer}
+.coach-observation-page .coach-obs-category{display:block!important;box-sizing:border-box!important;width:100%!important;margin:0!important;padding:0!important;border:2px solid #d4dcda!important;border-radius:11px!important;background:#f8faf9!important;overflow:hidden!important;box-shadow:none!important}
+.coach-observation-page .coach-obs-category summary{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;box-sizing:border-box!important;min-height:52px!important;margin:0!important;padding:11px 13px!important;list-style:none!important;cursor:pointer!important;background:transparent!important;line-height:1.15!important}
 .coach-observation-page .coach-obs-category summary:before{display:none!important;content:none!important}
-.coach-observation-page .coach-obs-category summary strong{margin-right:auto!important;min-width:0;color:#a32630!important;font-size:19px!important;font-weight:950!important;letter-spacing:.065em!important;line-height:1.15!important;text-transform:uppercase!important}
-.coach-observation-page .coach-obs-category summary .coach-obs-category-status{margin:0!important;color:#657084!important;font-size:15px!important;font-weight:850!important;white-space:nowrap}
-.coach-observation-page .coach-obs-category summary .coach-obs-chevron{display:block!important;margin:0 0 3px 2px!important;color:#171717!important;font-size:26px!important;line-height:.8!important;font-weight:900!important;transition:transform .12s}
-.coach-observation-page .coach-obs-category[open] summary .coach-obs-chevron{transform:rotate(180deg)}
-.coach-observation-page .coach-obs-category[open]{background:#fff!important}
-.coach-observation-page .coach-obs-options{display:flex!important;flex-wrap:wrap!important;gap:8px!important;padding:4px 14px 16px!important;background:#fff!important}
-.coach-observation-page .coach-obs-option{display:inline-flex!important;align-items:center!important;min-height:36px!important;width:auto!important;max-width:100%;padding:7px 12px!important;border:1.5px solid #b12631!important;border-radius:999px!important;background:#fff!important;color:#111827!important;font-size:14px!important;font-weight:750!important;line-height:1.2!important}
-.coach-observation-page .coach-obs-option.is-selected{background:#b12631!important;color:#fff!important}
-.coach-observation-page .coach-obs-option.is-selected:before{color:#fff!important}
+.coach-observation-page .coach-obs-category summary strong{flex:1 1 auto!important;min-width:0!important;margin:0!important;color:#961f28!important;font-size:17px!important;font-weight:950!important;letter-spacing:.5px!important;line-height:1.15!important;text-transform:uppercase!important}
+.coach-observation-page .coach-obs-category summary .coach-obs-category-status{flex:0 0 auto!important;margin:0!important;color:#667085!important;font-size:12px!important;font-weight:850!important;letter-spacing:0!important;white-space:nowrap!important;text-transform:none!important}
+.coach-observation-page .coach-obs-category summary .coach-obs-chevron{flex:0 0 auto!important;display:block!important;margin:0!important;color:#111!important;font-size:22px!important;font-weight:700!important;line-height:1!important;transform-origin:center!important}
+.coach-observation-page .coach-obs-category[open] summary .coach-obs-chevron{transform:rotate(180deg)!important}
+.coach-observation-page .coach-obs-options{display:block!important;box-sizing:border-box!important;max-height:240px!important;margin:0!important;padding:6px 8px!important;border-top:1px solid #e0e5e2!important;background:#fff!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+.coach-observation-page .coach-obs-option{display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box!important;width:100%!important;max-width:none!important;min-height:52px!important;margin:0!important;padding:11px 12px!important;border:0!important;border-bottom:1px solid #dce2df!important;border-radius:0!important;background:#fff!important;color:#111!important;font-size:16px!important;font-weight:850!important;line-height:1.25!important;text-align:left!important;box-shadow:none!important}
+.coach-observation-page .coach-obs-option:last-child{border-bottom:0!important}
+.coach-observation-page .coach-obs-option:after{content:''!important;display:grid!important;place-items:center!important;flex:0 0 25px!important;width:25px!important;height:25px!important;margin-left:10px!important;border:2px solid #c8d0cc!important;border-radius:7px!important;color:#fff!important;font-size:16px!important}
+.coach-observation-page .coach-obs-option.is-selected{border-color:#dce2df!important;background:#111!important;color:#fff!important}
+.coach-observation-page .coach-obs-option.is-selected:before{display:none!important;content:none!important}
+.coach-observation-page .coach-obs-option.is-selected:after{content:'✓'!important;border-color:#fff!important}
 .coach-observation-page .coach-obs-note textarea{font-size:16px!important}
-.coach-observation-page .coach-obs-dictate{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:46px!important;padding:9px 15px!important;border:2px solid #cbd3d0!important;border-radius:13px!important;background:#fff!important;color:#111827!important;font-size:16px!important;font-weight:850!important}
-@media(max-width:430px){.coach-observation-page .coach-obs-category summary strong{font-size:17px!important;letter-spacing:.045em!important}.coach-observation-page .coach-obs-category summary .coach-obs-category-status{font-size:14px!important}.coach-observation-page .coach-obs-category summary{padding:14px 12px!important}.coach-observation-page .coach-obs-options{padding:4px 12px 14px!important}}
+.coach-observation-page .coach-obs-dictate{min-height:42px!important;padding:7px 12px!important;border:2px solid #cbd3cf!important;border-radius:10px!important;background:#fff!important;color:#111827!important;font-size:14px!important;font-weight:850!important;box-shadow:none!important}
+.coach-observation-page .coach-obs-dictate[aria-pressed="true"]{border-color:#b4232b!important;background:#b4232b!important;color:#fff!important}
+@media(max-width:560px){
+ .coach-observation-page .coach-form{padding:8px!important}
+ .coach-observation-page .coach-obs-category summary{min-height:50px!important;padding:11px 12px!important}
+ .coach-observation-page .coach-obs-category summary strong{font-size:16px!important}
+ .coach-observation-page .coach-obs-options{max-height:228px!important}
+ .coach-observation-page .coach-obs-option{min-height:54px!important;padding:12px 10px!important;font-size:16px!important}
+}
