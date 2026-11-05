@@ -274,3 +274,87 @@ body:has(.coach-observation-page) main > #app{
    font-size:16px!important;
  }
 }
+
+/* HotB-governed drill replacement picker — matching the supplied HotB mobile reference. */
+#app .coach-observation-page .coach-drill-picker.show-search{
+ position:fixed!important;inset:0!important;z-index:11000!important;
+ padding:0!important;margin:0!important;width:100%!important;height:100dvh!important;
+ background:rgba(0,0,0,.67)!important;overflow:hidden!important;
+}
+#app .coach-observation-page .coach-drill-picker.show-search .coach-drill-search-view{
+ display:flex!important;flex-direction:column!important;gap:10px!important;
+ position:absolute!important;top:calc(16px + env(safe-area-inset-top))!important;
+ bottom:calc(16px + env(safe-area-inset-bottom))!important;
+ left:10px!important;right:10px!important;box-sizing:border-box!important;
+ width:auto!important;min-height:0!important;margin:0!important;
+ padding:16px 12px 18px!important;border:0!important;border-radius:18px!important;
+ background:#fff!important;overflow:hidden!important;
+}
+#app .coach-observation-page .coach-drill-search-view>.coach-drill-modal-title{
+ flex:0 0 auto!important;display:flex!important;align-items:center!important;
+ justify-content:space-between!important;gap:10px!important;margin:0 0 6px!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-modal-title>div{min-width:0!important;flex:1 1 auto!important}
+#app .coach-observation-page .coach-drill-replace-label{
+ margin:0 0 3px!important;color:#9d252c!important;font-size:11px!important;
+ font-weight:950!important;letter-spacing:1.2px!important;text-transform:uppercase!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-modal-title h2{
+ margin:0!important;color:#111827!important;font-size:23px!important;
+ font-weight:900!important;line-height:1.08!important;letter-spacing:-.02em!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-search-back{
+ flex:0 0 auto!important;min-height:42px!important;margin:0!important;
+ padding:7px 13px!important;border:2px solid #cbd3cf!important;
+ border-radius:10px!important;background:#fff!important;color:#111827!important;
+ font-size:15px!important;font-weight:900!important;
+}
+#app .coach-observation-page .coach-drill-custom-label{
+ display:block!important;flex:0 0 auto!important;margin:0!important;
+ padding:0!important;color:#111827!important;font-size:14px!important;
+ font-weight:600!important;line-height:1.3!important;
+}
+#app .coach-observation-page .coach-drill-custom-name,
+#app .coach-observation-page .coach-drill-picker-search{
+ display:block!important;box-sizing:border-box!important;width:100%!important;
+ height:48px!important;min-height:48px!important;flex:0 0 auto!important;
+ margin:5px 0 0!important;padding:9px 13px!important;
+ border:2px solid #cbd3cf!important;border-radius:11px!important;
+ background:#fff!important;color:#111827!important;
+ font-size:16px!important;font-weight:650!important;box-shadow:none!important;
+}
+#app .coach-observation-page .coach-drill-custom-name::placeholder,
+#app .coach-observation-page .coach-drill-picker-search::placeholder{color:#a6afbf!important}
+#app .coach-observation-page .coach-drill-use-custom{
+ display:block!important;box-sizing:border-box!important;flex:0 0 auto!important;
+ width:100%!important;min-height:44px!important;margin:0 0 1px!important;
+ padding:8px!important;border:2px solid #cbd3cf!important;
+ border-radius:11px!important;background:#fff!important;color:#111827!important;
+ font-size:16px!important;font-weight:900!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-picker-list{
+ display:grid!important;grid-auto-rows:min-content!important;gap:8px!important;
+ flex:1 1 auto!important;min-height:0!important;max-height:none!important;
+ margin:0!important;padding:0 0 10px!important;overflow-y:auto!important;
+ overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-option{
+ display:block!important;box-sizing:border-box!important;width:100%!important;
+ min-height:68px!important;max-height:none!important;margin:0!important;
+ padding:12px 14px!important;border:2px solid #d4dcda!important;
+ border-radius:11px!important;background:#fff!important;color:#111827!important;
+ text-align:left!important;box-shadow:none!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-option strong{
+ display:block!important;margin:0 0 3px!important;color:#111!important;
+ font-size:16px!important;font-weight:900!important;line-height:1.2!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-option span{
+ display:block!important;margin:0!important;color:#667085!important;
+ font-size:13px!important;font-weight:750!important;line-height:1.3!important;
+}
+#app .coach-observation-page .coach-drill-search-view .coach-drill-option.is-disabled{opacity:.4!important}
+@media(max-width:390px){
+ #app .coach-observation-page .coach-drill-search-view .coach-drill-modal-title h2{font-size:21px!important}
+ #app .coach-observation-page .coach-drill-search-view{left:8px!important;right:8px!important;padding:14px 10px!important}
+}
