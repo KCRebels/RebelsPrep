@@ -176,3 +176,101 @@
 .coach-observation-page .coach-picked-row small{font-size:12px!important}
 .coach-observation-page .coach-pick-drills .coach-obs-section-head h2{font-size:17px!important}
 .coach-observation-page .coach-form>.primary{min-height:54px!important;font-size:16px!important;border-radius:11px!important;margin-top:16px!important}
+
+/* Build 390: full-width HotB observation editor alignment. No changes to other coach pages. */
+body:has(.coach-observation-page) > main{
+  width:100%!important;max-width:none!important;margin:0!important;
+  padding-left:0!important;padding-right:0!important;
+}
+body:has(.coach-observation-page) main > #app{
+  width:100%!important;max-width:none!important;min-width:0!important;
+  margin:0!important;padding:0!important;
+}
+#app .coach-portal-page.coach-observation-page{
+  display:block!important;width:100%!important;max-width:none!important;
+  margin:0!important;padding:8px 10px calc(110px + env(safe-area-inset-bottom))!important;
+  box-sizing:border-box!important;
+}
+#app .coach-observation-page > .panel{
+  display:block!important;width:100%!important;max-width:none!important;
+  margin:0!important;padding:0!important;border:0!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+#app .coach-observation-page #hitting-observation-form{
+  display:grid!important;width:100%!important;max-width:none!important;
+  min-width:0!important;margin:0!important;padding:0!important;
+  gap:12px!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+#app .coach-observation-page .coach-obs-categories{
+  display:grid!important;gap:9px!important;
+  width:100%!important;min-width:0!important;
+  margin:0!important;padding:0!important;border:0!important;
+}
+#app .coach-observation-page .coach-obs-categories>.coach-obs-section-head{
+  display:flex!important;justify-content:flex-end!important;
+  padding:0!important;margin:0!important;
+}
+#app .coach-observation-page .coach-obs-category{
+  width:100%!important;min-width:0!important;margin:0!important;
+  border:2px solid #d4dcda!important;border-radius:11px!important;
+  background:#f8faf9!important;
+}
+#app .coach-observation-page .coach-obs-category>summary{
+  min-height:52px!important;gap:10px!important;padding:11px 13px!important;
+}
+#app .coach-observation-page .coach-obs-category>summary strong{
+  color:#961f28!important;font-size:17px!important;font-weight:950!important;
+  line-height:1.15!important;letter-spacing:.5px!important;
+}
+#app .coach-observation-page .coach-obs-category>summary .coach-obs-category-status{
+  font-size:12px!important;font-weight:850!important;color:#667085!important;
+}
+#app .coach-observation-page .coach-obs-category>summary .coach-obs-chevron{
+  font-size:22px!important;
+}
+#app .coach-observation-page .coach-obs-section-head h2{
+  margin:0!important;font-size:17px!important;
+}
+#app .coach-observation-page .coach-obs-note,
+#app .coach-observation-page .coach-focus-next-field{margin:0!important}
+#app .coach-observation-page .coach-form textarea{
+  display:block!important;width:100%!important;min-width:0!important;
+  margin:5px 0 0!important;padding:11px 12px!important;
+  border:2px solid #d4dcda!important;border-radius:11px!important;
+  font-size:16px!important;line-height:1.35!important;
+}
+#app .coach-observation-page .coach-pick-drills{
+  width:100%!important;min-width:0!important;gap:9px!important;
+  margin:6px 0 0!important;padding:14px 0 0!important;
+  border-top:1px solid #e0e5e2!important;
+}
+#app .coach-observation-page .coach-picked-drills,
+#app .coach-observation-page .coach-drill-plan-actions{
+  width:100%!important;min-width:0!important;
+}
+#app .coach-observation-page .coach-obs-hint,
+#app .coach-observation-page .coach-suggest-requirement{
+  font-size:13px!important;font-weight:700!important;
+  line-height:1.35!important;color:#667085!important;
+  margin:2px 0 5px!important;
+}
+#app .coach-observation-page .coach-drill-plan-actions button{
+  min-width:0!important;min-height:44px!important;
+  padding:7px 8px!important;font-size:13px!important;
+  line-height:1.2!important;border-radius:10px!important;
+}
+#app .coach-observation-page .coach-obs-section-head .coach-obs-dictate{
+  font-size:14px!important;
+}
+@media(max-width:560px){
+ #app .coach-portal-page.coach-observation-page{
+   padding-left:10px!important;padding-right:10px!important;
+ }
+ #app .coach-observation-page .coach-obs-category>summary{
+   min-height:50px!important;padding:11px 12px!important;
+ }
+ #app .coach-observation-page .coach-obs-category>summary strong{
+   font-size:16px!important;
+ }
+}
