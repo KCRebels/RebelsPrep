@@ -378,3 +378,7 @@ header .logo{margin-bottom:2px !important}
 .practice-hero-title{background:#fff!important;color:#111827!important;border:2px solid #d7ddda;border-radius:16px;margin:0 0 14px!important;padding:18px 14px!important}
 .practice-hero-title small{color:#596579!important;opacity:1!important}
 .practice-hero-title h1{color:#111827!important}
+
+/* Prevent Safari double-tap zoom without blocking two-finger pinch zoom. */
+html,body{touch-action:manipulation}
+button,a,input,select,textarea,summary,[role="button"]{touch-action:manipulation}
