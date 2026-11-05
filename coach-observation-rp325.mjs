@@ -36,17 +36,24 @@ function selectedHTML(){
 }
 
 function optionHTML(d){
- const checked=selectedIds.includes(d.id);
- const disabled=!checked&&selectedIds.length>=3&&replacingDrill<0;
- return '<label class="coach-drill-option '+(checked?'is-selected ':'')+(disabled?'is-disabled':'')+'" data-drill-row="'+esc(d.id)+'"><input type="checkbox" value="'+esc(d.id)+'" '+(checked?'checked':'')+' '+(disabled?'disabled':'')+'><span>'+esc(d.name)+'</span></label>';
+ const unavailable=selectedIds.includes(d.id)&&selectedIds.indexOf(d.id)!==replacingDrill;
+ return '<button type="button" class="coach-drill-option'+(unavailable?' is-disabled':'')+'" data-choose-drill="'+esc(d.id)+'" '+(unavailable?'disabled':'')+'><strong>'+esc(d.name)+'</strong><span>'+esc(d.bestUsedFor||d.primaryPurpose||d.secondaryFocus||'')+'</span></button>';
 }
-
 function renderPickerRows(filter=''){
  const list=document.querySelector('.coach-drill-picker-list');
  if(!list)return;
  const q=filter.trim().toLowerCase();
- const items=[...drills].sort((a,b)=>a.name.localeCompare(b.name)).filter(d=>!q||[d.name,d.category,d.primaryPurpose,d.secondaryFocus,d.bestUsedFor].some(v=>String(v||'').toLowerCase().includes(q)));
+ const items=drills.filter(d=>!q||[d.name,d.category,d.primaryPurpose,d.secondaryFocus,d.bestUsedFor,d.howItWorks,d.coachingCues].some(v=>String(v||'').toLowerCase().includes(q)));
  list.innerHTML=items.map(optionHTML).join('')||'<p class="coach-drill-picker-empty">No matching drills.</p>';
+}
+function chooseDrill(id){
+ if(!id||!String(id).trim())return;
+ const duplicate=selectedIds.findIndex((value,i)=>value===id&&i!==replacingDrill);
+ if(duplicate!==-1)return;
+ if(replacingDrill>=0&&replacingDrill<selectedIds.length)selectedIds[replacingDrill]=id;
+ else if(selectedIds.length<3)selectedIds.push(id);
+ else return;
+ showDrillSearch(false);syncPickerUI();
 }
 
 function syncPickerUI(){
@@ -61,7 +68,7 @@ function buildPicker(){
   selectedHTML()+
   '<div class="coach-drill-plan-actions"><button type="button" class="coach-pick-drills-button">Manage Drills</button><button type="button" class="coach-suggest-drills">Suggest Drills</button></div>'+
   '<p class="coach-obs-hint coach-suggest-requirement">Complete Coach Observation and select at least one option to enable Suggested Drills.</p>'+
-  '<div class="coach-drill-picker" aria-hidden="true"><div class="coach-drill-modal-title"><h2>Manage Suggested Drills</h2><button type="button" class="coach-drill-picker-close">Close</button></div><p class="coach-obs-hint">Add, edit, or remove up to three drills. Suggestions are optional.</p><div class="coach-drill-manage-rows"></div><button class="coach-drill-picker-add" type="button">Add Drill</button><button class="coach-suggest-drills coach-drill-modal-suggest" type="button">Suggest Drills</button><div class="coach-drill-modal-footer"><button type="button" class="coach-drill-picker-done">Save Drills</button></div><div class="coach-drill-search-view" hidden><div class="coach-drill-modal-title"><h2>Add or Edit Drill</h2><button type="button" class="coach-drill-search-back">Back</button></div><input class="coach-drill-picker-search" type="search" placeholder="Search drills" autocomplete="off"><div class="coach-drill-picker-list"></div></div></div>'+
+  '<div class="coach-drill-picker" aria-hidden="true"><div class="coach-drill-modal-title"><h2>Manage Suggested Drills</h2><button type="button" class="coach-drill-picker-close">Close</button></div><p class="coach-obs-hint">Add, edit, or remove up to three drills. Suggestions are optional.</p><div class="coach-drill-manage-rows"></div><button class="coach-drill-picker-add" type="button">Add Drill</button><button class="coach-suggest-drills coach-drill-modal-suggest" type="button">Suggest Drills</button><div class="coach-drill-modal-footer"><button type="button" class="coach-drill-picker-done">Save Drills</button></div><div class="coach-drill-search-view" hidden><div class="coach-drill-modal-title"><div><div class="coach-drill-replace-label"></div><h2>Add or Edit Drill</h2></div><button type="button" class="coach-drill-search-back">Back</button></div><label class="coach-drill-custom-label" for="coach-drill-custom-name">Your drill name<input id="coach-drill-custom-name" class="coach-drill-custom-name" type="text" maxlength="100" placeholder="Enter your own drill"></label><button type="button" class="coach-drill-use-custom">Use Drill</button><input class="coach-drill-picker-search" type="search" placeholder="Search drills" autocomplete="off"><div class="coach-drill-picker-list"></div></div></div>'+
  '</section>';
 }
 let replacingDrill=-1;
@@ -90,7 +97,7 @@ function showDrillSearch(show,index=-1){
  replacingDrill=show?index:-1;
  const view=modal.querySelector('.coach-drill-search-view');if(view)view.hidden=!show;
  modal.classList.toggle('show-search',show);
- if(show){const input=modal.querySelector('.coach-drill-picker-search');if(input){input.value='';renderPickerRows('');input.focus();}}
+ if(show){const replacement=modal.querySelector('.coach-drill-replace-label');if(replacement)replacement.textContent=index>=0&&index<selectedIds.length?'REPLACE DRILL '+(index+1):'ADD DRILL';const custom=modal.querySelector('.coach-drill-custom-name');if(custom)custom.value=index>=0&&index<selectedIds.length&&!drills.some(d=>d.id===selectedIds[index])?selectedIds[index]:'';const input=modal.querySelector('.coach-drill-picker-search');if(input){input.value='';renderPickerRows('');}}
 }
 function hasCompletedObservations(){return !!document.querySelector('#focus-observation')?.value?.trim()&&selectedTags.length>0;}
 function syncSuggestionState(){const ready=hasCompletedObservations();document.querySelectorAll('.coach-suggest-drills').forEach(b=>{b.disabled=!ready;b.setAttribute('aria-disabled',String(!ready));});const note=document.querySelector('.coach-suggest-requirement');if(note)note.textContent=ready?'Suggestions are ready based on your observation and selected options.':'Complete Coach Observation and select at least one option to enable Suggested Drills.';const publish=document.querySelector('#hitting-observation-form button[type="submit"]');if(publish)publish.disabled=!(ready&&selectedIds.length>0)||publishing;}
@@ -186,6 +193,8 @@ document.addEventListener('click',e=>{
  if(e.target.closest?.('.coach-drill-picker-add')){e.preventDefault();showDrillSearch(true,selectedIds.length);return;}
  const edit=e.target.closest?.('[data-edit-drill]');if(edit){e.preventDefault();showDrillSearch(true,Number(edit.dataset.editDrill));return;}
  if(e.target.closest?.('.coach-drill-search-back')){e.preventDefault();showDrillSearch(false);return;}
+ const drillChoice=e.target.closest?.('[data-choose-drill]');if(drillChoice){e.preventDefault();if(!drillChoice.disabled)chooseDrill(drillChoice.dataset.chooseDrill);return;}
+ if(e.target.closest?.('.coach-drill-use-custom')){e.preventDefault();const custom=document.querySelector('.coach-drill-custom-name');const name=custom?.value?.trim();if(name)chooseDrill(name);else custom?.focus();return;}
  const suggest=e.target.closest?.('.coach-suggest-drills');if(suggest){e.preventDefault();suggestDrills();return;}
  const remove=e.target.closest?.('[data-remove-drill]');if(remove){e.preventDefault();selectedIds=selectedIds.filter(id=>id!==remove.dataset.removeDrill);syncPickerUI();return;}
 },true);
@@ -193,15 +202,6 @@ document.addEventListener('click',e=>{
 
 
 document.addEventListener('input',e=>{if(e.target.matches?.('.coach-drill-picker-search'))renderPickerRows(e.target.value);if(e.target.matches?.('#focus-observation'))syncSuggestionState();},true);
-
-document.addEventListener('change',e=>{
- const box=e.target.closest?.('.coach-drill-option input');if(!box)return;
- const id=box.value;
- if(box.checked){const other=selectedIds.filter((_,i)=>i!==replacingDrill);if(other.includes(id))return;if(replacingDrill>=0&&replacingDrill<selectedIds.length)selectedIds[replacingDrill]=id;else if(selectedIds.length<3)selectedIds.push(id);showDrillSearch(false);}
- else selectedIds=selectedIds.filter(x=>x!==id);
- syncPickerUI();
-},true);
-
 
 
 document.addEventListener('submit',e=>{
