@@ -160,3 +160,19 @@
  .coach-observation-page .coach-obs-options{max-height:228px!important}
  .coach-observation-page .coach-obs-option{min-height:54px!important;padding:12px 10px!important;font-size:16px!important}
 }
+
+/* Match HotB's compact mobile type scale across the complete hitting editor. */
+.coach-observation-page .coach-page-head{margin:4px 0 12px!important}
+.coach-observation-page .coach-page-head h1{font-size:24px!important;line-height:1.12!important;letter-spacing:-.015em!important;margin:0 0 4px!important}
+.coach-observation-page .coach-page-head p{font-size:14px!important;line-height:1.3!important;font-weight:750!important}
+.coach-observation-page .coach-obs-section-head h2{font-size:17px!important;line-height:1.2!important;letter-spacing:0!important}
+.coach-observation-page .coach-form label{font-size:14px!important;line-height:1.3!important;font-weight:800!important;gap:5px!important}
+.coach-observation-page .coach-form textarea{border-radius:11px!important;border-color:#d4dcda!important;padding:11px 12px!important;font-size:16px!important;line-height:1.35!important;box-shadow:none!important}
+.coach-observation-page .coach-obs-note{margin-bottom:10px!important}
+.coach-observation-page .coach-focus-next-field{margin-bottom:12px!important}
+.coach-observation-page .coach-pick-drills{gap:8px!important;padding-top:14px!important}
+.coach-observation-page .coach-picked-row{min-height:52px!important;padding:9px 10px!important;border-radius:11px!important;border-color:#d7ddda!important}
+.coach-observation-page .coach-picked-row strong{font-size:15px!important}
+.coach-observation-page .coach-picked-row small{font-size:12px!important}
+.coach-observation-page .coach-pick-drills .coach-obs-section-head h2{font-size:17px!important}
+.coach-observation-page .coach-form>.primary{min-height:54px!important;font-size:16px!important;border-radius:11px!important;margin-top:16px!important}
