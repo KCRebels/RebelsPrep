@@ -31,3 +31,23 @@
 .coach-drill-picker-empty{margin:4px 2px;color:#657084;font-size:14px;font-weight:750}
 .obs-error{margin:0;padding:10px 12px;border-radius:10px;background:#fff2f3;color:#a20f23;font-size:13px;font-weight:800}
 @media(max-width:430px){.coach-observation-page .coach-page-head h1{font-size:29px!important}.coach-observation-page .coach-form{padding:15px!important;border-radius:19px!important}.coach-observation-page .coach-form textarea{min-height:100px!important}.coach-drill-option{min-height:60px;font-size:15px}}
+
+/* HotB-inspired category-first observation editor; scoped to RebelsPrep hitting observations. */
+.coach-observation-page .coach-obs-categories{display:grid;gap:10px}
+.coach-observation-page .coach-obs-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.coach-observation-page .coach-obs-section-head h2{margin:0;color:#111827;font-size:19px;font-weight:900}
+.coach-observation-page .coach-obs-tag-count{color:#657084;font-size:12px;font-weight:850;white-space:nowrap}
+.coach-observation-page .coach-obs-hint{margin:-4px 0 2px;color:#657084;font-size:13px;font-weight:650;line-height:1.35}
+.coach-observation-page .coach-obs-category{border:1.5px solid #d8ddd9;border-radius:13px;background:#fff;overflow:hidden}
+.coach-observation-page .coach-obs-category summary{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer;padding:13px 14px;color:#111827;font-size:15px;font-weight:850}
+.coach-observation-page .coach-obs-category summary::-webkit-details-marker{display:none}
+.coach-observation-page .coach-obs-category summary:before{content:'▸';font-size:13px;margin-right:3px;color:#657084}
+.coach-observation-page .coach-obs-category[open] summary:before{content:'▾'}
+.coach-observation-page .coach-obs-category summary span{margin-left:auto;font-size:12px;color:#657084;white-space:nowrap}
+.coach-observation-page .coach-obs-options{display:flex;flex-wrap:wrap;gap:8px;padding:2px 12px 13px}
+.coach-observation-page .coach-obs-option{min-height:38px;padding:8px 11px;border:1.5px solid #d8ddd9;border-radius:9px;background:#fff;color:#111827;font-size:13px;font-weight:750;line-height:1.2;text-align:left;cursor:pointer}
+.coach-observation-page .coach-obs-option.is-selected{border-color:#c8102e;background:#fff0f2;color:#a10c23}
+.coach-observation-page .coach-obs-option.is-selected:before{content:'✓ ';font-weight:900}
+.coach-observation-page .coach-obs-option:disabled:not(.is-selected){opacity:.38;cursor:not-allowed}
+.coach-observation-page .coach-obs-option:focus-visible,.coach-observation-page .coach-obs-category summary:focus-visible{outline:3px solid #c8102e;outline-offset:2px}
+@media(max-width:430px){.coach-observation-page .coach-obs-section-head h2{font-size:17px}.coach-observation-page .coach-obs-option{font-size:13px}}
