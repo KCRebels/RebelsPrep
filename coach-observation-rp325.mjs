@@ -31,8 +31,7 @@ async function resolvePlayer(){
 }
 
 function selectedHTML(){
- if(!selectedIds.length)return '<div class="coach-picked-drills" data-empty="1"></div>';
- return '<div class="coach-picked-drills">'+selectedIds.map(id=>'<span class="coach-picked-chip">'+esc(drillName(id))+'<button type="button" data-remove-drill="'+esc(id)+'" aria-label="Remove '+esc(drillName(id))+'">×</button></span>').join('')+'</div>';
+ return '<div class="coach-picked-drills">'+(selectedIds.length?selectedIds.map((id,i)=>'<article class="coach-picked-row"><span class="coach-picked-number">'+(i+1)+'</span><div><strong>'+esc(drillName(id))+'</strong><small>'+esc(drills.find(d=>d.id===id)?.bestUsedFor||drills.find(d=>d.id===id)?.primaryPurpose||'')+'</small></div></article>').join(''):'<p class="coach-obs-hint">No drills selected. Add drills yourself or get suggestions.</p>')+'</div>';
 }
 
 function optionHTML(d){
@@ -50,25 +49,58 @@ function renderPickerRows(filter=''){
 }
 
 function syncPickerUI(){
- const count=document.querySelector('.coach-pick-drills-count');
- if(count)count.textContent=selectedIds.length+' of 3 selected';
- const picked=document.querySelector('.coach-picked-drills');
- if(picked)picked.outerHTML=selectedHTML();
- const search=document.querySelector('.coach-drill-picker-search');
- renderPickerRows(search?.value||'');
+ const count=document.querySelector('.coach-pick-drills-count');if(count)count.textContent=selectedIds.length+' of 3 selected';
+ const picked=document.querySelector('.coach-picked-drills');if(picked)picked.outerHTML=selectedHTML();
+ refreshDrillManager();
 }
 
 function buildPicker(){
  return '<section class="coach-pick-drills">'+
-  '<button type="button" class="coach-pick-drills-button"><span>Pick Drills</span><span class="coach-pick-drills-count">'+selectedIds.length+' of 3 selected</span></button>'+
+  '<div class="coach-obs-section-head"><h2>Your Drill Plan</h2><span class="coach-pick-drills-count">'+selectedIds.length+' of 3 selected</span></div>'+
   selectedHTML()+
-  '<div class="coach-drill-picker" aria-hidden="true">'+
-   '<input class="coach-drill-picker-search" type="search" placeholder="Search drills" autocomplete="off">'+
-   '<div class="coach-drill-picker-list"></div>'+
-   '<button type="button" class="coach-drill-picker-done">Done</button>'+
-  '</div>'+ 
+  '<div class="coach-drill-plan-actions"><button type="button" class="coach-pick-drills-button">Manage Drills</button><button type="button" class="coach-suggest-drills">Suggest Drills</button></div>'+
+  '<p class="coach-obs-hint">RebelsPrep suggestions are optional. Review or replace any suggested drills.</p>'+
+  '<div class="coach-drill-picker" aria-hidden="true"><div class="coach-drill-modal-title"><h2>Manage Suggested Drills</h2><button type="button" class="coach-drill-picker-close">Close</button></div><p class="coach-obs-hint">Add, edit, or remove up to three drills. Suggestions are optional.</p><div class="coach-drill-manage-rows"></div><button class="coach-drill-picker-add" type="button">Add Drill</button><button class="coach-suggest-drills coach-drill-modal-suggest" type="button">Suggest Drills</button><div class="coach-drill-modal-footer"><button type="button" class="coach-drill-picker-done">Save Drills</button></div><div class="coach-drill-search-view" hidden><div class="coach-drill-modal-title"><h2>Add or Edit Drill</h2><button type="button" class="coach-drill-search-back">Back</button></div><input class="coach-drill-picker-search" type="search" placeholder="Search drills" autocomplete="off"><div class="coach-drill-picker-list"></div></div></div>'+
  '</section>';
 }
+let replacingDrill=-1;
+function refreshDrillManager(){
+ const list=document.querySelector('.coach-drill-manage-rows');
+ if(!list)return;
+ list.innerHTML=selectedIds.map((id,i)=>{const d=drills.find(x=>x.id===id);return '<article class="coach-drill-manage-row"><div class="coach-drill-row-intro"><span class="coach-picked-number">'+(i+1)+'</span><div><strong>'+esc(drillName(id))+'</strong><p>'+esc(d?.bestUsedFor||d?.primaryPurpose||'')+'</p></div></div><div class="coach-drill-row-actions"><button type="button" data-edit-drill="'+i+'">Edit / Replace</button><button type="button" data-remove-drill="'+esc(id)+'">Remove</button></div></article>';}).join('')||'<p class="coach-obs-hint">No drills selected yet.</p>';
+ const add=document.querySelector('.coach-drill-picker-add');if(add)add.disabled=selectedIds.length>=3;
+ const count=document.querySelector('.coach-pick-drills-count');if(count)count.textContent=selectedIds.length+' of 3 selected';
+ const picked=document.querySelector('.coach-picked-drills');if(picked)picked.outerHTML=selectedHTML();
+ const search=document.querySelector('.coach-drill-picker-search');renderPickerRows(search?.value||'');
+}
+function openDrillManager(){
+ const modal=document.querySelector('.coach-drill-picker');if(!modal)return;
+ modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');
+ document.body.classList.add('coach-drill-modal-active');
+ showDrillSearch(false);refreshDrillManager();
+}
+function closeDrillManager(){
+ const modal=document.querySelector('.coach-drill-picker');modal?.classList.remove('is-open');modal?.setAttribute('aria-hidden','true');
+ document.body.classList.remove('coach-drill-modal-active');replacingDrill=-1;
+}
+function showDrillSearch(show,index=-1){
+ const modal=document.querySelector('.coach-drill-picker');if(!modal)return;
+ replacingDrill=show?index:-1;
+ const view=modal.querySelector('.coach-drill-search-view');if(view)view.hidden=!show;
+ modal.classList.toggle('show-search',show);
+ if(show){const input=modal.querySelector('.coach-drill-picker-search');if(input){input.value='';renderPickerRows('');input.focus();}}
+}
+function suggestDrills(){
+ const note=document.querySelector('#focus-observation')?.value||'';
+ const query=[...selectedTags,note,document.querySelector('#focus-next')?.value||''].join(' ').toLowerCase();
+ const words=[...new Set((query.match(/[a-z]{4,}/g)||[]).filter(x=>!['poor','with','what','their','from','this','that','have','player','hitting'].includes(x)))];
+ if(!words.length){const box=document.querySelector('#focus-observation');box?.focus();return;}
+ const scored=drills.map(d=>{const attrs=[[d.name,4],[d.bestUsedFor,5],[d.primaryPurpose,4],[d.secondaryFocus,3],[d.coachingCues,2],[d.howItWorks,1]];const score=words.reduce((n,w)=>n+attrs.reduce((a,[value,weight])=>a+(String(value||'').toLowerCase().includes(w)?weight:0),0),0);return{d,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.d.name.localeCompare(b.d.name)).slice(0,3);
+ if(!scored.length){const hint=document.querySelector('.coach-drill-picker .coach-obs-hint');if(hint)hint.textContent='No matching suggestions found. Choose drills from the library instead.';return;}
+ if(selectedIds.length&&!window.confirm('Replace the current drill plan with RebelsPrep suggestions?'))return;
+ selectedIds=scored.map(x=>x.d.id);refreshDrillManager();syncPickerUI();
+}
+
 
 function patch(){
  const form=app?.querySelector('#hitting-observation-form');
@@ -146,31 +178,28 @@ async function publish(form){
 document.addEventListener('click',e=>{
  const tag=e.target.closest?.('[data-coach-obs-tag]');
  if(tag){e.preventDefault();const value=tag.dataset.coachObsTag;if(selectedTags.includes(value))selectedTags=selectedTags.filter(x=>x!==value);else if(selectedTags.length<3)selectedTags.push(value);syncObservationPicker();return;}
- const pick=e.target.closest?.('.coach-pick-drills-button');
- if(pick){
-  e.preventDefault();e.stopPropagation();
-  const panel=document.querySelector('.coach-drill-picker');
-  const open=!panel?.classList.contains('is-open');
-  panel?.classList.toggle('is-open',open);
-  panel?.setAttribute('aria-hidden',open?'false':'true');
-  if(open)setTimeout(()=>document.querySelector('.coach-drill-picker-search')?.focus(),0);
-  return;
- }
- const done=e.target.closest?.('.coach-drill-picker-done');
- if(done){const panel=document.querySelector('.coach-drill-picker');panel?.classList.remove('is-open');panel?.setAttribute('aria-hidden','true');return;}
- const remove=e.target.closest?.('[data-remove-drill]');
- if(remove){selectedIds=selectedIds.filter(id=>id!==remove.dataset.removeDrill);syncPickerUI();return;}
+ if(e.target.closest?.('.coach-pick-drills-button')){e.preventDefault();openDrillManager();return;}
+ if(e.target.closest?.('.coach-drill-picker-close,.coach-drill-picker-done')){e.preventDefault();closeDrillManager();return;}
+ if(e.target.closest?.('.coach-drill-picker-add')){e.preventDefault();showDrillSearch(true,selectedIds.length);return;}
+ const edit=e.target.closest?.('[data-edit-drill]');if(edit){e.preventDefault();showDrillSearch(true,Number(edit.dataset.editDrill));return;}
+ if(e.target.closest?.('.coach-drill-search-back')){e.preventDefault();showDrillSearch(false);return;}
+ const suggest=e.target.closest?.('.coach-suggest-drills');if(suggest){e.preventDefault();suggestDrills();return;}
+ const remove=e.target.closest?.('[data-remove-drill]');if(remove){e.preventDefault();selectedIds=selectedIds.filter(id=>id!==remove.dataset.removeDrill);syncPickerUI();return;}
 },true);
+
+
 
 document.addEventListener('input',e=>{if(e.target.matches?.('.coach-drill-picker-search'))renderPickerRows(e.target.value);},true);
 
 document.addEventListener('change',e=>{
- const box=e.target.closest?.('.coach-drill-option input');
- if(!box)return;
+ const box=e.target.closest?.('.coach-drill-option input');if(!box)return;
  const id=box.value;
- if(box.checked){if(selectedIds.length>=3){box.checked=false;return;}if(!selectedIds.includes(id))selectedIds.push(id);}else selectedIds=selectedIds.filter(x=>x!==id);
+ if(box.checked){const other=selectedIds.filter((_,i)=>i!==replacingDrill);if(other.includes(id))return;if(replacingDrill>=0&&replacingDrill<selectedIds.length)selectedIds[replacingDrill]=id;else if(selectedIds.length<3)selectedIds.push(id);showDrillSearch(false);}
+ else selectedIds=selectedIds.filter(x=>x!==id);
  syncPickerUI();
 },true);
+
+
 
 document.addEventListener('submit',e=>{
  const form=e.target.closest?.('#hitting-observation-form');
