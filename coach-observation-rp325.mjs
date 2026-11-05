@@ -36,7 +36,7 @@ function selectedHTML(){
 
 function optionHTML(d){
  const checked=selectedIds.includes(d.id);
- const disabled=!checked&&selectedIds.length>=3;
+ const disabled=!checked&&selectedIds.length>=3&&replacingDrill<0;
  return '<label class="coach-drill-option '+(checked?'is-selected ':'')+(disabled?'is-disabled':'')+'" data-drill-row="'+esc(d.id)+'"><input type="checkbox" value="'+esc(d.id)+'" '+(checked?'checked':'')+' '+(disabled?'disabled':'')+'><span>'+esc(d.name)+'</span></label>';
 }
 
@@ -118,6 +118,7 @@ function patch(){
   if(!p)return;
   if(activePlayerId&&activePlayerId!==p.id){selectedIds=[];selectedTags=[];}
   activePlayerId=p.id;
+  syncObservationPicker();
   syncPickerUI();
  }).catch(()=>{});
 }
