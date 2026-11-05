@@ -6,6 +6,7 @@ const app=document.getElementById('app');
 let selectedIds=[];
 let activePlayerId='';
 let publishing=false;
+let voiceRecognition=null;
 let selectedTags=[];
 const CATEGORIES=[
  ['Approach',['Poor pitch selection','Too passive / hesitant','Chasing','Not attacking hittable pitches','Guessing','Poor two-strike approach','Taking too many strikes','Expanding the zone early']],
@@ -13,7 +14,7 @@ const CATEGORIES=[
  ['Mechanics',['Flying open','Rolling over','Dropping hands','Casting','Pulling off the ball','Poor outside-pitch approach','Under the ball / excessive pop-ups','Down-up swing path','Poor extension','Losing posture','Collapsing back side','Long swing path']],
  ['Mental / Competitive',['Tentative','Pressing','Lack of confidence','Poor adjustment','Repeating same mistake','At-bat carried into next at-bat','Lost plan / approach']]
 ];
-function observationPickerHTML(){return '<section class="coach-obs-categories"><div class="coach-obs-section-head"><h2>What Did You Observe?</h2><span class="coach-obs-tag-count">'+selectedTags.length+' of 3 selected</span></div><p class="coach-obs-hint">Select up to three observations, then add any additional notes below.</p>'+CATEGORIES.map(([category,options])=>'<details class="coach-obs-category" '+(selectedTags.some(t=>options.includes(t))?'open':'')+'><summary>'+esc(category)+'<span>'+options.filter(t=>selectedTags.includes(t)).length+' selected</span></summary><div class="coach-obs-options">'+options.map(t=>'<button type="button" class="coach-obs-option '+(selectedTags.includes(t)?'is-selected':'')+'" data-coach-obs-tag="'+esc(t)+'" aria-pressed="'+selectedTags.includes(t)+'">'+esc(t)+'</button>').join('')+'</div></details>').join('')+'</section>';}
+function observationPickerHTML(){return '<section class="coach-obs-categories"><div class="coach-obs-section-head"><h2>Observation Options</h2><span class="coach-obs-tag-count">'+selectedTags.length+' of 3 selected</span></div><p class="coach-obs-hint">Select up to three observations, then add any additional notes below.</p>'+CATEGORIES.map(([category,options])=>'<details class="coach-obs-category" '+(selectedTags.some(t=>options.includes(t))?'open':'')+'><summary>'+esc(category)+'<span>'+options.filter(t=>selectedTags.includes(t)).length+' selected</span></summary><div class="coach-obs-options">'+options.map(t=>'<button type="button" class="coach-obs-option '+(selectedTags.includes(t)?'is-selected':'')+'" data-coach-obs-tag="'+esc(t)+'" aria-pressed="'+selectedTags.includes(t)+'">'+esc(t)+'</button>').join('')+'</div></details>').join('')+'</section>';}
 function syncObservationPicker(){document.querySelectorAll('[data-coach-obs-tag]').forEach(b=>{const on=selectedTags.includes(b.dataset.coachObsTag);b.classList.toggle('is-selected',on);b.setAttribute('aria-pressed',String(on));b.disabled=!on&&selectedTags.length>=3;});const count=document.querySelector('.coach-obs-tag-count');if(count)count.textContent=selectedTags.length+' of 3 selected';document.querySelectorAll('.coach-obs-category').forEach(d=>{const all=[...d.querySelectorAll('[data-coach-obs-tag]')];const n=all.filter(b=>selectedTags.includes(b.dataset.coachObsTag)).length;const span=d.querySelector('summary span');if(span)span.textContent=n+' selected';});}
 
 
@@ -59,7 +60,7 @@ function buildPicker(){
   '<div class="coach-obs-section-head"><h2>Your Drill Plan</h2><span class="coach-pick-drills-count">'+selectedIds.length+' of 3 selected</span></div>'+
   selectedHTML()+
   '<div class="coach-drill-plan-actions"><button type="button" class="coach-pick-drills-button">Manage Drills</button><button type="button" class="coach-suggest-drills">Suggest Drills</button></div>'+
-  '<p class="coach-obs-hint">RebelsPrep suggestions are optional. Review or replace any suggested drills.</p>'+
+  '<p class="coach-obs-hint coach-suggest-requirement">Complete Coach Observation and select at least one option to enable Suggested Drills.</p>'+
   '<div class="coach-drill-picker" aria-hidden="true"><div class="coach-drill-modal-title"><h2>Manage Suggested Drills</h2><button type="button" class="coach-drill-picker-close">Close</button></div><p class="coach-obs-hint">Add, edit, or remove up to three drills. Suggestions are optional.</p><div class="coach-drill-manage-rows"></div><button class="coach-drill-picker-add" type="button">Add Drill</button><button class="coach-suggest-drills coach-drill-modal-suggest" type="button">Suggest Drills</button><div class="coach-drill-modal-footer"><button type="button" class="coach-drill-picker-done">Save Drills</button></div><div class="coach-drill-search-view" hidden><div class="coach-drill-modal-title"><h2>Add or Edit Drill</h2><button type="button" class="coach-drill-search-back">Back</button></div><input class="coach-drill-picker-search" type="search" placeholder="Search drills" autocomplete="off"><div class="coach-drill-picker-list"></div></div></div>'+
  '</section>';
 }
@@ -72,6 +73,7 @@ function refreshDrillManager(){
  const count=document.querySelector('.coach-pick-drills-count');if(count)count.textContent=selectedIds.length+' of 3 selected';
  const picked=document.querySelector('.coach-picked-drills');if(picked)picked.outerHTML=selectedHTML();
  const search=document.querySelector('.coach-drill-picker-search');renderPickerRows(search?.value||'');
+ syncSuggestionState();
 }
 function openDrillManager(){
  const modal=document.querySelector('.coach-drill-picker');if(!modal)return;
@@ -90,7 +92,11 @@ function showDrillSearch(show,index=-1){
  modal.classList.toggle('show-search',show);
  if(show){const input=modal.querySelector('.coach-drill-picker-search');if(input){input.value='';renderPickerRows('');input.focus();}}
 }
+function hasCompletedObservations(){return !!document.querySelector('#focus-observation')?.value?.trim()&&selectedTags.length>0;}
+function syncSuggestionState(){const ready=hasCompletedObservations();document.querySelectorAll('.coach-suggest-drills').forEach(b=>{b.disabled=!ready;b.setAttribute('aria-disabled',String(!ready));});const note=document.querySelector('.coach-suggest-requirement');if(note)note.textContent=ready?'Suggestions are ready based on your observation and selected options.':'Complete Coach Observation and select at least one option to enable Suggested Drills.';const publish=document.querySelector('#hitting-observation-form button[type="submit"]');if(publish)publish.disabled=!(ready&&selectedIds.length>0)||publishing;}
+function setupDictation(){const button=document.querySelector('.coach-obs-dictate');if(!button)return;const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Speech){button.disabled=true;button.title='Use the iPhone keyboard microphone to dictate.';button.textContent='🎙 Keyboard Mic';return;}button.addEventListener('click',()=>{if(voiceRecognition){voiceRecognition.stop();return;}const field=document.querySelector('#focus-observation');if(!field)return;try{const rec=new Speech();rec.lang='en-US';rec.continuous=true;rec.interimResults=false;rec.onresult=event=>{const words=Array.from(event.results).slice(event.resultIndex).filter(result=>result.isFinal).map(result=>result[0]?.transcript||'').join(' ').trim();if(words){field.value+=(field.value.trim()?' ':'')+words;field.dispatchEvent(new Event('input',{bubbles:true}));}};rec.onerror=()=>{button.textContent='🎙 Dictate';button.setAttribute('aria-pressed','false');};rec.onend=()=>{voiceRecognition=null;button.textContent='🎙 Dictate';button.setAttribute('aria-pressed','false');};rec.start();voiceRecognition=rec;button.textContent='■ Stop';button.setAttribute('aria-pressed','true');}catch{button.textContent='🎙 Dictate';}});}
 function suggestDrills(){
+ if(!hasCompletedObservations()){syncSuggestionState();return;}
  const note=document.querySelector('#focus-observation')?.value||'';
  const query=[...selectedTags,note,document.querySelector('#focus-next')?.value||''].join(' ').toLowerCase();
  const words=[...new Set((query.match(/[a-z]{4,}/g)||[]).filter(x=>!['poor','with','what','their','from','this','that','have','player','hitting'].includes(x)))];
@@ -109,29 +115,24 @@ function patch(){
  const page=form.closest('.coach-portal-page');
  page?.classList.add('coach-observation-page');
  const observationLabel=form.querySelector('#focus-observation')?.closest('label');
- if(observationLabel){observationLabel.insertAdjacentHTML('beforebegin',observationPickerHTML());const text=observationLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Additional Notes (optional)';form.querySelector('#focus-observation')?.setAttribute('placeholder','Add anything else you noticed during the swing…');}
- const focusLabel=form.querySelector('#focus-next')?.closest('label');if(focusLabel){const text=focusLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Player Focus / Next Steps (optional)';}
+ if(observationLabel){observationLabel.classList.add('coach-obs-note');observationLabel.insertAdjacentHTML('beforebegin','<div class="coach-obs-section-head"><h2>Coach Observation</h2><button type="button" class="coach-obs-dictate" aria-pressed="false">🎙 Dictate</button></div>');const text=observationLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Describe what you observed';form.querySelector('#focus-observation')?.setAttribute('placeholder','Type or dictate your hitting observation…');observationLabel.insertAdjacentHTML('afterend',observationPickerHTML());}
+ const focusLabel=form.querySelector('#focus-next')?.closest('label');if(focusLabel){const text=focusLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Player Focus / Next Steps (optional)';focusLabel.classList.add('coach-focus-next-field');}
  const oldSelect=form.querySelector('#focus-drill')?.closest('label');
  if(oldSelect)oldSelect.outerHTML=buildPicker();
  renderPickerRows('');
+ setupDictation();
+ syncSuggestionState();
  resolvePlayer().then(p=>{
   if(!p)return;
   if(activePlayerId&&activePlayerId!==p.id){selectedIds=[];selectedTags=[];}
   activePlayerId=p.id;
   syncObservationPicker();
   syncPickerUI();
+  syncSuggestionState();
  }).catch(()=>{});
 }
 
-function goBackToPlayer(playerId){
- const focus=[...document.querySelectorAll('[data-coach-view="focus"]')][0];
- if(!focus)return;
- focus.click();
- setTimeout(()=>{
-  const player=document.querySelector('[data-focus-player="'+CSS.escape(playerId)+'"]');
-  if(player)player.click();
- },60);
-}
+function goBackToTeam(){const nav=[...document.querySelectorAll('[data-coach-view="focus"]')].find(el=>el.closest('.coach-bottom-nav'));nav?.click();}
 
 async function publish(form){
  if(publishing)return;
@@ -143,7 +144,8 @@ async function publish(form){
  try{
   const observation=form.querySelector('#focus-observation')?.value?.trim()||'';
   const nextFocus=form.querySelector('#focus-next')?.value?.trim()||'';
-  if(!observation&&!selectedTags.length)throw Error('Select an observation or add a note before publishing.');
+  if(!observation||!selectedTags.length)throw Error('Complete Coach Observation and select at least one Observation Option before publishing.');
+  if(!selectedIds.length)throw Error('Select at least one drill before publishing.');
   const player=activePlayerId?rosterPlayers.find(p=>p.id===activePlayerId):await resolvePlayer();
   if(!player)throw Error('Player not found.');
   const ctx=await accountContext();
@@ -167,7 +169,7 @@ async function publish(form){
   selectedIds=[];
   selectedTags=[];
   activePlayerId=player.id;
-  goBackToPlayer(player.id);
+  goBackToTeam();
  }catch(e){
   const p=document.createElement('p');p.className='obs-error';p.textContent=e?.message||String(e);form.prepend(p);
  }finally{
@@ -178,7 +180,7 @@ async function publish(form){
 
 document.addEventListener('click',e=>{
  const tag=e.target.closest?.('[data-coach-obs-tag]');
- if(tag){e.preventDefault();const value=tag.dataset.coachObsTag;if(selectedTags.includes(value))selectedTags=selectedTags.filter(x=>x!==value);else if(selectedTags.length<3)selectedTags.push(value);syncObservationPicker();return;}
+ if(tag){e.preventDefault();const value=tag.dataset.coachObsTag;if(selectedTags.includes(value))selectedTags=selectedTags.filter(x=>x!==value);else if(selectedTags.length<3)selectedTags.push(value);syncObservationPicker();syncSuggestionState();return;}
  if(e.target.closest?.('.coach-pick-drills-button')){e.preventDefault();openDrillManager();return;}
  if(e.target.closest?.('.coach-drill-picker-close,.coach-drill-picker-done')){e.preventDefault();closeDrillManager();return;}
  if(e.target.closest?.('.coach-drill-picker-add')){e.preventDefault();showDrillSearch(true,selectedIds.length);return;}
@@ -190,7 +192,7 @@ document.addEventListener('click',e=>{
 
 
 
-document.addEventListener('input',e=>{if(e.target.matches?.('.coach-drill-picker-search'))renderPickerRows(e.target.value);},true);
+document.addEventListener('input',e=>{if(e.target.matches?.('.coach-drill-picker-search'))renderPickerRows(e.target.value);if(e.target.matches?.('#focus-observation'))syncSuggestionState();},true);
 
 document.addEventListener('change',e=>{
  const box=e.target.closest?.('.coach-drill-option input');if(!box)return;
