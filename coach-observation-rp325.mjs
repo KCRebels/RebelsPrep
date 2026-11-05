@@ -6,6 +6,16 @@ const app=document.getElementById('app');
 let selectedIds=[];
 let activePlayerId='';
 let publishing=false;
+let selectedTags=[];
+const CATEGORIES=[
+ ['Approach',['Poor pitch selection','Too passive / hesitant','Chasing','Not attacking hittable pitches','Guessing','Poor two-strike approach','Taking too many strikes','Expanding the zone early']],
+ ['Timing',['Early','Late','Lunging / drifting forward','Off-balance','Not getting foot down','Rushing','Commitment too early','Not adjusting to off-speed']],
+ ['Mechanics',['Flying open','Rolling over','Dropping hands','Casting','Pulling off the ball','Poor outside-pitch approach','Under the ball / excessive pop-ups','Down-up swing path','Poor extension','Losing posture','Collapsing back side','Long swing path']],
+ ['Mental / Competitive',['Tentative','Pressing','Lack of confidence','Poor adjustment','Repeating same mistake','At-bat carried into next at-bat','Lost plan / approach']]
+];
+function observationPickerHTML(){return '<section class="coach-obs-categories"><div class="coach-obs-section-head"><h2>What Did You Observe?</h2><span class="coach-obs-tag-count">'+selectedTags.length+' of 3 selected</span></div><p class="coach-obs-hint">Select up to three observations, then add any additional notes below.</p>'+CATEGORIES.map(([category,options])=>'<details class="coach-obs-category" '+(selectedTags.some(t=>options.includes(t))?'open':'')+'><summary>'+esc(category)+'<span>'+options.filter(t=>selectedTags.includes(t)).length+' selected</span></summary><div class="coach-obs-options">'+options.map(t=>'<button type="button" class="coach-obs-option '+(selectedTags.includes(t)?'is-selected':'')+'" data-coach-obs-tag="'+esc(t)+'" aria-pressed="'+selectedTags.includes(t)+'">'+esc(t)+'</button>').join('')+'</div></details>').join('')+'</section>';}
+function syncObservationPicker(){document.querySelectorAll('[data-coach-obs-tag]').forEach(b=>{const on=selectedTags.includes(b.dataset.coachObsTag);b.classList.toggle('is-selected',on);b.setAttribute('aria-pressed',String(on));b.disabled=!on&&selectedTags.length>=3;});const count=document.querySelector('.coach-obs-tag-count');if(count)count.textContent=selectedTags.length+' of 3 selected';document.querySelectorAll('.coach-obs-category').forEach(d=>{const all=[...d.querySelectorAll('[data-coach-obs-tag]')];const n=all.filter(b=>selectedTags.includes(b.dataset.coachObsTag)).length;const span=d.querySelector('summary span');if(span)span.textContent=n+' selected';});}
+
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const drillName=id=>drills.find(d=>d.id===id)?.name||id;
@@ -66,12 +76,15 @@ function patch(){
  form.dataset.rp332='1';
  const page=form.closest('.coach-portal-page');
  page?.classList.add('coach-observation-page');
+ const observationLabel=form.querySelector('#focus-observation')?.closest('label');
+ if(observationLabel){observationLabel.insertAdjacentHTML('beforebegin',observationPickerHTML());const text=observationLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Additional Notes (optional)';form.querySelector('#focus-observation')?.setAttribute('placeholder','Add anything else you noticed during the swing…');}
+ const focusLabel=form.querySelector('#focus-next')?.closest('label');if(focusLabel){const text=focusLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Player Focus / Next Steps (optional)';}
  const oldSelect=form.querySelector('#focus-drill')?.closest('label');
  if(oldSelect)oldSelect.outerHTML=buildPicker();
  renderPickerRows('');
  resolvePlayer().then(p=>{
   if(!p)return;
-  if(activePlayerId&&activePlayerId!==p.id)selectedIds=[];
+  if(activePlayerId&&activePlayerId!==p.id){selectedIds=[];selectedTags=[];}
   activePlayerId=p.id;
   syncPickerUI();
  }).catch(()=>{});
@@ -97,7 +110,7 @@ async function publish(form){
  try{
   const observation=form.querySelector('#focus-observation')?.value?.trim()||'';
   const nextFocus=form.querySelector('#focus-next')?.value?.trim()||'';
-  if(!observation)throw Error('Add an observation before publishing.');
+  if(!observation&&!selectedTags.length)throw Error('Select an observation or add a note before publishing.');
   const player=activePlayerId?rosterPlayers.find(p=>p.id===activePlayerId):await resolvePlayer();
   if(!player)throw Error('Player not found.');
   const ctx=await accountContext();
@@ -107,7 +120,8 @@ async function publish(form){
    playerId:player.id,
    playerName:player.name,
    type:'hitting',
-   observation,
+   observation:observation||selectedTags.join('; '),
+   tags:[...selectedTags],
    nextFocus,
    drillIds:[...selectedIds],
    drillId:selectedIds[0]||'',
@@ -118,6 +132,7 @@ async function publish(form){
    publishedAt:F.serverTimestamp()
   });
   selectedIds=[];
+  selectedTags=[];
   activePlayerId=player.id;
   goBackToPlayer(player.id);
  }catch(e){
@@ -129,6 +144,8 @@ async function publish(form){
 }
 
 document.addEventListener('click',e=>{
+ const tag=e.target.closest?.('[data-coach-obs-tag]');
+ if(tag){e.preventDefault();const value=tag.dataset.coachObsTag;if(selectedTags.includes(value))selectedTags=selectedTags.filter(x=>x!==value);else if(selectedTags.length<3)selectedTags.push(value);syncObservationPicker();return;}
  const pick=e.target.closest?.('.coach-pick-drills-button');
  if(pick){
   e.preventDefault();e.stopPropagation();
