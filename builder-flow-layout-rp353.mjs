@@ -26,7 +26,8 @@ function backConfig(){
  if(v==='setup')return ['← Back to Teams',()=>click('.bottom-nav [data-view="home"]')];
  if(v==='attendance'&&s==='players')return ['← Back to Setup',()=>click('.bottom-nav [data-view="setup"]')];
  if(v==='attendance'&&s==='coaches')return ['← Back to Players',()=>click('#back-attendance-players')];
- if(v==='plan'||v==='review')return ['← Back to Coaches',()=>click('#back-practice-coaches')];
+ // Overview/Review uses its Edit action; omit redundant Back to Coaches.
+ if(v==='plan'||v==='review')return null;
  if(v==='drills')return ['← Back to Practice',()=>click('#back-drills-attendance')];
  return null;
 }
