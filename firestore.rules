@@ -65,6 +65,25 @@ service cloud.firestore {
     allow delete: if false;
    }
   }
+  // Hitting Focus records. Coaches may read their assigned team observations;
+  // organizational coaches may read across teams. Player opening receipts are
+  // deliberately not inferred from publication data.
+  match /rpFocusObservations/{observationId} {
+   allow get, list: if orgCoach() || (hasAccount() && account().active == true
+    && account().role == 'team_coach' && resource.data.teamIds is list
+    && account().teamIds is list
+    && resource.data.teamIds.toSet().hasAny(account().teamIds.toSet()));
+   allow create: if signedIn() && hasAccount() && account().active == true
+    && account().role in ['org_admin','org_coach','team_coach']
+    && request.resource.data.coachUid == request.auth.uid
+    && request.resource.data.playerId is string
+    && request.resource.data.teamIds is list
+    && request.resource.data.teamIds.size() > 0
+    && request.resource.data.status == 'published'
+    && (orgCoach() || (account().teamIds is list
+      && request.resource.data.teamIds.toSet().hasAny(account().teamIds.toSet())));
+   allow update, delete: if false;
+  }
   match /rpFeedback/{feedbackId} {
    allow read: if ownPlayer(resource.data.playerId) || orgCoach() || coachFor(resource.data.teamId);
    allow create: if coachFor(request.resource.data.teamId)
