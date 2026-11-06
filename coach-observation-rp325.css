@@ -403,3 +403,93 @@ body:has(.coach-observation-page) main > #app{
     font-size:27px!important;
   }
 }
+
+/* Build 394: clean HotB-governed Hitting Focus layout; scoped to this screen. */
+body:has(#hitting-observation-form) > main > header{display:none!important}
+body:has(#hitting-observation-form) > main{padding-top:0!important;padding-bottom:0!important;background:#f5f7f6!important}
+body:has(#hitting-observation-form){background:#f5f7f6!important}
+#app .coach-portal-page.coach-observation-page{padding:0 10px calc(115px + env(safe-area-inset-bottom))!important;background:#f5f7f6!important}
+#app .coach-observation-page .coach-focus-banner{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:calc(100% + 20px)!important;min-height:62px!important;margin:0 -10px 14px!important;
+  padding:12px!important;box-sizing:border-box!important;
+  background:linear-gradient(105deg,#430b13,#ac1826 70%,#c91530)!important;
+  color:#fff!important;font-size:25px!important;font-weight:900!important;line-height:1.1!important;
+  text-align:center!important;letter-spacing:-.3px!important;
+}
+#app .coach-observation-page .coach-observation-back{margin:0 2px 9px!important}
+#app .coach-observation-page .coach-observation-back .coach-back{
+  display:inline-flex!important;align-items:center!important;min-height:36px!important;
+  margin:0!important;padding:3px 0!important;border:0!important;background:transparent!important;
+  color:#111827!important;font-size:15px!important;font-weight:850!important;
+}
+#app .coach-observation-page .coach-obs-identity{
+  width:100%!important;margin:0 0 14px!important;padding:14px 16px!important;
+  border:2px solid #d7ddda!important;border-radius:16px!important;background:#fff!important;
+}
+#app .coach-observation-page .coach-obs-identity .coach-section-eyebrow{
+  margin:0 0 4px!important;color:#a32630!important;font-size:11px!important;
+  font-weight:900!important;line-height:1.15!important;letter-spacing:1.15px!important;
+}
+#app .coach-observation-page .coach-obs-identity h1{
+  margin:0!important;color:#111827!important;font-size:25px!important;
+  font-weight:900!important;line-height:1.15!important;letter-spacing:-.4px!important;
+}
+#app .coach-observation-page>.panel{margin:0!important;padding:0!important;background:transparent!important}
+#app .coach-observation-page #hitting-observation-form{
+  display:grid!important;gap:10px!important;margin:0!important;padding:15px 14px 18px!important;
+  border:2px solid #d7ddda!important;border-radius:16px!important;background:#fff!important;
+  box-shadow:none!important;
+}
+#app .coach-observation-page .coach-obs-section-head{margin:0!important;padding:0!important;gap:8px!important}
+#app .coach-observation-page .coach-obs-section-head h2{
+  margin:0!important;color:#111827!important;font-size:18px!important;
+  font-weight:850!important;line-height:1.2!important;letter-spacing:-.25px!important;
+}
+#app .coach-observation-page .coach-obs-dictate{
+  min-height:38px!important;padding:6px 10px!important;border-radius:10px!important;
+  font-size:13px!important;white-space:nowrap!important;
+}
+#app .coach-observation-page .coach-obs-note{
+  display:block!important;margin:0!important;color:#566174!important;
+  font-size:0!important;line-height:0!important;
+}
+#app .coach-observation-page .coach-obs-note textarea{
+  display:block!important;min-height:104px!important;height:104px!important;
+  margin:0!important;padding:12px!important;font-size:16px!important;line-height:1.35!important;
+  resize:vertical!important;
+}
+#app .coach-observation-page .coach-obs-categories{
+  gap:7px!important;padding:12px 0 0!important;border-top:1px solid #e0e5e2!important;
+}
+#app .coach-observation-page .coach-obs-categories>.coach-obs-section-head{min-height:20px!important}
+#app .coach-observation-page .coach-obs-categories>.coach-obs-section-head h2{
+  display:block!important;font-size:16px!important;
+}
+#app .coach-observation-page .coach-obs-tag-count{font-size:12px!important}
+#app .coach-observation-page .coach-obs-category{border-radius:11px!important}
+#app .coach-observation-page .coach-obs-category>summary{
+  min-height:49px!important;padding:10px 11px!important;
+}
+#app .coach-observation-page .coach-obs-category>summary strong{
+  font-size:15px!important;letter-spacing:.4px!important;
+}
+#app .coach-observation-page .coach-pick-drills{
+  gap:9px!important;padding:14px 0 0!important;margin:2px 0 0!important;
+  border-top:1px solid #e0e5e2!important;
+}
+#app .coach-observation-page .coach-pick-drills .coach-obs-section-head h2{
+  font-size:17px!important;
+}
+#app .coach-observation-page .coach-picked-drills>.coach-obs-hint,
+#app .coach-observation-page .coach-suggest-requirement{
+  margin:0!important;padding:0!important;color:#667085!important;
+  font-size:12px!important;font-weight:650!important;line-height:1.35!important;
+}
+#app .coach-observation-page .coach-drill-plan-actions{gap:8px!important}
+#app .coach-observation-page .coach-form>.primary{margin-top:12px!important}
+@media(max-width:400px){
+ #app .coach-observation-page #hitting-observation-form{padding:12px!important}
+ #app .coach-observation-page .coach-obs-identity h1{font-size:23px!important}
+ #app .coach-observation-page .coach-focus-banner{font-size:23px!important}
+}
