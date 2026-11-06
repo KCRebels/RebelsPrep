@@ -23,7 +23,7 @@ const drillName=id=>drills.find(d=>d.id===id)?.name||id;
 
 async function resolvePlayer(){
  const page=app?.querySelector('#hitting-observation-form')?.closest('.coach-portal-page');
- const playerName=page?.querySelector('.coach-page-head p')?.textContent?.trim()||'';
+ const playerName=page?.querySelector('.coach-obs-identity h1')?.textContent?.trim()||page?.querySelector('.coach-page-head p')?.textContent?.trim()||'';
  if(!playerName)return null;
  const ctx=await accountContext();
  const teamIds=ctx?.account?.teamIds||[];
@@ -122,8 +122,8 @@ function patch(){
  const page=form.closest('.coach-portal-page');
  page?.classList.add('coach-observation-page');
  const observationLabel=form.querySelector('#focus-observation')?.closest('label');
- if(observationLabel){observationLabel.classList.add('coach-obs-note');observationLabel.insertAdjacentHTML('beforebegin','<div class="coach-obs-section-head"><h2>Coach Observation</h2><button type="button" class="coach-obs-dictate" aria-pressed="false">🎙 Dictate</button></div>');const text=observationLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Describe what you observed';form.querySelector('#focus-observation')?.setAttribute('placeholder','Type or dictate your hitting observation…');}
- const focusLabel=form.querySelector('#focus-next')?.closest('label');if(focusLabel){const text=focusLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Player Focus / Next Steps (optional)';focusLabel.classList.add('coach-focus-next-field');focusLabel.insertAdjacentHTML('afterend',observationPickerHTML());}
+ if(observationLabel){observationLabel.classList.add('coach-obs-note');observationLabel.insertAdjacentHTML('beforebegin','<div class="coach-obs-section-head"><h2>Coach Observation</h2><button type="button" class="coach-obs-dictate" aria-pressed="false">🎙 Dictate</button></div>');const text=observationLabel.firstChild;if(text?.nodeType===Node.TEXT_NODE)text.textContent='Describe what you observed';form.querySelector('#focus-observation')?.setAttribute('placeholder','Type or dictate your hitting observation…');observationLabel.insertAdjacentHTML('afterend',observationPickerHTML());}
+
  const oldSelect=form.querySelector('#focus-drill')?.closest('label');
  if(oldSelect)oldSelect.outerHTML=buildPicker();
  renderPickerRows('');
