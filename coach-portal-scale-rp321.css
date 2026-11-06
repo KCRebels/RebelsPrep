@@ -42,3 +42,36 @@
  box-shadow:none!important;
  background:#fff!important;
 }
+
+/* Player Focus statuses: same age thresholds and visual hierarchy as HotB.
+   Published <7d neutral; 7–13d dark border; 14+d or never published red. */
+#app .coach-portal-page .coach-list .coach-focus-row[data-focus-status="current"],
+#app .coach-portal-page .coach-list .coach-focus-row[data-focus-status="loading"]{
+ border:2px solid #d9dede!important;border-color:#d9dede!important;
+ background:#fff!important;box-shadow:none!important;
+}
+#app .coach-portal-page .coach-list .coach-focus-row[data-focus-status="needs"]{
+ border:2px solid #344054!important;border-color:#344054!important;
+ background:#fff!important;box-shadow:none!important;
+}
+#app .coach-portal-page .coach-list .coach-focus-row[data-focus-status="overdue"]{
+ border:2px solid #c71920!important;border-color:#c71920!important;
+ background:#fff!important;box-shadow:none!important;
+}
+#app .coach-portal-page .coach-focus-row .coach-focus-status{
+ font-size:13px!important;font-weight:900!important;color:#344054!important;
+ line-height:1.2!important;max-width:60%;white-space:normal!important;
+}
+#app .coach-portal-page .coach-focus-row .coach-focus-status small{
+ margin-top:4px!important;font-size:12px!important;line-height:1.2!important;
+ color:#667085!important;font-weight:750!important;
+}
+#app .coach-portal-page .coach-focus-row[data-focus-status="overdue"] .coach-focus-status{
+ color:#c71920!important;
+}
+#app .coach-portal-page .coach-focus-row[data-focus-status="needs"] .coach-focus-status{
+ color:#344054!important;
+}
+#app .coach-portal-page .coach-focus-row[data-focus-status="loading"] .coach-focus-status{
+ color:#667085!important;
+}
