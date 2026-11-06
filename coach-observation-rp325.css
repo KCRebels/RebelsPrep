@@ -524,3 +524,25 @@ body:has(#hitting-observation-form){background:#f5f7f6!important}
  #app .coach-focus-roster-header{padding:16px!important}
  #app .coach-focus-roster-header h1{font-size:27px!important}
 }
+
+/* HotB Player Focus header typography parity: name and eyebrow. */
+#app .coach-observation-page .coach-obs-identity h1{
+ font-family:Arial,sans-serif!important;
+ font-size:29px!important;
+ font-weight:900!important;
+ line-height:1.08!important;
+ letter-spacing:-.55px!important;
+ color:#101828!important;
+}
+#app .coach-observation-page .coach-obs-identity .coach-section-eyebrow{
+ font-family:Arial,sans-serif!important;
+ font-size:12px!important;
+ font-weight:950!important;
+ line-height:1.15!important;
+ letter-spacing:1px!important;
+ color:#a51e27!important;
+ margin:0 0 5px!important;
+}
+@media(max-width:400px){
+ #app .coach-observation-page .coach-obs-identity h1{font-size:29px!important}
+}
