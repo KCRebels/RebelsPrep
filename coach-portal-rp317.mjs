@@ -30,10 +30,11 @@ function instructions(s){const d=s.drillId?drillById.get(s.drillId):null;if(!d)r
 function practicePage(){const rows=activeRecords();if(!rows.some(r=>r.practiceId===chosen))chosen=rows[0]?.practiceId||'';const r=rows.find(x=>x.practiceId===chosen);let body='';if(rows.length>1)body+='<section class="panel"><label>My Practice<select id="coach-practice-select">'+rows.map(x=>'<option value="'+esc(x.practiceId)+'" '+(x.practiceId===chosen?'selected':'')+'>'+esc(x.date+' · '+x.start+' · '+x.facility)+'</option>').join('')+'</select></label></section>';if(!r)body+='<section class="panel"><h2>No active practice</h2><p>Your next assignment will appear here when a builder activates the practice.</p></section>';else{const c=clockState(clocks.get(r.clockToken)?.clock);if(!c)body+='<section class="panel"><p>Loading practice clock…</p></section>';else{const secs=Math.ceil(c.remaining/1000),time=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');const status=!c.started?'Ready to start':c.phase==='rotate'?'Rotate':c.phase==='wrap'?'Wrap up':c.running?'Practice running':'Paused';body+='<section class="personal-coach-shell"><div class="personal-coach-title"><div class="personal-coach-eyebrow">'+esc(name()).toUpperCase()+'</div><h1>My Practice</h1><div class="personal-coach-subtitle">Coaching Assignments</div></div><div class="personal-practice-meta">'+esc(r.date)+' · '+esc(r.facility)+' · '+esc(fmtStart(r.start))+'</div><div class="personal-practice-stats"><div><span>BLOCK</span><strong>'+(c.index+1)+' of '+c.blocks+'</strong></div><div><span>TIME LEFT</span><strong id="personal-timer">'+time+'</strong></div><div class="personal-status"><span>STATUS</span><strong>'+esc(status)+'</strong></div></div></section><div id="blocks"><h2 class="rp-cards-heading">My Coaching Assignments</h2><article class="rp-player-card"><header class="rp-card-name">'+esc(r.name)+'</header><div class="rp-card-body"><table class="rp-player-rotation"><tbody>'+r.blocks.map((b,i)=>'<tr '+(i===c.index?'class="personal-current"':'')+'><th scope="row">B'+b.number+'</th><td class="rp-card-time">'+esc(range(b))+'</td><td>'+ (b.stations.length?b.stations.map(s=>esc(duty(s))+(s.players?.length?'<div class="personal-players"><strong>Players:</strong> '+s.players.map(esc).join(', ')+'</div>':'')+(instructions(s)?'<details class="personal-instructions"><summary>Instructions</summary>'+instructions(s)+'</details>':'')).join('<hr class="personal-station-break">'):b.coaching?'Circulate and coach':'Not Present')+'</td></tr>').join('')+'</tbody></table></div></article></div>';}}
 return '<div class="coach-portal-page">'+pageHead('My Practice','Your active coaching assignment.')+body+'</div>';}
 function accessiblePlayers(){const ids=ctx?.account?.teamIds||[];return rosterPlayers.filter(p=>{const members=p.memberTeamIds||[];return ids.some(id=>members.includes(id));}).sort((a,b)=>a.name.localeCompare(b.name));}
-let focusStatusRecords=new Map(),focusStatusLoaded=false,focusStatusBusy=false;
+let focusStatusRecords=new Map(),focusStatusLoaded=false,focusStatusBusy=false,focusStatusError=false;
 const FOCUS_DAY_MS=86400000;
 function focusRecordDate(row){const v=row?.publishedAt||row?.createdAt;const ms=v?.toMillis?.()||(v?.seconds?Number(v.seconds)*1000:typeof v==='number'?v:Date.parse(v||''));return Number.isFinite(ms)?ms:0;}
 function focusState(playerId){
+ if(focusStatusError)return {kind:'unavailable',label:'STATUS UNAVAILABLE',detail:'Focus records could not load'};
  if(!focusStatusLoaded)return {kind:'loading',label:'Checking Focus',detail:'Loading status'};
  const rows=focusStatusRecords.get(playerId)||[];
  const last=rows.reduce((n,x)=>Math.max(n,focusRecordDate(x)),0);
@@ -70,8 +71,8 @@ async function refreshFocusStatus(force=false){
     }});
    }
   }
-  focusStatusRecords=found;focusStatusLoaded=true;
- }catch(error){console.warn('RebelsPrep Player Focus status could not load:',error);focusStatusLoaded=false;}
+  focusStatusRecords=found;focusStatusLoaded=true;focusStatusError=false;
+ }catch(error){console.warn('RebelsPrep Player Focus status could not load:',error);focusStatusLoaded=false;focusStatusError=true;}
  finally{focusStatusBusy=false;paintFocusStatus();}
 }
 document.addEventListener('rp-focus-published',()=>refreshFocusStatus(true));
