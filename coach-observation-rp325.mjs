@@ -161,6 +161,7 @@ async function publish(form){
   await F.addDoc(F.collection(db,'rpFocusObservations'),{
    playerId:player.id,
    playerName:player.name,
+   teamIds:[...(player.memberTeamIds||[])],
    type:'hitting',
    observation:observation||selectedTags.join('; '),
    tags:[...selectedTags],
@@ -176,6 +177,7 @@ async function publish(form){
   selectedIds=[];
   selectedTags=[];
   activePlayerId=player.id;
+  document.dispatchEvent(new Event('rp-focus-published'));
   goBackToTeam();
  }catch(e){
   const p=document.createElement('p');p.className='obs-error';p.textContent=e?.message||String(e);form.prepend(p);
