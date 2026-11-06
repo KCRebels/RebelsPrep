@@ -500,3 +500,27 @@ body:has(#hitting-observation-form){background:#f5f7f6!important}
  font-size:14px!important;font-weight:700!important;line-height:1.4!important;
  letter-spacing:0!important;
 }
+
+/* HotB-style Choose A Player header on the club coach roster. */
+#app .coach-focus-roster-header{
+  display:block!important;margin:4px 0 14px!important;padding:17px 18px 18px!important;
+  border:2px solid #d7ddda!important;border-radius:16px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+#app .coach-focus-roster-header .coach-section-eyebrow{
+  margin:0 0 5px!important;font-size:12px!important;
+  font-weight:950!important;letter-spacing:1.1px!important;
+  line-height:1.2!important;color:#a32630!important;
+}
+#app .coach-focus-roster-header h1{
+  margin:0 0 10px!important;color:#111827!important;font-size:28px!important;
+  font-weight:900!important;line-height:1.12!important;letter-spacing:-.55px!important;
+}
+#app .coach-focus-roster-header p{
+  margin:0!important;color:#667085!important;font-size:15px!important;
+  font-weight:700!important;line-height:1.38!important;
+}
+@media(max-width:430px){
+ #app .coach-focus-roster-header{padding:16px!important}
+ #app .coach-focus-roster-header h1{font-size:27px!important}
+}
