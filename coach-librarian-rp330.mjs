@@ -42,8 +42,28 @@ function searchDrills(q){
 function renameCards(){app?.querySelectorAll('.coach-card h2').forEach(h=>{if(/^Ask the Library$/i.test(h.textContent.trim()))setText(h,'Ask the Librarian');});}
 function detailHtml(d){return '<section class="coach-librarian-detail"><h3>'+esc(d.name)+'</h3>'+(d.primaryPurpose?'<p><b>Purpose:</b> '+esc(d.primaryPurpose)+'</p>':'')+(d.bestUsedFor?'<p><b>Best used for:</b> '+esc(d.bestUsedFor)+'</p>':'')+(d.howItWorks?'<p><b>How it works:</b> '+esc(d.howItWorks)+'</p>':'')+(d.coachingCues?'<p><b>Coaching cues:</b> '+esc(d.coachingCues)+'</p>':'')+(d.success?'<p><b>What good looks like:</b> '+esc(d.success)+'</p>':'')+(d.equipment?'<p><b>Equipment:</b> '+esc(d.equipment)+'</p>':'')+'<button type="button" class="coach-librarian-detail-back">← Back to Results</button></section>';}
 function renderResults(page,q){const host=page.querySelector('.coach-librarian-results')||document.createElement('div');host.className='coach-librarian-results';host.innerHTML='';const found=searchDrills(q);if(!q.trim()){host.remove();return;}if(!found.length){host.innerHTML='<div class="coach-librarian-empty">I could not find a strong match for that yet. Try describing the pitch or problem another way.</div>';}else{host.innerHTML='<p class="coach-librarian-results-title">Recommended Drills</p>'+found.map((d,i)=>'<button type="button" class="coach-librarian-result" data-lib-index="'+i+'"><small>'+esc(d.category||'Hitting')+'</small><strong>'+esc(d.name)+'</strong><span>'+esc(d.bestUsedFor||d.primaryPurpose||d.coachingCues||'Open drill details.')+'</span></button>').join('');host.querySelectorAll('[data-lib-index]').forEach(btn=>btn.addEventListener('click',()=>{const d=found[Number(btn.dataset.libIndex)];host.innerHTML=detailHtml(d);host.querySelector('.coach-librarian-detail-back')?.addEventListener('click',()=>renderResults(page,lastQuery));}));}
- if(!host.isConnected)page.appendChild(host);
+ if(!host.isConnected){const ask=page.querySelector('.coach-librarian-ask');if(ask)ask.after(host);else page.appendChild(host);}
 }
-function patchAsk(){if(!app)return;renameCards();const head=app.querySelector('.coach-page-head');const title=head?.querySelector('h1');if(!head||!title||!/^Ask the (Library|Librarian)$/i.test(title.textContent.trim()))return;const page=head.closest('.coach-portal-page');if(!page)return;page.classList.add('coach-librarian-page');setText(title,'Ask the Librarian');const back=head.querySelector('.coach-back');if(back)setText(back,'← Back');const copy=head.querySelector('p');if(copy)setText(copy,'Describe what you want to work on and the Librarian will recommend drills from the RebelsPrep library.');let hero=page.querySelector('.coach-librarian-hero');if(!hero){hero=document.createElement('section');hero.className='coach-librarian-hero';hero.innerHTML='<span class="coach-librarian-kicker">DRILL FINDER</span><h2>What Do You Want to Work On?</h2><p>Describe what is happening in the swing or the pitch you are struggling to hit. The Librarian will recommend drills only from the RebelsPrep library.</p>';head.insertAdjacentElement('afterend',hero);}const source=page.querySelector('#coach-ask-search');if(!source)return;let ask=page.querySelector('.coach-librarian-ask');if(!ask){ask=document.createElement('section');ask.className='coach-librarian-ask';ask.innerHTML='<label for="coach-librarian-query">ASK THE LIBRARIAN</label><textarea class="coach-librarian-query" id="coach-librarian-query" placeholder="Example: I can’t hit a changeup."></textarea><button class="coach-librarian-find" type="button">Find My Drills</button>';source.insertAdjacentElement('afterend',ask);const textarea=ask.querySelector('#coach-librarian-query');textarea.value=lastQuery||source.value||'';const go=()=>{lastQuery=textarea.value.trim();renderResults(page,lastQuery);};ask.querySelector('.coach-librarian-find')?.addEventListener('click',go);textarea.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')go();});if(lastQuery)renderResults(page,lastQuery);} }
-function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;patchAsk();});}
+function patchLibrary(){
+ if(!app)return;
+ const search=app.querySelector('#coach-library-search');
+ const page=search?.closest('.coach-portal-page');
+ if(!search||!page)return;
+ const button=page.querySelector('.coach-add-drill');
+ if(button&&button.textContent!=='Submit a Drill')button.textContent='Submit a Drill';
+ let ask=page.querySelector('.coach-librarian-ask');
+ if(!ask){
+  ask=document.createElement('section');
+  ask.className='coach-librarian-ask';
+  ask.innerHTML='<label for="coach-librarian-query">ASK THE LIBRARIAN</label><p class="coach-librarian-help">Describe a hitting problem and get recommended drills.</p><input class="coach-librarian-query" id="coach-librarian-query" type="search" placeholder="Example: I can’t hit a changeup."><button class="coach-librarian-find" type="button">Find Drills</button>';
+  search.after(ask);
+  const input=ask.querySelector('#coach-librarian-query');
+  input.value=lastQuery;
+  const go=()=>{lastQuery=input.value.trim();renderResults(page,lastQuery);};
+  ask.querySelector('.coach-librarian-find').addEventListener('click',go);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});
+  if(lastQuery)renderResults(page,lastQuery);
+ }
+}
+function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;patchLibrary();});}
 if(app){new MutationObserver(schedule).observe(app,{childList:true,subtree:true});schedule();}
