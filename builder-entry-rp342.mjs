@@ -8,14 +8,17 @@ let frame=0;
 
 export async function authorizeBuilderEntry(){
  try{
-  const {auth}=await services();
-  await auth.authStateReady();
+  const timeout=(label)=>new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out. Check the connection and refresh the page.')),10000));
+  const {auth}=await Promise.race([services(),timeout('Firebase services')]);
+  await Promise.race([auth.authStateReady(),timeout('Coach sign-in')]);
   const email=String(auth.currentUser?.email||'').trim().toLowerCase();
   access=builderAccess(email);
   if(!auth.currentUser||!access.builder){location.replace('./coach.html?v=363');return false;}
   return true;
- }catch{
-  location.replace('./coach.html?v=363');
+ }catch(error){
+  const app=document.getElementById('app');
+  if(app)app.innerHTML='<section style="margin:22px auto;max-width:620px;padding:20px;border:2px solid #d8ddd9;border-radius:16px;background:white"><h2>Practice Builder could not connect</h2><p>'+String(error?.message||error).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p><p><a href="./coach.html?v=407">Return to Coach Dashboard</a></p><button type="button" onclick="location.reload()">Retry</button></section>';
+  console.error('RebelsPrep builder authorization failed:',error);
   return false;
  }
 }
