@@ -29,21 +29,21 @@
 @media(max-width:430px){.coach-librarian-page .coach-page-head h1{font-size:30px!important}.coach-librarian-hero{padding:16px 18px!important}.coach-librarian-hero h2{font-size:23px!important}}
 
 /* Coach Drill Library consolidation */
-.coach-portal-page:has(#coach-library-search) .coach-library-title-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important}
-.coach-portal-page:has(#coach-library-search) .coach-add-drill{min-width:165px!important;min-height:46px!important;padding:10px 18px!important;white-space:nowrap!important}
-.coach-portal-page:has(#coach-library-search) .coach-librarian-ask{margin-top:16px!important;margin-bottom:18px!important}
-.coach-portal-page:has(#coach-library-search) .coach-librarian-help{margin:0 0 10px!important;color:#667085!important;font-size:14px!important;line-height:1.35!important}
-.coach-portal-page:has(#coach-library-search) input.coach-librarian-query{min-height:48px!important;height:48px!important;resize:none!important;padding:10px 13px!important}
-.coach-portal-page:has(#coach-library-search) .coach-librarian-find{min-height:46px!important}
-.coach-portal-page:has(#coach-library-search) .coach-librarian-results{margin-bottom:18px!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-library-title-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-add-drill{min-width:165px!important;min-height:46px!important;padding:10px 18px!important;white-space:nowrap!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-librarian-ask{margin-top:16px!important;margin-bottom:18px!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-librarian-help{margin:0 0 10px!important;color:#667085!important;font-size:14px!important;line-height:1.35!important}
+.coach-portal-page:has(.coach-drills-heading) input.coach-librarian-query{min-height:48px!important;height:48px!important;resize:none!important;padding:10px 13px!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-librarian-find{min-height:46px!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-librarian-results{margin-bottom:18px!important}
 
 /* Build 404: library tools stacked above the drill catalog */
-.coach-portal-page:has(#coach-library-search) .coach-library-top{margin-bottom:12px!important;padding-bottom:0!important;min-height:0!important}
-.coach-portal-page:has(#coach-library-search) .coach-library-top>p,.coach-portal-page:has(#coach-library-search) .coach-library-top>h1{display:none!important}
-.coach-portal-page:has(#coach-library-search) .coach-submit-inline{margin-top:16px!important;margin-bottom:18px!important}
-.coach-portal-page:has(#coach-library-search) .coach-submit-inline-label{display:block!important;margin:0 0 8px!important;color:#a62a31!important;font-size:12px!important;font-weight:950!important;letter-spacing:.08em!important}
-.coach-portal-page:has(#coach-library-search) .coach-library-lower-title{margin:20px 0 14px!important;font-size:30px!important;font-weight:900!important;line-height:1.12!important;color:#111827!important}
-.coach-portal-page:has(#coach-library-search) .coach-submit-inline .coach-librarian-find{margin-top:12px!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-library-top{margin-bottom:12px!important;padding-bottom:0!important;min-height:0!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-library-top>p,.coach-portal-page:has(.coach-drills-heading) .coach-library-top>h1{display:none!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-submit-inline{margin-top:16px!important;margin-bottom:18px!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-submit-inline-label{display:block!important;margin:0 0 8px!important;color:#a62a31!important;font-size:12px!important;font-weight:950!important;letter-spacing:.08em!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-library-lower-title{margin:20px 0 14px!important;font-size:30px!important;font-weight:900!important;line-height:1.12!important;color:#111827!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-submit-inline .coach-librarian-find{margin-top:12px!important}
 
 /* Build 405: heading card for coach drills; only librarian provides search */
 .coach-portal-page:has(.coach-drills-heading) .coach-drills-heading{margin:8px 0 18px!important;padding:19px 20px!important;border:2px solid #d8ddd9!important;border-radius:18px!important;background:#fff!important;box-shadow:0 4px 0 #dde1df!important}
