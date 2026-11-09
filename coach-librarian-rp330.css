@@ -44,3 +44,9 @@
 .coach-portal-page:has(#coach-library-search) .coach-submit-inline-label{display:block!important;margin:0 0 8px!important;color:#a62a31!important;font-size:12px!important;font-weight:950!important;letter-spacing:.08em!important}
 .coach-portal-page:has(#coach-library-search) .coach-library-lower-title{margin:20px 0 14px!important;font-size:30px!important;font-weight:900!important;line-height:1.12!important;color:#111827!important}
 .coach-portal-page:has(#coach-library-search) .coach-submit-inline .coach-librarian-find{margin-top:12px!important}
+
+/* Build 405: heading card for coach drills; only librarian provides search */
+.coach-portal-page:has(.coach-drills-heading) .coach-drills-heading{margin:8px 0 18px!important;padding:19px 20px!important;border:2px solid #d8ddd9!important;border-radius:18px!important;background:#fff!important;box-shadow:0 4px 0 #dde1df!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-drills-heading .coach-section-eyebrow{display:block!important;margin:0 0 7px!important;color:#a62a31!important;font-size:12px!important;font-weight:950!important;letter-spacing:.09em!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-drills-heading h1{margin:0 0 6px!important;color:#111827!important;font-size:30px!important;line-height:1.1!important;font-weight:950!important}
+.coach-portal-page:has(.coach-drills-heading) .coach-drills-heading p{margin:0!important;color:#657084!important;font-size:15px!important;font-weight:650!important;line-height:1.4!important}
