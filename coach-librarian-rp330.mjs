@@ -46,9 +46,9 @@ function renderResults(page,q){const host=page.querySelector('.coach-librarian-r
 }
 function patchLibrary(){
  if(!app)return;
- const search=app.querySelector('#coach-library-search');
- const page=search?.closest('.coach-portal-page');
- if(!search||!page)return;
+ const heading=app.querySelector('.coach-drills-heading');
+ const page=heading?.closest('.coach-portal-page');
+ if(!heading||!page)return;
  const button=page.querySelector('.coach-add-drill');
  if(button&&button.textContent!=='Submit a Drill')button.textContent='Submit a Drill';
  let ask=page.querySelector('.coach-librarian-ask:not(.coach-submit-inline)');
@@ -56,7 +56,7 @@ function patchLibrary(){
   ask=document.createElement('section');
   ask.className='coach-librarian-ask';
   ask.innerHTML='<label for="coach-librarian-query">ASK THE LIBRARIAN</label><p class="coach-librarian-help">Describe a hitting problem and get recommended drills.</p><input class="coach-librarian-query" id="coach-librarian-query" type="search" placeholder="Example: I can’t hit a changeup."><button class="coach-librarian-find" type="button">Find Drills</button>';
-  search.after(ask);
+  heading.after(ask);
   const input=ask.querySelector('#coach-librarian-query');
   input.value=lastQuery;
   const go=()=>{lastQuery=input.value.trim();renderResults(page,lastQuery);};
