@@ -7,20 +7,24 @@ export * from './shared-rp49.mjs?v=rp134';
 export {activate} from './shared-live-rp276.mjs?v=rp276';
 export {control} from './shared-control-rp134.mjs?v=rp134';
 
-// Build 354: recover an installed/PWA window that reopened an older cached HTML document.
-// The marker request is always cache-busted; when the visible footer is stale, reload the
-// exact current route with a unique query so iOS cannot reuse the old document cache entry.
+// Keep iOS PWAs current, but never redirect to an older marker or loop when
+// GitHub Pages temporarily serves an old HTML document after deployment.
 (function installBuildRecovery(){
  const check=async()=>{
   try{
    if(!/\/RebelsPrep\/(?:index\.html|coach\.html)?$/.test(location.pathname))return;
    const response=await fetch('./build-current.txt?_='+Date.now(),{cache:'no-store'});
    if(!response.ok)return;
-   const current=(await response.text()).trim();
-   const shown=(document.querySelector('footer')?.textContent.match(/Build\s+(\d+)/i)||[])[1]||'';
-   if(!current||!shown||current===shown)return;
+   const current=Number((await response.text()).trim());
+   const shown=Number((document.querySelector('footer')?.textContent.match(/Build\s+(\d+)/i)||[])[1]);
+   if(!Number.isSafeInteger(current)||!Number.isSafeInteger(shown)||current<=shown)return;
    const url=new URL(location.href);
-   url.searchParams.set('v',current);
+   // One recovery attempt per target build per tab. Persisting mismatch is
+   // surfaced by the existing planner watchdog instead of trapping the user.
+   const key='RebelsPrep:recovery:'+current;
+   if(sessionStorage.getItem(key)==='attempted')return;
+   sessionStorage.setItem(key,'attempted');
+   url.searchParams.set('v',String(current));
    url.searchParams.set('_fresh',Date.now().toString());
    location.replace(url.toString());
   }catch{}
