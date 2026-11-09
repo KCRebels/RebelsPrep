@@ -51,7 +51,7 @@ function patchLibrary(){
  if(!search||!page)return;
  const button=page.querySelector('.coach-add-drill');
  if(button&&button.textContent!=='Submit a Drill')button.textContent='Submit a Drill';
- let ask=page.querySelector('.coach-librarian-ask');
+ let ask=page.querySelector('.coach-librarian-ask:not(.coach-submit-inline)');
  if(!ask){
   ask=document.createElement('section');
   ask.className='coach-librarian-ask';
