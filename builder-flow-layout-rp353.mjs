@@ -28,7 +28,8 @@ function backConfig(){
  if(v==='attendance'&&s==='coaches')return ['← Back to Players',()=>click('#back-attendance-players')];
  // Overview/Review uses its Edit action; omit redundant Back to Coaches.
  if(v==='plan'||v==='review')return null;
- if(v==='drills')return ['← Back to Practice',()=>click('#back-drills-attendance')];
+ // The drill picker already renders its own working Back to Practice button.
+ if(v==='drills')return null;
  return null;
 }
 
