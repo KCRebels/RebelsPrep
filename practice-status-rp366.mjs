@@ -78,24 +78,9 @@ function ensureSingleHeading(panel){
   heading.className='rp370-practice-status-heading';
   panel.prepend(heading);
  }
- heading.textContent='PRACTICE STATUS';
- heading.style.setProperty('display','block','important');
- heading.style.setProperty('visibility','visible','important');
- heading.style.setProperty('opacity','1','important');
- heading.style.setProperty('position','static','important');
- heading.style.setProperty('width','auto','important');
- heading.style.setProperty('height','auto','important');
- heading.style.setProperty('overflow','visible','important');
- heading.style.setProperty('clip','auto','important');
- heading.style.setProperty('clip-path','none','important');
- heading.style.setProperty('margin','0 0 7px','important');
- heading.style.setProperty('padding','0','important');
- heading.style.setProperty('color','#b51f2e','important');
- heading.style.setProperty('font-size','14px','important');
- heading.style.setProperty('font-weight','900','important');
- heading.style.setProperty('letter-spacing','.12em','important');
- heading.style.setProperty('text-transform','uppercase','important');
- heading.style.setProperty('line-height','1.2','important');
+ if(heading.textContent!=='PRACTICE STATUS')heading.textContent='PRACTICE STATUS';
+ // Visibility and typography are owned by the stylesheet above. Do not
+ // repeatedly write identical inline styles while a MutationObserver runs.
  [...panel.querySelectorAll(':scope > .rp370-practice-status-heading')].slice(1).forEach(el=>el.remove());
 }
 
@@ -120,11 +105,11 @@ function ensureButtons(panel){
  }
  if(activate){
   activate.classList.add('rp-status-primary-292');
-  mine.className='rp-status-secondary-292';
+  if(mine.className!=='rp-status-secondary-292')mine.className='rp-status-secondary-292';
   if(activate.parentElement!==row)row.appendChild(activate);
   if(mine.parentElement!==row)row.appendChild(mine);
  }else{
-  mine.className='rp-status-primary-292';
+  if(mine.className!=='rp-status-primary-292')mine.className='rp-status-primary-292';
   if(mine.parentElement!==row)row.appendChild(mine);
   if(signOut&&signOut!==mine&&signOut.parentElement!==row)row.appendChild(signOut);
  }
@@ -144,6 +129,6 @@ let frame=0;
 function schedule(){cancelAnimationFrame(frame);frame=requestAnimationFrame(repair);}
 ensureStyle();
 schedule();
-if(app)new MutationObserver(schedule).observe(app,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
+if(app)new MutationObserver(schedule).observe(app,{childList:true,subtree:true});
 window.addEventListener('pageshow',schedule);
 window.addEventListener('load',schedule);
