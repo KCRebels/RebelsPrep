@@ -31,6 +31,7 @@ jobs:
           node --check roster-cache.mjs
           node --check roster-lifecycle.test.mjs
           node --check roster-manager-ui.mjs
+          node --check person-account-rp279.mjs
           node --check coach-roster-link.mjs
       - run: npm test
       - run: npx playwright install --with-deps chromium

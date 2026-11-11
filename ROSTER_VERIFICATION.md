@@ -11,7 +11,7 @@ Development branch: `feature/coach-roster-management`; draft PR: https://github.
 - Made edits transactional so a concurrent transfer cannot leave an edit operating on a former team membership.
 - Prevented late roster responses from overwriting a newer team selection and disabled controls during saves.
 - Let organization coaches see active roster members in Player Focus even without assigned team IDs.
-- Explicitly rejected inactive profiles in the player portal.
+- Explicitly rejected inactive profiles in the player portal and cleared the open session view if live profile permissions are revoked.
 - Added cache/worker regressions, a synthetic Firestore lifecycle test using the production store, and browser interaction tests.
 - Added dependency lockfile, browser CI checks, and Windows-compatible emulator command quoting.
 
@@ -27,6 +27,6 @@ Local Firestore emulator execution is blocked by missing Java. CI installs Java 
 
 No merge, hosting deployment, Firebase rules deployment, production roster writes, account activation or seed/migration was performed. Production Build 420, actual players (including Maleah and Katelyn), and HotB data were not changed.
 
-A browser-to-Firestore end-to-end test now runs inside the synthetic Firestore emulator job, using the production UI and store with emulator-only authentication. It verifies add/edit/transfer/remove against actual emulator documents. Its final CI result is required.
+A browser-to-Firestore end-to-end test now runs inside the synthetic Firestore emulator job, using the production UI and store with emulator-only authentication. It verifies add/edit/transfer/remove against actual emulator documents. CI passed for commit `05965fb`, including this browser-to-Firestore test. The subsequent portal-revocation cleanup must also pass final CI.
 
 Before release: verify final CI (including the browser-to-Firestore test), verify real coach/account assignments (including Maryann) through authorized Firebase access, and compare deployed rules with the reviewed rules. Use synthetic players only. Production deployment remains deferred until those checks succeed.
