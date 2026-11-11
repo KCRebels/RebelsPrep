@@ -8,7 +8,8 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const individual=teams.filter(t=>!['kc-rebels-nationals','kc-rebels-all-regional'].includes(t.id));
 let ctx=null,teamId='',players=[],busy=false,error='',message='',editId='',mode='list';
 function shell(body){
- app.innerHTML='<div class="rm-shell"><a class="rm-back" href="./coach.html?v=420">← Back to Coaches</a><h1>Manage Roster</h1><p class="rm-subtitle">Add or remove permanent players from your assigned team.</p>'+ (error?'<p class="rm-error" role="alert">'+esc(error)+'</p>':'')+(message?'<p class="rm-success" role="status">'+esc(message)+'</p>':'')+body+'</div>';
+ app.innerHTML='<div class="rm-shell"><a class="rm-back" href="./coach.html?v=420">← Back to Coaches</a><h1>Roster</h1><p class="rm-subtitle">Add or remove permanent players from your assigned team.</p>'+ (error?'<p class="rm-error" role="alert">'+esc(error)+'</p>':'')+(message?'<p class="rm-success" role="status">'+esc(message)+'</p>':'')+body+'</div><nav class="coach-bottom-nav" aria-label="Coach navigation"><button data-coach-view="home">Home</button><button data-coach-view="practice">Practice</button><button data-coach-view="focus">Focus</button><button data-coach-view="more">More</button><button data-coach-view="roster" aria-current="page">Roster</button></nav>';
+ app.querySelectorAll('.coach-bottom-nav [data-coach-view]').forEach(button=>button.addEventListener('click',()=>{const target=button.dataset.coachView;if(target==='roster')return;location.assign('./coach.html?v=420&view='+(target==='more'?'library':target));}));
 }
 function permittedTeams(){return individual.filter(t=>canManageTeam(ctx?.account,t.id));}
 function page(){
@@ -23,7 +24,7 @@ function page(){
  }else{
   shell(pick+'<div class="rm-actions"><strong>'+players.length+' active players</strong><button class="rm-primary" id="rm-add">+ Add Player</button></div><div class="rm-players">'+players.map(p=>'<article class="rm-player"><div><strong>'+esc(p.name)+'</strong><small>'+(p.pitcher?'Pitcher ':'')+(p.catcher?'Catcher ':'')+(p.jerseyNumber?'#'+esc(p.jerseyNumber):'')+'</small></div><div class="rm-actions"><button data-edit="'+esc(p.id)+'">Edit</button><button data-remove="'+esc(p.id)+'">Remove</button>'+(isOrgCoach(ctx.account)?'<button data-transfer="'+esc(p.id)+'">Transfer</button>':'')+'</div></article>').join('')+'</div>');
  }
- document.querySelectorAll('button, input, select').forEach(el=>el.disabled=busy);
+ document.querySelectorAll('.rm-shell button, .rm-shell input, .rm-shell select').forEach(el=>el.disabled=busy);
  const selector=document.getElementById('rm-team');
  selector?.addEventListener('change',e=>{teamId=e.target.value;editId='';mode='list';reload();});
  document.getElementById('rm-add')?.addEventListener('click',()=>{editId='';mode='form';error='';page();});
