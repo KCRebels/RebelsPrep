@@ -25,5 +25,10 @@ jobs:
           node --check app-rpbuild43.mjs
           node --check scheduler.mjs
           node --check worker.mjs
+          node --check roster-management.mjs
+          node --check roster-store.mjs
+          node --check roster-sync.mjs
+          node --check roster-manager-ui.mjs
+          node --check coach-roster-link.mjs
       - run: npm test
       - run: npm run test:rules
