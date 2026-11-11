@@ -36,7 +36,7 @@ async function save(form){
  const values={name:form.get('name'),email:form.get('email'),jerseyNumber:form.get('jerseyNumber'),pitcher:form.has('pitcher'),catcher:form.has('catcher')};
  try{if(editId)await editRosterPlayer(ctx.account,teamId,editId,values);else await addRosterPlayer(ctx.account,teamId,values);message=editId?'Player updated.':'Player added.';editId='';mode='list';await reload();}
  catch(e){error=e.message||String(e);page();}
- finally{busy=false;}
+ finally{busy=false;page();}
 }
 async function remove(id){
  if(busy)return;const player=players.find(p=>p.id===id);if(!player)return;
@@ -44,7 +44,7 @@ async function remove(id){
  busy=true;error='';message='';
  try{await removeRosterPlayer(ctx.account,teamId,id);message=player.name+' removed from this team.';await reload();}
  catch(e){error=e.message||String(e);page();}
- finally{busy=false;}
+ finally{busy=false;page();}
 }
 try{
  ctx=await accountContext();
