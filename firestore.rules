@@ -19,8 +19,19 @@ service cloud.firestore {
   function orgCoach() { return hasAccount() && account().active == true && account().role in ['org_admin','org_coach']; }
   function teamCoach(teamId) { return hasAccount() && account().active == true && account().role == 'team_coach' && account().teamIds is list && teamId in account().teamIds; }
   function coachFor(teamId) { return orgCoach() || teamCoach(teamId); }
-  function ownPlayer(playerId) { return hasAccount() && account().active == true && account().role == 'player' && account().playerId == playerId; }
-  function playerOnTeam(teamId) { return hasAccount() && account().active == true && account().role == 'player' && account().teamIds is list && teamId in account().teamIds; }
+  function livePlayerPath(playerId) { return /databases/$(database)/documents/rpPlayers/$(playerId); }
+  function activePlayer(playerId) {
+   return exists(livePlayerPath(playerId)) && get(livePlayerPath(playerId)).data.active == true;
+  }
+  function ownPlayer(playerId) {
+   return hasAccount() && account().active == true && account().role == 'player'
+     && account().playerId == playerId && activePlayer(playerId);
+  }
+  function playerOnTeam(teamId) {
+   return hasAccount() && account().active == true && account().role == 'player'
+     && account().playerId is string && activePlayer(account().playerId)
+     && teamId in get(livePlayerPath(account().playerId)).data.teamIds;
+  }
   function validAccountRole() { return request.resource.data.role in ['org_admin','org_coach','team_coach','player']; }
   function pendingPlayerCreate(uid) { return signedIn() && request.auth.uid == uid && request.resource.data.role == 'pending_player' && request.resource.data.active == false && request.resource.data.email == request.auth.token.email && request.resource.data.teamIds is list && request.resource.data.teamIds.size() == 0 && request.resource.data.keys().hasOnly(['role','active','displayName','email','teamIds','createdAt','lastSeenAt']); }
   function eligiblePlayerAccount() { return request.resource.data.role != 'player' || (request.resource.data.playerId is string && exists(/databases/$(database)/documents/rpPlayers/$(request.resource.data.playerId)) && get(/databases/$(database)/documents/rpPlayers/$(request.resource.data.playerId)).data.playerPortalEnabled == true); }
