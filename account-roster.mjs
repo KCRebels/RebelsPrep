@@ -1,5 +1,5 @@
-import {rosterPlayers} from './team-rosters.mjs?v=rpbuild34';
-import {teams} from './teams.mjs?v=rpbuild34';
+import {rosterPlayers} from './team-rosters.mjs';
+import {teams} from './teams.mjs';
 
 const virtualTeamIds=new Set(['kc-rebels-nationals','kc-rebels-all-regional']);
 const playerPortalTeamIds=new Set(teams.filter(t=>/^KC Rebels (14|16|18)(?:\s|B\b)/.test(t.name)).map(t=>t.id));

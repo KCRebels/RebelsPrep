@@ -1,5 +1,5 @@
 import {firebaseConfig} from './shared-config.mjs?v=rp47';
-import {teams} from './teams.mjs?v=rp47';
+import {teams} from './teams.mjs';
 const $=s=>document.querySelector(s), params=new URLSearchParams(location.search), hex64=v=>/^[a-f0-9]{64}$/.test(String(v||''));
 const sessionToken=params.get('session')||'', teamOnly=params.get('team')||'', requestedFacility=(params.get('facility')||'barn').toLowerCase(), locationId=['barn','shed'].includes(requestedFacility)?requestedFacility:'barn';
 const stableURL=()=>{const u=new URL(location.href);u.search='?checkin=1&facility='+encodeURIComponent(locationId)+(teamOnly?'&team='+encodeURIComponent(teamOnly):'');u.hash='';return u.href};

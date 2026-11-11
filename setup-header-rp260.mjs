@@ -1,5 +1,5 @@
 // Build 226: uniform RebelsPrep Practice Scheduler header using the full selected team name.
-import {teams} from './teams.mjs?v=recovery78';
+import {teams} from './teams.mjs';
 const ID='rp207-setup-header';
 const pages={setup:'Practice Setup',attendance:'Attendance',drills:'Drills',review:'Review Practice',plan:'Hitting Practice'};
 let lastView='',lastTeam='';

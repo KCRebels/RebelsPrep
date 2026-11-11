@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs team-selection.test.mjs account-roster.test.mjs roster-management.test.mjs practice-capacity.test.mjs shared-concurrency-rp132.test.mjs shared-live-rp133.test.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-rebelsprep 'node --test firestore.test.mjs shared-activation.test.mjs' && firebase emulators:exec --only firestore --project demo-rebelsprep-roster 'node --test roster-rules.test.mjs'"
+    "test": "node --test roster-cache.test.mjs scheduler.test.mjs workflow.test.mjs worker.test.mjs portal-model.test.mjs team-selection.test.mjs account-roster.test.mjs roster-management.test.mjs practice-capacity.test.mjs shared-concurrency-rp132.test.mjs shared-live-rp133.test.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-rebelsprep 'node --test firestore.test.mjs shared-activation.test.mjs' && firebase emulators:exec --only firestore --project demo-rebelsprep-roster 'node --test --test-concurrency=1 roster-rules.test.mjs roster-lifecycle.test.mjs'"
   },
   "devDependencies": {
     "firebase": "12.19.0",

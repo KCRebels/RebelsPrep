@@ -28,6 +28,8 @@ jobs:
           node --check roster-management.mjs
           node --check roster-store.mjs
           node --check roster-sync.mjs
+          node --check roster-cache.mjs
+          node --check roster-lifecycle.test.mjs
           node --check roster-manager-ui.mjs
           node --check coach-roster-link.mjs
       - run: npm test
