@@ -27,4 +27,6 @@ Local Firestore emulator execution is blocked by missing Java. CI installs Java 
 
 No merge, hosting deployment, Firebase rules deployment, production roster writes, account activation or seed/migration was performed. Production Build 420, actual players (including Maleah and Katelyn), and HotB data were not changed.
 
-Before release: verify final CI, run a browser-to-Firestore end-to-end flow in an isolated Firebase test environment, verify real coach/account assignments (including Maryann) through authorized Firebase access, and compare deployed rules with the reviewed rules. Use synthetic players only. Production deployment remains deferred until those checks succeed.
+A browser-to-Firestore end-to-end test now runs inside the synthetic Firestore emulator job, using the production UI and store with emulator-only authentication. It verifies add/edit/transfer/remove against actual emulator documents. Its final CI result is required.
+
+Before release: verify final CI (including the browser-to-Firestore test), verify real coach/account assignments (including Maryann) through authorized Firebase access, and compare deployed rules with the reviewed rules. Use synthetic players only. Production deployment remains deferred until those checks succeed.

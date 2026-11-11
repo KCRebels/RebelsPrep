@@ -33,6 +33,6 @@ jobs:
           node --check roster-manager-ui.mjs
           node --check coach-roster-link.mjs
       - run: npm test
-      - run: npm run test:rules
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:rules
       - run: npm run test:browser
