@@ -52,7 +52,13 @@ service cloud.firestore {
   match /rpDirectoryTeams/{teamId} {
    allow get: if hasAccount() && (orgCoach() || teamCoach(teamId) || playerOnTeam(teamId));
    allow list: if orgCoach();
-   allow create, update: if builder() || orgCoach();
+   allow create: if builder() || orgCoach();
+   allow update: if builder() || orgCoach() || (
+     teamCoach(teamId) && resource.data.playerIds is list
+     && request.resource.data.playerIds is list
+     && request.resource.data.playerIds.size() <= 60
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playerIds'])
+   );
    allow delete: if false;
   }
   // Coaches can edit a single-team roster, but cannot move players across team
@@ -96,7 +102,7 @@ service cloud.firestore {
   }
   match /rpPlayers/{playerId} {
    allow get: if ownPlayer(playerId) || orgCoach() || coachRosterRead();
-   allow list: if orgCoach() || coachRosterRead();
+   allow list: if orgCoach();
    allow create: if builder() || orgCoach() || coachRosterCreate();
    allow update: if builder() || orgCoach() || coachRosterUpdate();
    allow delete: if false;
