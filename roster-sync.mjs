@@ -24,8 +24,11 @@ export async function refreshRosters(account,{requireSeed=true}={}){
  // All reads finish before mutating the in-memory rosters, so a permission
  // failure never leaves half the organization's team arrays modified.
  const snapshots=await Promise.all(permitted.map(async t=>{
-  const q=F.query(F.collection(db,'rpPlayers'),F.where('teamIds','array-contains',t.id));
-  const docs=(await F.getDocs(q)).docs.map(d=>({id:d.id,...d.data()}));
+  const directory=await F.getDoc(F.doc(db,'rpDirectoryTeams',t.id));
+  if(!directory.exists())throw Error('Team roster is not provisioned: '+t.name);
+  const ids=[...new Set(directory.data().playerIds||[])];
+  const snapshots=await Promise.all(ids.map(id=>F.getDoc(F.doc(db,'rpPlayers',id))));
+  const docs=snapshots.filter(d=>d.exists()).map(d=>({id:d.id,...d.data()}));
   return {teamId:t.id,docs};
  }));
  if(requireSeed&&snapshots.every(x=>x.docs.length===0))throw Error('The Firestore roster has not been provisioned. Existing roster was kept.');
