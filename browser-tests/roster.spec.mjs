@@ -56,3 +56,32 @@ test('team coach sees only assigned team and no transfer controls',async({page})
  await expect(page.getByText('Synthetic Coach Player',{exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'Transfer',exact:true})).toHaveCount(0);
 });
+
+test('fourth dashboard card and mobile bottom menu open the same roster screen',async({page})=>{
+ const adapter=accountModule+`
+export const canAccessTeam=()=>true;
+export const services=async()=>({auth:{currentUser:{uid:'synthetic-admin'},authStateReady:async()=>{}},A:{isSignInWithEmailLink:()=>false},F:{doc:()=>({}),getDoc:async()=>({exists:()=>true,data:()=>({playerIds:[]})})},db:{}});
+export const sendPlayerSignInLink=async()=>{};
+export const finishPlayerSignIn=async()=>{};
+export const ensurePersonalCoachAccount=async()=>{};
+export const registerPendingPlayerLogin=async()=>{};
+export const signOutAccount=async()=>{};
+export const watchAccount=async()=>()=>{};`;
+ await page.route('**/account-model-rp276.mjs*',r=>r.fulfill({contentType:'text/javascript',body:adapter}));
+ await page.route('**/dashboard-preview.html',r=>r.fulfill({contentType:'text/html',body:`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="./coach-portal-rp317.css"><link rel="stylesheet" href="./coach-portal-scale-rp321.css"><div id="app"></div><script type="module" src="./coach-portal-rp317.mjs"></script><script type="module" src="./coach-nav-rp321.mjs"></script>`}));
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/dashboard-preview.html');
+ await expect(page.locator('.coach-card-stack > .coach-card')).toHaveCount(4);
+ await expect(page.locator('.coach-card-stack > .coach-card').nth(3).getByRole('heading')).toHaveText('Roster');
+ const nav=page.locator('.coach-bottom-nav');
+ await expect(nav.locator('button:visible')).toHaveCount(5);
+ await expect(nav.locator('button:visible')).toHaveText(['Home','Practice','Focus','Drills','Roster']);
+ const box=await nav.boundingBox();expect(box.width).toBeLessThanOrEqual(390);
+ await page.locator('.coach-card-stack').getByRole('button',{name:/Roster/}).click();
+ await expect(page).toHaveURL(/roster-manager.html/);
+ await expect(page.getByRole('heading',{name:'Roster',exact:true})).toBeVisible();
+ await expect(page.locator('.coach-bottom-nav [aria-current="page"]')).toHaveText('Roster');
+ await page.goto('/dashboard-preview.html');
+ await page.locator('.coach-bottom-nav').getByRole('button',{name:'Roster',exact:true}).click();
+ await expect(page).toHaveURL(/roster-manager.html/);
+});
