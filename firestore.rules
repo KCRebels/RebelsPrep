@@ -21,7 +21,7 @@ service cloud.firestore {
   function coachFor(teamId) { return orgCoach() || teamCoach(teamId); }
   function livePlayerPath(playerId) { return /databases/$(database)/documents/rpPlayers/$(playerId); }
   function activePlayer(playerId) {
-   return exists(livePlayerPath(playerId)) && get(livePlayerPath(playerId)).data.active == true;
+   return exists(livePlayerPath(playerId)) && get(livePlayerPath(playerId)).data.get('active', true) == true;
   }
   function ownPlayer(playerId) {
    return hasAccount() && account().active == true && account().role == 'player'
