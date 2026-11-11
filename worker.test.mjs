@@ -14,3 +14,9 @@ test('build checks Live first even when old draft allowed replacements',()=>{con
 test('scheduler supports relaxed coverage goals without relaxing hard safety rules',()=>{const base={...input(12),durationMinutes:120,requireFront:false,requireSecondFrontForReplacement:false,allowReplacements:false};const p=buildPractice(base);assert.equal(p.requirements.front,false);assert.ok(p.blocks.flatMap(b=>b.stations).filter(s=>!['opening','warm'].includes(s.kind)).every(s=>s.players.length>=3&&s.players.length<=4));assert.deepEqual(validatePractice(p),[]);});
 test('23 hitters recommendation reflects simultaneous station demand',()=>{messages.length=0;self.onmessage({data:{mode:'recommend',input:input(23)}});const r=messages[0].recommendation;assert.ok(r.total>=6&&r.total<=8);assert.ok(r.frontCount>=3&&r.frontCount<=r.total);assert.ok(r.liveCount>=3&&r.liveCount<=r.total);assert.equal(r.count,Math.max(r.frontCount,r.liveCount));});
 test('changing duration does not multiply the station setup count',()=>{messages.length=0;self.onmessage({data:{mode:'recommend',input:{...input(23),durationMinutes:210}}});assert.ok(messages[0].recommendation.count>=3&&messages[0].recommendation.count<=8);});
+
+test('worker retains the refreshed team membership sent by the builder',()=>{
+ const request=input(12);request.players=request.players.map(p=>({...p,memberTeamIds:['kc-rebels-16-regional']}));
+ const result=build(request);assert.ok(result.plan);
+ for(const p of result.plan.players)assert.deepEqual(p.memberTeamIds,['kc-rebels-16-regional']);
+});

@@ -1,7 +1,7 @@
 import {buildPractice,validatePractice} from './scheduler.mjs?v=structural237';
-import {rosterPlayers as organizationPlayers} from './team-rosters.mjs?v=teamaware101';
+import {rosterPlayers as organizationPlayers} from './team-rosters.mjs';
 const orgById=new Map(organizationPlayers.map(p=>[p.id,p]));
-function enrich(input){return {...input,players:input.players.map(p=>{const o=orgById.get(p.id);return o?{...p,memberTeamIds:o.memberTeamIds||[],pitcher:p.pitcher??o.pitcher,catcher:p.catcher??o.catcher}:p;})};}
+function enrich(input){return {...input,players:input.players.map(p=>{const o=orgById.get(p.id);return o?{...p,memberTeamIds:p.memberTeamIds??o.memberTeamIds??[],pitcher:p.pitcher??o.pitcher,catcher:p.catcher??o.catcher}:p;})};}
 function checked(input){const plan=buildPractice(input),errors=validatePractice(plan);if(errors.length)throw Error(errors.join('; '));return plan;}
 function age(p){const ids=p?.memberTeamIds||p?.teamIds||[];if(ids.some(id=>String(id).includes('18-national')))return 18;if(ids.some(id=>String(id).includes('16-national')))return 16;if(ids.some(id=>String(id).includes('14-national')))return 14;return 0;}
 const upper=p=>age(p)>=16;

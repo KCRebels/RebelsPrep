@@ -1,5 +1,5 @@
 import * as shared from './shared-rp52.mjs?v=rp135';
-import {teams} from './teams.mjs?v=rpbuild34';
+import {teams} from './teams.mjs';
 import {coaches} from './roster.mjs?v=rp129';
 import {drills} from './drills.mjs?v=recovery78';
 import {combinedTeam} from './team-selection.mjs?v=rpbuild33';

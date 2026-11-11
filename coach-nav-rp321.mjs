@@ -1,6 +1,7 @@
-/* Coach bottom nav: Home, Practice, Focus, Drills. Keep the native More control only as a hidden routing driver for Drill Library. */
+/* Coach bottom nav: Home, Practice, Focus, Drills, Roster. Keep the native More control only as a hidden routing driver for Drill Library. */
 const app=document.getElementById('app');
 const icons={
+ roster:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M17 13a5 5 0 0 1 4 5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
  home:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3l8.5 7.5v9.5h-6v-6h-5v6h-6z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>',
  practice:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M5.8 7.6c2.1 1 3.8 2.7 4.8 4.8m7.6-4.8c-2.1 1-3.8 2.7-4.8 4.8m-7.6 4c2.1-1 3.8-2.7 4.8-4.8m7.6 4c-2.1-1-3.8-2.7-4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/></svg>',
  focus:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
@@ -14,6 +15,8 @@ function patchNav(){
  const home=[...nav.querySelectorAll('button')].find(b=>b.dataset.coachView==='home');
  const practice=[...nav.querySelectorAll('button')].find(b=>b.dataset.coachView==='practice');
  const focus=[...nav.querySelectorAll('button')].find(b=>b.dataset.coachView==='focus');
+ const roster=nav.querySelector('[data-coach-view="roster"]');
+ if(roster&&!roster.querySelector('.coach-nav-icon'))label(roster,'roster','Roster');
  const more=[...nav.querySelectorAll('button')].find(b=>b.dataset.coachView==='more');
  if(home&&!home.querySelector('.coach-nav-icon'))label(home,'home','Home');
  if(practice&&!practice.querySelector('.coach-nav-icon'))label(practice,'practice','Practice');
@@ -30,7 +33,7 @@ function patchNav(){
   nav.insertBefore(drills,more);
  }else if(drills&&!drills.querySelector('.coach-nav-icon'))label(drills,'drills','Drills');
  if(more){more.hidden=true;more.style.display='none';more.setAttribute('aria-hidden','true');more.tabIndex=-1;}
- nav.querySelectorAll('.coach-nav-item:not([hidden])').forEach(b=>{b.style.flex='1 1 25%';});
+ nav.querySelectorAll('.coach-nav-item:not([hidden])').forEach(b=>{b.style.flex='1 1 20%';});
  const title=app?.querySelector('.coach-page-head h1')?.textContent?.trim()||'';
  if(title==='Drill Library'){
   nav.querySelectorAll('[aria-current="page"]').forEach(b=>b.removeAttribute('aria-current'));

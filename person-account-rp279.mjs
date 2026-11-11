@@ -90,9 +90,9 @@ async function load(){
   ctx=await accountContext();
   if(isPlayer(ctx.account)){
    const snap=await F.getDoc(F.doc(db,'rpPlayers',ctx.account.playerId));
-   if(!snap.exists()||snap.data().playerPortalEnabled!==true)throw Error('Player portal access is not enabled for this profile.');
+   if(!snap.exists()||(snap.data().active===false||snap.data().playerPortalEnabled!==true))throw Error('Player portal access is not enabled for this profile.');
    profile=snap.data();
-   profileStop=F.onSnapshot(snap.ref,s=>{if(!s.exists()||s.data().playerPortalEnabled!==true){stop();ctx.account=null;message='Player portal access is not enabled.';render();return;}profile=s.data();setSessions(profile.practiceAssignments||{}).catch(e=>{message=e.message;render();});},e=>{message=e.message;render();});
+   profileStop=F.onSnapshot(snap.ref,s=>{if(!s.exists()||(s.data().active===false||s.data().playerPortalEnabled!==true)){stop();ctx.account=null;message='Player portal access is not enabled.';render();return;}profile=s.data();setSessions(profile.practiceAssignments||{}).catch(e=>{message=e.message;render();});},e=>{stop();profile=null;ctx.account=null;sessions={};clocks.clear();message=e.code==='permission-denied'?'Player portal access is no longer enabled.':e.message;render();});
   }else if(isCoach(ctx.account)){await setSessions(ctx.account.practiceAssignments);}
   if(ctx.user)accountStop=await watchAccount(a=>{
    const before=ctx.account;ctx.account=a;

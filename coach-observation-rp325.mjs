@@ -1,6 +1,6 @@
 import {services,accountContext} from './account-model-rp276.mjs?v=rp276';
 import {drills} from './drills.mjs?v=rp277';
-import {rosterPlayers} from './team-rosters.mjs?v=teamaware101';
+import {rosterPlayers} from './team-rosters.mjs';
 
 const app=document.getElementById('app');
 let selectedIds=[];

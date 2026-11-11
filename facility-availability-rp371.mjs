@@ -1,5 +1,5 @@
 import * as shared from './shared-rp52.mjs?v=rp276';
-import {teams} from './teams.mjs?v=recovery78';
+import {teams} from './teams.mjs';
 import {minutes,practiceWindow,overlaps,facilityId} from './practice-capacity.mjs?v=rp133';
 
 const state={key:'',sessions:[],loaded:false,loading:false,error:''};
